@@ -33,15 +33,18 @@ class AuthController extends Controller
             throw ValidationException::withMessages(['nik_nip' => 'Hanya untuk NIK Ciamis (3207)']);
         }
 
+        // --- Bagian yang Disarankan untuk Update ---
+
         User::create([
-            'name' => $request->name,
-            'nama_mitra' => $request->nama_mitra, // Akan null jika petani
-            'email' => $request->email,
-            'nik_nip' => $request->nik_nip,
-            'alamat' => $request->alamat,
-            'password' => $request->password,
-            'role' => $request->role,
+            'name'       => $request->name,
+            'email'      => $request->email,
+            'nik_nip'    => $request->nik_nip,
+            'alamat'     => $request->alamat,
+            'password'   => $request->password,
+            'role'       => $request->role,
             'status_akun' => 'pending',
+            // Gunakan null coalescing (?? null) agar tidak error jika field tidak ada
+            'nama_mitra' => $request->role === 'mitra' ? $request->nama_mitra : null,
         ]);
 
         return redirect()->route('login')->with('success', 'Registrasi berhasil, tunggu verifikasi.');
