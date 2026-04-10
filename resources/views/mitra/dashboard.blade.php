@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+<span class="font-bold">Ini Halaman Mitra</span><br><br>
 <div class="bg-white p-8 rounded-2xl shadow-lg">
     <div class="mb-6">
         <h2 class="text-sm font-bold text-green-600 uppercase tracking-widest">Toko / Mitra</h2>

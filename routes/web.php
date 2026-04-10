@@ -28,10 +28,12 @@ Route::middleware(['auth'])->group(function () {
         request()->session()->regenerateToken();
         return redirect('/');
     })->name('logout');
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
     Route::middleware(['role:admin,superadmin'])->group(function () {
         Route::get('/admin/verifikasi', [AdminController::class, 'index'])->name('admin.verifikasi');
         Route::post('/admin/approve/{id}', [AdminController::class, 'approve'])->name('admin.approve');
+        Route::get('/admin/pupuk', function() { return "Halaman Pupuk"; })->name('pupuk');
+        Route::get('/admin/laporan', function() { return "Halaman Laporan"; })->name('laporan');
     });
     // Khusus Petani
     Route::middleware(['role:petani'])->group(function () {

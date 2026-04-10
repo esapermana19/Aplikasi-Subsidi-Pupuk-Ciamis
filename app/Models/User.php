@@ -16,6 +16,7 @@ use Illuminate\Notifications\Notifiable;
     'name',
     'nama_mitra',
     'email',
+    'no_telepon',
     'nik_nip',
     'password',
     'role',

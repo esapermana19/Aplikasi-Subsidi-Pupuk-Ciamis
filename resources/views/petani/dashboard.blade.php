@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+<h1 class="text-3xl font-bold text-gray-800">Dashboard Petani</h1>
 <div class="bg-white p-8 rounded-2xl shadow-lg border border-green-100">
     <div class="flex items-center gap-4 mb-6">
         <div class="p-3 bg-green-100 rounded-full text-green-700">

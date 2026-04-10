@@ -15,6 +15,7 @@ class AuthController extends Controller
         $rules = [
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users',
+            'no_telepon' => 'required',
             'nik_nip' => 'required|string|size:16|unique:users',
             'alamat' => 'required|string',
             'password' => 'required|string|min:8|confirmed',
@@ -38,6 +39,7 @@ class AuthController extends Controller
         User::create([
             'name'       => $request->name,
             'email'      => $request->email,
+            'no_telepon' => $request->no_telepon,
             'nik_nip'    => $request->nik_nip,
             'alamat'     => $request->alamat,
             'password'   => $request->password,

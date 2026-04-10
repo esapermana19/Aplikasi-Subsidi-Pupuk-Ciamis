@@ -3,28 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - ASUP Ciamis</title>
+    <title>ASUP Ciamis</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-<body class="bg-gray-100">
-    <nav class="bg-green-700 text-white p-4 shadow-lg">
-        <div class="container mx-auto flex justify-between items-center">
-            <h1 class="font-bold text-xl">ASUP CIAMIS</h1>
-            <div class="flex items-center gap-4">
-                <span class="text-sm">Halo, {{ auth()->user()->name }} ({{ ucfirst(auth()->user()->role) }})</span>
-                <form action="{{ route('logout') }}" method="POST">
-                    @csrf
-                    <button type="submit" class="bg-red-500 hover:bg-red-600 px-3 py-1 rounded text-sm transition">Keluar</button>
-                </form>
-            </div>
-        </div>
-    </nav>
+<body class="bg-gray-50 text-gray-900">
 
-    <main class="container mx-auto mt-10 p-4">
-        @yield('content')
-    </main>
+    <x-sidebar :active="$activeMenu ?? 'dashboard'" />
 
-    <script>lucide.createIcons();</script>
+    <div class="pl-64 flex flex-col min-h-screen">
+        <header class="h-16 border-b bg-white flex items-center px-8 sticky top-0 z-10">
+            <h1 class="font-bold text-lg text-gray-800 capitalize">{{ str_replace('-', ' ', $activeMenu ?? 'Dashboard') }}</h1>
+        </header>
+
+        <main class="p-8">
+            @yield('content')
+        </main>
+    </div>
+
+    <script>
+        // Inisialisasi Lucide Icons
+        lucide.createIcons();
+    </script>
 </body>
 </html>
