@@ -16,23 +16,60 @@
             @php
                 $menuItems = [
                     ['id' => 'dashboard', 'label' => 'Dashboard', 'icon' => 'layout-dashboard', 'route' => 'dashboard'],
+                    [
+                        'id' => 'verifikasi',
+                        'label' => 'Verifikasi Akun',
+                        'icon' => 'user-check',
+                        'route' => 'verifikasi',
+                    ],
                     ['id' => 'pupuk', 'label' => 'Kelola Pupuk', 'icon' => 'leaf', 'route' => 'pupuk'],
-                    ['id' => 'verifikasi', 'label' => 'Verifikasi Petani', 'icon' => 'user-check', 'route' => 'verifikasi'],
                     ['id' => 'petani', 'label' => 'Kelola Petani', 'icon' => 'users', 'route' => 'petani'],
                     ['id' => 'mitra', 'label' => 'Kelola Mitra', 'icon' => 'building-2', 'route' => 'mitra'],
-                    ['id' => 'approval-permintaan', 'label' => 'Approval Permintaan', 'icon' => 'file-check', 'route' => 'approval-permintaan'],
-                    ['id' => 'approval-pencairan', 'label' => 'Approval Pencairan', 'icon' => 'dollar-sign', 'route' => 'approval-pencairan'],
-                    ['id' => 'rekonsiliasi', 'label' => 'Rekonsiliasi Data', 'icon' => 'database', 'route' => 'rekonsiliasi'],
+                    [
+                        'id' => 'approval-permintaan',
+                        'label' => 'Approval Permintaan',
+                        'icon' => 'file-check',
+                        'route' => 'approval-permintaan',
+                    ],
+                    [
+                        'id' => 'approval-pencairan',
+                        'label' => 'Approval Pencairan',
+                        'icon' => 'dollar-sign',
+                        'route' => 'approval-pencairan',
+                    ],
+                    [
+                        'id' => 'rekonsiliasi',
+                        'label' => 'Rekonsiliasi Data',
+                        'icon' => 'database',
+                        'route' => 'rekonsiliasi',
+                    ],
                     ['id' => 'transaksi', 'label' => 'Data Transaksi', 'icon' => 'receipt', 'route' => 'transaksi'],
                     ['id' => 'laporan', 'label' => 'Laporan', 'icon' => 'file-text', 'route' => 'laporan'],
                 ];
             @endphp
 
-            @foreach($menuItems as $item)
+            @foreach ($menuItems as $item)
                 <a href="{{ route($item['route']) }}"
-                   class="{{ $activeMenu == $item['route'] ? 'flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm font-medium bg-green-600 text-white shadow-sm' : 'flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900' }}">
-                    <i data-lucide="{{ $item['icon'] }}" class="h-5 w-5"></i>
-                    {{ $item['label'] }}
+                    class="{{ ($activeMenu ?? '') == $item['id'] ? 'flex items-center justify-between px-3 py-2 rounded-lg transition-colors text-sm font-medium bg-green-600 text-white shadow-sm' : 'flex items-center justify-between px-3 py-2 rounded-lg transition-colors text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900' }}">
+
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="{{ $item['icon'] }}" class="h-5 w-5"></i>
+                        {{ $item['label'] }}
+                    </div>
+
+                    {{-- Notifikasi khusus untuk menu verifikasi --}}
+                    @if ($item['id'] === 'verifikasi' && ($pendingCount ?? 0) > 0)
+                        <span class="relative flex h-5 w-5">
+                            {{-- Efek Lingkaran Berkedip --}}
+                            <span
+                                class="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                            {{-- Angka Jumlah Permintaan --}}
+                            <span
+                                class="relative inline-flex rounded-full h-5 w-5 bg-orange-500 text-[10px] text-white items-center justify-center font-bold">
+                                {{ $pendingCount }}
+                            </span>
+                        </span>
+                    @endif
                 </a>
             @endforeach
         </div>
@@ -53,7 +90,8 @@
 
         <form action="{{ route('logout') }}" method="POST">
             @csrf
-            <button type="submit" class="flex w-full items-center gap-2 px-3 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-red-600 hover:border-red-100 transition-all">
+            <button type="submit"
+                class="flex w-full items-center gap-2 px-3 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-red-600 hover:border-red-100 transition-all">
                 <i data-lucide="log-out" class="h-4 w-4"></i>
                 Keluar
             </button>

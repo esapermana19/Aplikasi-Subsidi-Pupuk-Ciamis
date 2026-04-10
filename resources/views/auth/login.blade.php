@@ -24,7 +24,7 @@
 
             <div class="bg-white border border-gray-200 rounded-xl shadow-lg p-7">
                 <h2 class="text-xl font-bold text-gray-800">Masuk ke Sistem</h2>
-                <p class="text-gray-500 text-sm mb-5">Masukkan username dan password untuk melanjutkan</p>
+                <p class="text-gray-500 text-sm mb-5">Masukkan NIK / NIP dan password untuk melanjutkan</p>
 
                 @if($errors->any())
                     <div class="bg-red-50 text-red-600 p-2.5 rounded-lg mb-4 text-xs flex items-center gap-2">

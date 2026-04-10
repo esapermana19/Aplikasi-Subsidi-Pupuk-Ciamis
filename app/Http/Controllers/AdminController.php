@@ -6,6 +6,7 @@ use App\Models\Pupuk;
 use App\Models\Transaksi;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class AdminController extends Controller
 {
@@ -24,27 +25,44 @@ class AdminController extends Controller
         $recentActivities = User::latest()->take(5)->get();
 
         return view('admin.dashboard', [
-        'stats' => $stats,
-        'recentActivities' => $recentActivities,
-        'activeMenu' => 'dashboard' // Memberikan nilai untuk variabel $activeMenu
-    ]);
+            'stats' => $stats,
+            'recentActivities' => $recentActivities,
+            'activeMenu' => 'dashboard' // Memberikan nilai untuk variabel $activeMenu
+        ]);
     }
-    public function verifikasi()
+    public function verifikasi(Request $request)
     {
-        // Ambil semua user yang statusnya pending
-        $pendingUsers = \App\Models\User::where('status_akun', 'pending')->latest()->get();
+        $query = User::where('status_akun', 'pending');
+
+        // Filter berdasarkan role jika ada request 'role'
+        if ($request->has('role') && $request->role != '') {
+            $query->where('role', $request->role);
+        }
+
+        $pendingUsers = $query->latest()->get();
 
         return view('admin.verifikasi', [
             'users' => $pendingUsers,
-            'activeMenu' => 'admin.verifikasi' // Untuk highlight di sidebar
+            'activeMenu' => 'verifikasi',
+            'currentFilter' => $request->role // Mengirim filter aktif ke view
         ]);
     }
 
-    public function approve($id)
+    public function approve_akun($id)
     {
         $user = \App\Models\User::findOrFail($id);
-        $user->update(['status_akun' => 'aktif']);
-
+        $user->update([
+            'status_akun' => 'aktif',
+            'verified_by' => Auth::id(),
+        ]);
         return back()->with('success', 'Akun ' . $user->name . ' berhasil diverifikasi!');
+    }
+
+    public function reject_akun($id)
+    {
+        $user = User::findOrFail($id);
+        $user->delete(); // Menghapus data user dari database
+
+        return back()->with('success', 'Pendaftaran akun ' . $user->name . ' telah ditolak.');
     }
 }

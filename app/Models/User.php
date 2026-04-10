@@ -51,7 +51,7 @@ class User extends Authenticatable
     }
 
     //Relasi: Yang memverifikasi akun
-    public function validator(): BelongsTo
+    public function verifikator()
     {
         return $this->belongsTo(User::class, 'verified_by');
     }

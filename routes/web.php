@@ -30,10 +30,17 @@ Route::middleware(['auth'])->group(function () {
     })->name('logout');
     Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
     Route::middleware(['role:admin,superadmin'])->group(function () {
-        Route::get('/admin/verifikasi', [AdminController::class, 'index'])->name('admin.verifikasi');
-        Route::post('/admin/approve/{id}', [AdminController::class, 'approve'])->name('admin.approve');
         Route::get('/admin/pupuk', function() { return "Halaman Pupuk"; })->name('pupuk');
+        Route::get('/admin/petani', function() { return "Halaman Petani"; })->name('petani');
+        Route::get('/admin/mitra', function() { return "Halaman Mitra"; })->name('mitra');
+        Route::get('/admin/approval-permintaan', function() { return "Halaman Req"; })->name('approval-permintaan');
+        Route::get('/admin/approval-pencairan', function() { return "Halaman Cair"; })->name('approval-pencairan');
+        Route::get('/admin/rekonsiliasi', function() { return "Halaman Rekon"; })->name('rekonsiliasi');
+        Route::get('/admin/transaksi', function() { return "Halaman Transaksi"; })->name('transaksi');
         Route::get('/admin/laporan', function() { return "Halaman Laporan"; })->name('laporan');
+        Route::get('/admin/verifikasi', [AdminController::class, 'verifikasi'])->name('verifikasi');
+        Route::post('/admin/approve_akun/{id}', [AdminController::class, 'approve_akun'])->name('admin.approve_akun');
+        Route::delete('/admin/reject_akun/{id}', [AdminController::class, 'reject_akun'])->name('admin.reject_akun');
     });
     // Khusus Petani
     Route::middleware(['role:petani'])->group(function () {
