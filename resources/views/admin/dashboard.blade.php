@@ -87,7 +87,7 @@
                                             {{ ucfirst($activity->role) }}
                                         </span>
                                         • <span class="text-gray-400 text-xs">Daftar
-                                            {{ $activity->created_at->diffForHumans() }}</span>
+                                            {{ $activity->created_at->format('d M Y H:i:s') }}</span>
                                     </p>
                                 </div>
                             </div>
@@ -102,6 +102,20 @@
                                             <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
                                         </span>
                                         Menunggu Verifikasi
+                                    </div>
+                                @elseif($activity->status_akun == 'ditolak')
+                                    <div class="text-right">
+                                        <div
+                                            class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold bg-red-50 text-red-700 rounded-full border border-red-200">
+                                            <i data-lucide="x-circle" class="h-3.5 w-3.5"></i>
+                                            Pendaftaran Ditolak
+                                        </div>
+                                        @if ($activity->verifikator)
+                                            <p
+                                                class="text-[10px] text-red-500 font-medium mt-1.5 flex items-center gap-1 justify-end">
+                                                Ditolak oleh: {{ $activity->verifikator->name }}
+                                            </p>
+                                        @endif
                                     </div>
                                 @else
                                     <div class="text-right">
@@ -123,7 +137,7 @@
                         </div>
                     @empty
                         <div class="text-center py-10 text-gray-400 italic text-sm">
-                            Bel_m ada aktivitas terbaru.
+                            Belum ada aktivitas terbaru.
                         </div>
                     @endforelse
                 </div>

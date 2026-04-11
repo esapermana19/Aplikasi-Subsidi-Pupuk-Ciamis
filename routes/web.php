@@ -31,7 +31,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
     Route::middleware(['role:admin,superadmin'])->group(function () {
         Route::get('/admin/pupuk', function() { return "Halaman Pupuk"; })->name('pupuk');
-        Route::get('/admin/petani', function() { return "Halaman Petani"; })->name('petani');
+        Route::get('/admin/petani', [AdminController::class, 'list_petani'])->name('admin.list_petani');
+        Route::patch('/admin/petani/update/{id}', [AdminController::class, 'update_petani'])->name('admin.petani.update');
+        Route::patch('/admin/update_status_petani/{id}', [AdminController::class, 'update_status_petani'])->name('admin.petani.update_status');
         Route::get('/admin/mitra', function() { return "Halaman Mitra"; })->name('mitra');
         Route::get('/admin/approval-permintaan', function() { return "Halaman Req"; })->name('approval-permintaan');
         Route::get('/admin/approval-pencairan', function() { return "Halaman Cair"; })->name('approval-pencairan');

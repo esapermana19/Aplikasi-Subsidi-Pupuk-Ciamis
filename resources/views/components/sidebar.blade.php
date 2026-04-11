@@ -22,9 +22,9 @@
                         'icon' => 'user-check',
                         'route' => 'verifikasi',
                     ],
+                    ['id' => 'petani', 'label' => 'Kelola Akun Petani', 'icon' => 'users', 'route' => 'admin.list_petani'],
+                    ['id' => 'mitra', 'label' => 'Kelola  Akun Mitra', 'icon' => 'building-2', 'route' => 'mitra'],
                     ['id' => 'pupuk', 'label' => 'Kelola Pupuk', 'icon' => 'leaf', 'route' => 'pupuk'],
-                    ['id' => 'petani', 'label' => 'Kelola Petani', 'icon' => 'users', 'route' => 'petani'],
-                    ['id' => 'mitra', 'label' => 'Kelola Mitra', 'icon' => 'building-2', 'route' => 'mitra'],
                     [
                         'id' => 'approval-permintaan',
                         'label' => 'Approval Permintaan',
