@@ -99,7 +99,29 @@
                             </div>
 
                             <div class="flex items-center gap-4">
-                                @if ($activity->status_akun == 'pending')
+                                {{-- 1. PRIORITAS: Cek apakah ini benar-benar EDIT DATA (Bukan verifikasi baru) --}}
+                                {{-- Logika: Waktu update berbeda DAN status akun memang sudah aktif sebelumnya --}}
+                                @if (
+                                    $activity->updated_at != $activity->created_at &&
+                                        $activity->status_akun == 'aktif' &&
+                                        $activity->email_verified_at != null)
+                                    <div class="text-right">
+                                        <div
+                                            class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold bg-blue-50 text-blue-700 rounded-full border border-blue-200">
+                                            <i data-lucide="edit-3" class="h-3.5 w-3.5"></i>
+                                            Data Diperbarui
+                                        </div>
+                                        @if ($activity->verifikator)
+                                            <p
+                                                class="text-[10px] text-blue-500 font-medium mt-1.5 flex items-center gap-1 justify-end">
+                                                <i data-lucide="user-cog" class="h-3 w-3"></i>
+                                                Oleh: {{ $activity->verifikator->name }}
+                                            </p>
+                                        @endif
+                                    </div>
+
+                                    {{-- 2. Cek status Pending --}}
+                                @elseif ($activity->status_akun == 'pending')
                                     <div
                                         class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold bg-amber-50 text-amber-700 rounded-full border border-amber-200">
                                         <span class="relative flex h-2 w-2">
@@ -109,6 +131,8 @@
                                         </span>
                                         Menunggu Verifikasi
                                     </div>
+
+                                    {{-- 3. Cek status Ditolak --}}
                                 @elseif($activity->status_akun == 'ditolak')
                                     <div class="text-right">
                                         <div
@@ -124,6 +148,8 @@
                                             </p>
                                         @endif
                                     </div>
+
+                                    {{-- 4. Cek status Nonaktif --}}
                                 @elseif($activity->status_akun == 'nonaktif')
                                     <div class="text-right">
                                         <div
@@ -139,12 +165,29 @@
                                             </p>
                                         @endif
                                     </div>
-                                @else
+
+                                    {{-- 5. Default: Terverifikasi (Baru diverifikasi atau belum pernah diedit) --}}
+                                @elseif ($activity->status_akun == 'aktif')
                                     <div class="text-right">
                                         <div
                                             class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold bg-emerald-50 text-emerald-700 rounded-full border border-emerald-200">
                                             <i data-lucide="check-circle-2" class="h-3.5 w-3.5"></i>
                                             Terverifikasi
+                                        </div>
+                                        @if ($activity->verifikator)
+                                            <p
+                                                class="text-[10px] text-gray-500 font-medium mt-1.5 flex items-center gap-1 justify-end">
+                                                <i data-lucide="user-cog" class="h-3 w-3"></i>
+                                                Oleh: {{ $activity->verifikator->name }}
+                                            </p>
+                                        @endif
+                                    </div>
+                                @else
+                                    <div class="text-right">
+                                        <div
+                                            class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold bg-violet-50 text-violet-700 rounded-full border border-violet-200">
+                                            <i data-lucide="check-circle-2" class="h-3.5 w-3.5"></i>
+                                            Data Diperbarui
                                         </div>
                                         @if ($activity->verifikator)
                                             <p

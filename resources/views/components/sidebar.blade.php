@@ -1,4 +1,4 @@
-@props(['active'])
+@props(['activeMenu', 'pendingCount'])
 
 <div class="flex h-screen w-64 flex-col border-r bg-white fixed left-0 top-0">
     <div class="flex h-16 items-center gap-3 border-b px-6">
@@ -22,8 +22,19 @@
                         'icon' => 'user-check',
                         'route' => 'verifikasi',
                     ],
-                    ['id' => 'petani', 'label' => 'Kelola Akun Petani', 'icon' => 'users', 'route' => 'admin.list_petani'],
-                    ['id' => 'mitra', 'label' => 'Kelola  Akun Mitra', 'icon' => 'building-2', 'route' => 'mitra'],
+                    // PERBAIKAN DI SINI: Memisahkan icon dan route
+                    [
+                        'id' => 'petani',
+                        'label' => 'Kelola Akun Petani',
+                        'icon' => 'users',
+                        'route' => 'admin.list_petani',
+                    ],
+                    [
+                        'id' => 'mitra',
+                        'label' => 'Kelola Akun Mitra',
+                        'icon' => 'building-2',
+                        'route' => 'admin.list_mitra',
+                    ],
                     ['id' => 'pupuk', 'label' => 'Kelola Pupuk', 'icon' => 'leaf', 'route' => 'pupuk'],
                     [
                         'id' => 'approval-permintaan',
@@ -49,21 +60,25 @@
             @endphp
 
             @foreach ($menuItems as $item)
-                <a href="{{ route($item['route']) }}"
-                    class="{{ ($activeMenu ?? '') == $item['id'] ? 'flex items-center justify-between px-3 py-2 rounded-lg transition-colors text-sm font-medium bg-green-600 text-white shadow-sm' : 'flex items-center justify-between px-3 py-2 rounded-lg transition-colors text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900' }}">
+                @php
+                    // Cek apakah aktif berdasarkan variabel $activeMenu ATAU berdasarkan nama route saat ini
+                    $isActive = ($activeMenu ?? '') === $item['id'] || request()->routeIs($item['route']);
+                @endphp
+
+                <a href="{{ Route::has($item['route']) ? route($item['route']) : '#' }}"
+                    class="{{ $isActive
+                        ? 'flex items-center justify-between px-3 py-2 rounded-lg transition-colors text-sm font-medium bg-green-600 text-white shadow-sm'
+                        : 'flex items-center justify-between px-3 py-2 rounded-lg transition-colors text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900' }}">
 
                     <div class="flex items-center gap-3">
                         <i data-lucide="{{ $item['icon'] }}" class="h-5 w-5"></i>
                         {{ $item['label'] }}
                     </div>
 
-                    {{-- Notifikasi khusus untuk menu verifikasi --}}
                     @if ($item['id'] === 'verifikasi' && ($pendingCount ?? 0) > 0)
                         <span class="relative flex h-5 w-5">
-                            {{-- Efek Lingkaran Berkedip --}}
                             <span
                                 class="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                            {{-- Angka Jumlah Permintaan --}}
                             <span
                                 class="relative inline-flex rounded-full h-5 w-5 bg-orange-500 text-[10px] text-white items-center justify-center font-bold">
                                 {{ $pendingCount }}
@@ -91,7 +106,7 @@
         <form action="{{ route('logout') }}" method="POST">
             @csrf
             <button type="submit"
-                class="flex w-full items-center gap-2 px-3 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-red-600 hover:border-red-100 transition-all">
+                class="flex w-full items-center gap-2 px-3 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-red-600 hover:border-red-100 transition-all cursor-pointer">
                 <i data-lucide="log-out" class="h-4 w-4"></i>
                 Keluar
             </button>

@@ -10,7 +10,7 @@
 </head>
 <body class="bg-gray-50 text-gray-900">
 
-    <x-sidebar :active="$activeMenu ?? 'dashboard'" />
+    <x-sidebar :activeMenu="$activeMenu ?? ''" :pendingCount="$pendingCount ?? 0" />
 
     <div class="pl-64 flex flex-col min-h-screen">
         <header class="h-16 border-b bg-white flex items-center px-8 sticky top-0 z-10">
