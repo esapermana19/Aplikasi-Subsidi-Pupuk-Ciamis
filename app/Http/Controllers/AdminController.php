@@ -22,7 +22,7 @@ class AdminController extends Controller
         ];
 
         // Mengambil 5 aktivitas terbaru
-        $recentActivities = User::latest()->take(5)->get();
+        $recentActivities = User::with('verifiedUsers')->orderBy('updated_at', 'desc')->take(5)->get();
 
         return view('admin.dashboard', [
             'stats' => $stats,
@@ -140,6 +140,7 @@ class AdminController extends Controller
         $data = [
             'name' => $request->name,
             'email' => $request->email,
+            'verified_by' => Auth::id() // Mencatat siapa yang terakhir mengubah data petani
         ];
 
         // Update password hanya jika diinputkan

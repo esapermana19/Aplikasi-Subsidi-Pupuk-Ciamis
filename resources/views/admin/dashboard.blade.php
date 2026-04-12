@@ -81,13 +81,19 @@
                                 <div>
                                     <p class="text-base font-semibold text-gray-900">{{ $activity->name }}</p>
                                     <p class="text-sm text-gray-600">
-                                        {{-- Label Role dengan warna yang sesuai --}}
                                         <span
                                             class="{{ $activity->role == 'petani' ? 'text-green-600' : 'text-violet-600' }} font-medium">
                                             {{ ucfirst($activity->role) }}
                                         </span>
-                                        • <span class="text-gray-400 text-xs">Daftar
-                                            {{ $activity->created_at->format('d M Y H:i:s') }}</span>
+                                        •
+                                        <span class="text-gray-400 text-xs">
+                                            {{-- Jika updated_at berbeda dengan created_at, berarti ini adalah aktivitas edit/perubahan --}}
+                                            @if ($activity->updated_at != $activity->created_at)
+                                                Diperbarui {{ $activity->updated_at->diffForHumans() }}
+                                            @else
+                                                Daftar {{ $activity->created_at->format('d M Y') }}
+                                            @endif
+                                        </span>
                                     </p>
                                 </div>
                             </div>
@@ -112,8 +118,24 @@
                                         </div>
                                         @if ($activity->verifikator)
                                             <p
-                                                class="text-[10px] text-red-500 font-medium mt-1.5 flex items-center gap-1 justify-end">
-                                                Ditolak oleh: {{ $activity->verifikator->name }}
+                                                class="text-[10px] text-gray-500 font-medium mt-1.5 flex items-center gap-1 justify-end">
+                                                <i data-lucide="user-cog" class="h-3 w-3"></i>
+                                                Oleh: {{ $activity->verifikator->name }}
+                                            </p>
+                                        @endif
+                                    </div>
+                                @elseif($activity->status_akun == 'nonaktif')
+                                    <div class="text-right">
+                                        <div
+                                            class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold bg-gray-100 text-gray-700 rounded-full border border-gray-300">
+                                            <i data-lucide="slash" class="h-3.5 w-3.5"></i>
+                                            Akun Nonaktif
+                                        </div>
+                                        @if ($activity->verifikator)
+                                            <p
+                                                class="text-[10px] text-gray-500 font-medium mt-1.5 flex items-center gap-1 justify-end">
+                                                <i data-lucide="user-cog" class="h-3 w-3"></i>
+                                                Oleh: {{ $activity->verifikator->name }}
                                             </p>
                                         @endif
                                     </div>
@@ -126,7 +148,7 @@
                                         </div>
                                         @if ($activity->verifikator)
                                             <p
-                                                class="text-[10px] text-green-500 font-medium mt-1.5 flex items-center gap-1 justify-center">
+                                                class="text-[10px] text-gray-500 font-medium mt-1.5 flex items-center gap-1 justify-end">
                                                 <i data-lucide="user-cog" class="h-3 w-3"></i>
                                                 Oleh: {{ $activity->verifikator->name }}
                                             </p>
