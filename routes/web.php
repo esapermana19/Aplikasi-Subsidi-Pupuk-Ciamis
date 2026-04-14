@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MitraController;
 use App\Http\Controllers\PetaniController;
+use App\Http\Controllers\PupukController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
@@ -30,8 +31,13 @@ Route::middleware(['auth'])->group(function () {
     })->name('logout');
     Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
     Route::middleware(['role:admin,superadmin'])->group(function () {
-        Route::get('/admin/pupuk', function() { return "Halaman Pupuk"; })->name('pupuk');
+        // Manajemen Pupuk
+        Route::get('/admin/pupuk', [PupukController::class, 'index'])->name('admin.pupuk');
+        Route::post('/admin/pupuk/store', [PupukController::class, 'store'])->name('admin.pupuk.store');
+        Route::patch('/admin/pupuk/update/{id}', [PupukController::class, 'update'])->name('admin.pupuk.update');
+        Route::delete('/admin/pupuk/delete/{id}', [PupukController::class, 'destroy'])->name('admin.pupuk.destroy');
         Route::get('/admin/petani', [AdminController::class, 'list_petani'])->name('admin.list_petani');
+        // Manajemen Petani
         Route::patch('/admin/petani/update/{id}', [AdminController::class, 'update_petani'])->name('admin.petani.update');
         Route::patch('/admin/update_status_petani/{id}', [AdminController::class, 'update_status_petani'])->name('admin.petani.update_status');
         Route::get('/admin/mitra', [AdminController::class, 'list_mitra'])->name('admin.list_mitra');

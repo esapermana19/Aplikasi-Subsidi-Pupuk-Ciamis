@@ -35,7 +35,7 @@
                         'icon' => 'building-2',
                         'route' => 'admin.list_mitra',
                     ],
-                    ['id' => 'pupuk', 'label' => 'Kelola Pupuk', 'icon' => 'leaf', 'route' => 'pupuk'],
+                    ['id' => 'pupuk', 'label' => 'Kelola Pupuk', 'icon' => 'leaf', 'route' => 'admin.pupuk'],
                     [
                         'id' => 'approval-permintaan',
                         'label' => 'Approval Permintaan',
