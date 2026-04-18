@@ -82,13 +82,15 @@
                                             <i data-lucide="user" class="h-5 w-5 text-green-600"></i>
                                         </div>
                                         <div>
-                                            <div class="font-semibold text-gray-900">{{ $p->name }}</div>
-                                            {{-- Pakai nik_nip sesuai data Anda --}}
-                                            <div class="text-xs text-gray-500">{{ $p->nik_nip }}</div>
+                                            {{-- AMBIL DARI RELASI PETANI --}}
+                                            <div class="font-semibold text-gray-900">
+                                                {{ $p->petani->nama_petani ?? 'Belum Lengkap' }}</div>
+                                            <div class="text-xs text-gray-500">{{ $p->petani->nik ?? '-' }}</div>
                                         </div>
                                     </div>
                                 </td>
                                 <td class="px-6 py-4">
+                                    {{-- STATUS TETAP DARI USER --}}
                                     @if ($p->status_akun == 'aktif')
                                         <span
                                             class="px-3 py-1 text-xs font-bold bg-emerald-50 text-emerald-700 rounded-full border border-emerald-200">Aktif</span>
@@ -105,23 +107,62 @@
                                 </td>
                                 <td class="px-6 py-4 text-gray-600">{{ $p->created_at->format('d M Y') }}</td>
                                 <td class="px-6 py-4">
-                                    <div class="flex justify-center gap-2">
-                                        <form action="{{ route('admin.petani.update_status', $p->id) }}" method="POST"
-                                            id="form-status-{{ $p->id }}" class="inline">
-                                            @csrf @method('PATCH')
-                                            <button type="button"
-                                                onclick="confirmStatus('{{ $p->id }}', '{{ $p->status_akun == 'aktif' ? 'nonaktif' : 'aktif' }}', '{{ addslashes($p->name) }}')"
-                                                class="p-2 {{ $p->status_akun == 'aktif' ? 'text-amber-600 hover:bg-amber-50' : 'text-emerald-600 hover:bg-emerald-50' }} rounded-lg transition-colors">
-                                                <i data-lucide="{{ $p->status_akun == 'aktif' ? 'user-minus' : 'user-check' }}"
-                                                    class="h-4 w-4"></i>
-                                            </button>
-                                            <input type="hidden" name="status" id="input-status-{{ $p->id }}">
+                                    <div class="flex justify-center gap-2 items-center">
+                                        {{-- 1. FORM TERSEMBUNYI (Sama seperti Mitra) --}}
+                                        <form id="form-status-{{ $p->id_user }}"
+                                            action="{{ route('admin.update_status', $p->id_user) }}" method="POST"
+                                            class="hidden">
+                                            @csrf
+                                            @method('PATCH')
+                                            <input type="hidden" name="status" id="input-status-{{ $p->id_user }}"
+                                                value="{{ $p->status_akun == 'aktif' ? 'nonaktif' : 'aktif' }}">
                                         </form>
 
-                                        {{-- SINKRONKAN NIK DI SINI: {{ $p->nik_nip }} --}}
+                                        {{-- 2. TOMBOL DETAIL --}}
                                         <button type="button"
-                                            onclick="openEditModal('{{ $p->id }}', '{{ $p->nik_nip }}', '{{ addslashes($p->name) }}', '{{ $p->email }}')"
-                                            class="p-2 text-violet-600 hover:bg-violet-50 rounded-lg transition-colors">
+                                            onclick="openDetailModal(
+                                                '{{ $p->petani->nik ?? '-' }}',
+                                                '{{ addslashes($p->petani->nama_petani ?? '-') }}',
+                                                '{{ $p->email }}',
+                                                '{{ addslashes($p->petani->alamat_petani ?? '-') }}',
+                                                '{{ $p->petani->jenis_kelamin ?? '-' }}',
+                                                '{{ $p->status_akun }}',
+                                                '{{ $p->created_at->format('d M Y H:i') }}'
+                                            )"
+                                            class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors flex items-center justify-center"
+                                            title="Detail Akun">
+                                            <i data-lucide="eye" class="h-4 w-4"></i>
+                                        </button>
+
+                                        {{-- 3. TOMBOL AKTIVASI/NONAKTIF (Logika Kondisional) --}}
+                                        @if ($p->status_akun === 'aktif')
+                                            <button type="button"
+                                                onclick="confirmStatus('{{ $p->id_user }}', 'nonaktif', '{{ addslashes($p->petani->nama_petani ?? 'Petani') }}')"
+                                                class="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors flex items-center justify-center"
+                                                title="Nonaktifkan Akun">
+                                                <i data-lucide="user-minus" class="h-4 w-4"></i>
+                                            </button>
+                                        @else
+                                            <button type="button"
+                                                onclick="confirmStatus('{{ $p->id_user }}', 'aktif', '{{ addslashes($p->petani->nama_petani ?? 'Petani') }}')"
+                                                class="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors flex items-center justify-center"
+                                                title="Aktifkan Akun">
+                                                <i data-lucide="user-check" class="h-4 w-4"></i>
+                                            </button>
+                                        @endif
+
+                                        {{-- 4. TOMBOL EDIT --}}
+                                        <button type="button"
+                                            onclick="openEditModal(
+                                                '{{ $p->id_user }}',
+                                                '{{ $p->petani->nik ?? '' }}',
+                                                '{{ addslashes($p->petani->nama_petani ?? '') }}',
+                                                '{{ $p->email }}',
+                                                '{{ addslashes($p->petani->alamat_petani ?? '') }}',
+                                                '{{ $p->petani->jenis_kelamin ?? '' }}'
+                                            )"
+                                            class="p-2 text-violet-600 hover:bg-violet-50 rounded-lg transition-colors flex items-center justify-center"
+                                            title="Edit Data">
                                             <i data-lucide="edit-3" class="h-4 w-4"></i>
                                         </button>
                                     </div>
@@ -156,29 +197,38 @@
 
                 <form id="editForm" method="POST">
                     @csrf @method('PATCH')
-                    <div class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">NIK</label>
-                            {{-- Tambahkan name="nik_nip" di bawah ini --}}
-                            <input type="text" id="edit_nik" name="nik_nip" readonly
-                                class="w-full px-4 py-2.5 bg-gray-100 border border-gray-200 rounded-xl text-gray-500 cursor-not-allowed text-sm focus:outline-none">
+                            <input type="text" name="nik" id="edit_nik" required
+                                class="w-full px-4 py-2 border rounded-xl">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
-                            <input type="text" name="name" id="edit_name" required
-                                class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-sm transition-all">
+                            <input type="text" name="nama_petani" id="edit_name" required
+                                class="w-full px-4 py-2 border rounded-xl">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
                             <input type="email" name="email" id="edit_email" required
-                                class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-sm transition-all">
+                                class="w-full px-4 py-2 border rounded-xl">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Password Baru (Opsional)</label>
-                            <input type="password" name="password"
-                                class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-sm transition-all"
-                                placeholder="Kosongkan jika tidak ingin ganti">
-                            <p class="text-[10px] text-gray-400 mt-1 italic">*Minimal 8 karakter jika ingin diubah</p>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Kelamin</label>
+                            <select name="jenis_kelamin" id="edit_jk" required
+                                class="w-full px-4 py-2 border rounded-xl">
+                                <option value="L">L</option>
+                                <option value="P">P</option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Alamat</label>
+                            <textarea name="alamat" id="edit_alamat" rows="2" class="w-full px-4 py-2 border rounded-xl"></textarea>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Password Baru (Kosongkan jika tidak
+                                ganti)</label>
+                            <input type="password" name="password" class="w-full px-4 py-2 border rounded-xl">
                         </div>
                     </div>
 
@@ -193,5 +243,143 @@
             </div>
         </div>
     </div>
+    {{-- Modal Detail --}}
+    <div id="detailModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" onclick="closeDetailModal()"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+            <div
+                class="inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-3xl shadow-xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                    <h3 class="text-lg font-bold text-gray-900">Detail Informasi Petani</h3>
+                    <button onclick="closeDetailModal()" class="text-gray-400 hover:text-gray-600">
+                        <i data-lucide="x" class="h-5 w-5"></i>
+                    </button>
+                </div>
+                <div class="p-6 space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="col-span-2 sm:col-span-1">
+                            <label class="text-xs font-semibold text-gray-400 uppercase">NIK</label>
+                            <p id="det_nik" class="text-sm font-medium text-gray-900 mt-1"></p>
+                        </div>
+                        <div class="col-span-2 sm:col-span-1">
+                            <label class="text-xs font-semibold text-gray-400 uppercase">Status Akun</label>
+                            <p id="det_status" class="mt-1"></p>
+                        </div>
+                        <div class="col-span-2">
+                            <label class="text-xs font-semibold text-gray-400 uppercase">Nama Lengkap</label>
+                            <p id="det_nama" class="text-sm font-medium text-gray-900 mt-1"></p>
+                        </div>
+                        <div class="col-span-2">
+                            <label class="text-xs font-semibold text-gray-400 uppercase">Email</label>
+                            <p id="det_email" class="text-sm font-medium text-gray-900 mt-1"></p>
+                        </div>
+                        <div class="col-span-1">
+                            <label class="text-xs font-semibold text-gray-400 uppercase">Jenis Kelamin</label>
+                            <p id="det_jk" class="text-sm font-medium text-gray-900 mt-1"></p>
+                        </div>
+                        <div class="col-span-1">
+                            <label class="text-xs font-semibold text-gray-400 uppercase">Terdaftar Pada</label>
+                            <p id="det_tgl" class="text-sm font-medium text-gray-900 mt-1"></p>
+                        </div>
+                        <div class="col-span-2">
+                            <label class="text-xs font-semibold text-gray-400 uppercase">Alamat</label>
+                            <p id="det_alamat"
+                                class="text-sm font-medium text-gray-900 mt-1 p-3 bg-gray-50 rounded-xl border border-gray-100">
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 text-right">
+                    <button onclick="closeDetailModal()"
+                        class="px-6 py-2 text-sm font-bold text-white bg-violet-600 rounded-xl hover:bg-violet-700 transition-all">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
-@include('layouts.scripts')
+<script>
+    // 1. Fungsi Buka Modal (Sudah disesuaikan dengan struktur relasi yang baru)
+    function openEditModal(id_user, nik, nama_petani, email, alamat, jenis_kelamin) {
+        const modal = document.getElementById('editModal');
+        const form = document.getElementById('editForm');
+
+        // Sesuaikan URL action form. Pastikan '/admin/petani/update/' sesuai dengan route di web.php
+        form.action = `/admin/petani/update/${id_user}`;
+
+        // Mengisi field modal
+        document.getElementById('edit_nik').value = nik;
+        document.getElementById('edit_name').value = nama_petani;
+        document.getElementById('edit_email').value = email;
+        document.getElementById('edit_alamat').value = alamat;
+        document.getElementById('edit_jk').value = jenis_kelamin;
+
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden'; // Mengunci scroll background
+    }
+
+    // 2. Fungsi Tutup Modal (Ini yang membuat tombol Batal dan (X) berfungsi)
+    function closeEditModal() {
+        document.getElementById('editModal').classList.add('hidden');
+        document.body.style.overflow = 'auto'; // Mengembalikan scroll background
+    }
+
+    // 3. Fungsi SweetAlert untuk Konfirmasi Status
+    function confirmStatus(userId, status, userName) {
+        const actionText = status === 'aktif' ? 'mengaktifkan' : 'menonaktifkan';
+        const confirmColor = status === 'aktif' ? '#10b981' : '#f59e0b';
+
+        Swal.fire({
+            title: 'Konfirmasi Perubahan',
+            text: `Apakah Anda yakin ingin ${actionText} akun ${userName}?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: confirmColor,
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Ya, Lanjutkan!',
+            cancelButtonText: 'Batal',
+            borderRadius: '1.5rem',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('input-status-' + userId).value = status;
+                document.getElementById('form-status-' + userId).submit();
+            }
+        });
+    }
+
+    // 4. Render Icon Lucide
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    });
+
+    // 5. Fungsi Modal Detail
+    function openDetailModal(nik, nama, email, alamat, jk, status, tgl) {
+        document.getElementById('det_nik').innerText = nik;
+        document.getElementById('det_nama').innerText = nama;
+        document.getElementById('det_email').innerText = email;
+        document.getElementById('det_alamat').innerText = alamat;
+        document.getElementById('det_tgl').innerText = tgl;
+
+        // Format Tampilan Jenis Kelamin
+        document.getElementById('det_jk').innerText = jk === 'L' ? 'Laki-laki' : (jk === 'P' ? 'Perempuan' : '-');
+
+        // Format Badge Status
+        const statusEl = document.getElementById('det_status');
+        let badgeClass = "px-2 py-0.5 rounded text-xs font-bold ";
+        if (status === 'aktif') badgeClass += "bg-green-100 text-green-700";
+        else if (status === 'pending') badgeClass += "bg-yellow-100 text-yellow-700";
+        else badgeClass += "bg-red-100 text-red-700";
+
+        statusEl.innerHTML = `<span class="${badgeClass}">${status.toUpperCase()}</span>`;
+
+        document.getElementById('detailModal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeDetailModal() {
+        document.getElementById('detailModal').classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+</script>

@@ -35,7 +35,7 @@
                         'icon' => 'building-2',
                         'route' => 'admin.list_mitra',
                     ],
-                    ['id' => 'pupuk', 'label' => 'Kelola Pupuk', 'icon' => 'leaf', 'route' => 'admin.pupuk'],
+                    ['id' => 'pupuk', 'label' => 'Kelola Pupuk', 'icon' => 'leaf', 'route' => 'admin.pupuk.index'],
                     [
                         'id' => 'approval-permintaan',
                         'label' => 'Approval Permintaan',
@@ -95,6 +95,7 @@
     <div class="p-4">
         <div class="flex items-center gap-3 rounded-xl bg-gray-50 p-3 mb-3 border border-gray-100">
             <div class="flex h-9 w-9 items-center justify-center rounded-full bg-green-600 text-white font-bold">
+                <i data-lucide="user" class="h-5 w-5 text-gray-100"></i>
                 {{ substr(auth()->user()->name, 0, 1) }}
             </div>
             <div class="flex-1 min-w-0">

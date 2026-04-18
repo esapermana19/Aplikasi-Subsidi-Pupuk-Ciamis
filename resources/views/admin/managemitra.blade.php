@@ -63,65 +63,92 @@
         {{-- Tabel mitra --}}
         <div class="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
             <div class="overflow-x-auto">
-                <table class="w-full text-sm text-left">
-                    <thead class="bg-gray-50 text-gray-600 font-medium border-b border-gray-100">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-4">mitra</th>
-                            <th class="px-6 py-4">Status Akun</th>
-                            <th class="px-6 py-4">Tanggal Daftar</th>
-                            <th class="px-6 py-4 text-center">Aksi</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama
+                                Mitra / Pemilik</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">NIK &
+                                Rekening</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Status</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Aksi</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-50">
-                        @forelse($mitra as $p)
-                            <tr class="hover:bg-gray-50/50 transition-colors">
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        @forelse($mitra as $m)
+                            <tr>
                                 <td class="px-6 py-4">
                                     <div class="flex items-center gap-3">
                                         <div
-                                            class="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center border border-green-200 shadow-sm">
-                                            <i data-lucide="user" class="h-5 w-5 text-green-600"></i>
+                                            class="h-10 w-10 rounded-full bg-violet-100 flex items-center justify-center text-violet-600 font-bold">
+                                            {{ substr($m->mitra->nama_mitra ?? 'M', 0, 1) }}
                                         </div>
                                         <div>
-                                            <div class="font-semibold text-gray-900">{{ $p->name }}</div>
-                                            {{-- Pakai nik_nip sesuai data Anda --}}
-                                            <div class="text-xs text-gray-500">{{ $p->nik_nip }}</div>
+                                            <div class="text-sm font-bold text-gray-900">
+                                                {{ $m->mitra->nama_mitra ?? 'Belum Diatur' }}</div>
+                                            <div class="text-xs text-gray-500">Pemilik:
+                                                {{ $m->mitra->nama_pemilik ?? '-' }}</div>
                                         </div>
                                     </div>
                                 </td>
                                 <td class="px-6 py-4">
-                                    @if ($p->status_akun == 'aktif')
-                                        <span
-                                            class="px-3 py-1 text-xs font-bold bg-emerald-50 text-emerald-700 rounded-full border border-emerald-200">Aktif</span>
-                                    @elseif($p->status_akun == 'nonaktif')
-                                        <span
-                                            class="px-3 py-1 text-xs font-bold bg-gray-100 text-gray-600 rounded-full border border-gray-200">Nonaktif</span>
-                                    @elseif($p->status_akun == 'pending')
-                                        <span
-                                            class="px-3 py-1 text-xs font-bold bg-amber-50 text-amber-700 rounded-full border border-amber-200">Pending</span>
-                                    @else
-                                        <span
-                                            class="px-3 py-1 text-xs font-bold bg-red-50 text-red-700 rounded-full border border-red-200">Ditolak</span>
-                                    @endif
+                                    <div class="text-sm text-gray-900 font-medium italic">{{ $m->mitra->nik ?? '-' }}</div>
+                                    <div class="text-xs text-gray-500">Rek: {{ $m->mitra->no_rek ?? '-' }}</div>
                                 </td>
-                                <td class="px-6 py-4 text-gray-600">{{ $p->created_at->format('d M Y') }}</td>
+                                <td class="px-6 py-4">
+                                    @php
+                                        $statusClass =
+                                            [
+                                                'aktif' => 'bg-green-100 text-green-700',
+                                                'pending' => 'bg-amber-100 text-amber-700',
+                                                'nonaktif' => 'bg-red-100 text-red-700',
+                                            ][$m->status_akun] ?? 'bg-gray-100 text-gray-700';
+                                    @endphp
+                                    <span class="px-3 py-1 text-xs font-bold rounded-full {{ $statusClass }}">
+                                        {{ strtoupper($m->status_akun) }}
+                                    </span>
+                                </td>
                                 <td class="px-6 py-4">
                                     <div class="flex justify-center gap-2">
-                                        <form action="{{ route('admin.mitra.update_status', $p->id) }}" method="POST"
-                                            id="form-status-{{ $p->id }}" class="inline">
-                                            @csrf @method('PATCH')
-                                            <button type="button"
-                                                onclick="confirmStatus('{{ $p->id }}', '{{ $p->status_akun == 'aktif' ? 'nonaktif' : 'aktif' }}', '{{ addslashes($p->name) }}')"
-                                                class="p-2 {{ $p->status_akun == 'aktif' ? 'text-amber-600 hover:bg-amber-50' : 'text-emerald-600 hover:bg-emerald-50' }} rounded-lg transition-colors">
-                                                <i data-lucide="{{ $p->status_akun == 'aktif' ? 'user-minus' : 'user-check' }}"
-                                                    class="h-4 w-4"></i>
-                                            </button>
-                                            <input type="hidden" name="status" id="input-status-{{ $p->id }}">
+                                        {{-- Tombol Detail --}}
+                                        <button type="button"
+                                            onclick="openDetailModal('{{ $m->mitra->nik ?? '-' }}', '{{ addslashes($m->mitra->nama_mitra ?? '-') }}', '{{ $m->email }}', '{{ addslashes($m->mitra->alamat_mitra ?? '-') }}', '{{ addslashes($m->mitra->nama_pemilik ?? '-') }}', '{{ $m->mitra->no_rek ?? '-' }}')"
+                                            class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                            title="Detail">
+                                            <i data-lucide="eye" class="h-4 w-4"></i>
+                                        </button>
+
+                                        {{-- Tombol Aktivasi/Nonaktifkan (Sama seperti Petani) --}}
+                                        <form id="form-status-{{ $m->id_user }}"
+                                            action="{{ route('admin.update_status', $m->id_user) }}" method="POST"
+                                            class="hidden">
+                                            @csrf
+                                            @method('PATCH')
+                                            <input type="hidden" name="status" id="input-status-{{ $m->id_user }}">
                                         </form>
 
-                                        {{-- SINKRONKAN NIK DI SINI: {{ $p->nik_nip }} --}}
+                                        @if ($m->status_akun === 'aktif')
+                                            <button type="button"
+                                                onclick="confirmStatus('{{ $m->id_user }}', 'nonaktif', '{{ addslashes($m->mitra->nama_mitra ?? 'Mitra') }}')"
+                                                class="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                                                title="Nonaktifkan Akun">
+                                                <i data-lucide="user-x" class="h-4 w-4"></i>
+                                            </button>
+                                        @else
+                                            <button type="button"
+                                                onclick="confirmStatus('{{ $m->id_user }}', 'aktif', '{{ addslashes($m->mitra->nama_mitra ?? 'Mitra') }}')"
+                                                class="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
+                                                title="Aktifkan Akun">
+                                                <i data-lucide="user-check" class="h-4 w-4"></i>
+                                            </button>
+                                        @endif
+                                         {{-- Tombol Edit --}}
                                         <button type="button"
-                                            onclick="openEditModal('{{ $p->id }}', '{{ $p->nik_nip }}', '{{ addslashes($p->name) }}', '{{ $p->email }}')"
-                                            class="p-2 text-violet-600 hover:bg-violet-50 rounded-lg transition-colors">
+                                            onclick="openEditModal('{{ $m->id_user }}', '{{ $m->mitra->nik ?? '' }}', '{{ addslashes($m->mitra->nama_mitra ?? '') }}', '{{ $m->email }}', '{{ addslashes($m->mitra->alamat_mitra ?? '') }}', '{{ addslashes($m->mitra->nama_pemilik ?? '') }}', '{{ $m->mitra->no_rek ?? '' }}')"
+                                            class="p-2 text-violet-600 hover:bg-violet-50 rounded-lg transition-colors"
+                                            title="Edit">
                                             <i data-lucide="edit-3" class="h-4 w-4"></i>
                                         </button>
                                     </div>
@@ -129,7 +156,8 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="px-6 py-12 text-center text-gray-400">Data tidak ditemukan.</td>
+                                <td colspan="4" class="px-6 py-10 text-center text-gray-400 italic">Data mitra tidak
+                                    ditemukan</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -139,60 +167,188 @@
     </div>
 
     {{-- MODAL EDIT (Hanya Satu Saja) --}}
-    <div id="editModal" class="fixed inset-0 z-[9999] hidden overflow-y-auto">
-        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-            <div class="fixed inset-0 transition-opacity" aria-hidden="true" onclick="closeEditModal()">
-                <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
-            </div>
-            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            <div
-                class="inline-block align-bottom bg-white rounded-3xl text-left shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full p-6">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-bold text-gray-900">Edit Data mitra</h3>
-                    <button type="button" onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600">
-                        <i data-lucide="x" class="h-5 w-5"></i>
-                    </button>
-                </div>
-
+    <div id="editModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <div class="fixed inset-0 bg-gray-500/75 transition-opacity" onclick="closeEditModal()"></div>
+            <div class="relative bg-white rounded-3xl shadow-xl max-w-lg w-full overflow-hidden">
                 <form id="editForm" method="POST">
                     @csrf @method('PATCH')
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">NIK</label>
-                            {{-- Tambahkan name="nik_nip" di bawah ini --}}
-                            <input type="text" id="edit_nik" name="nik_nip" readonly
-                                class="w-full px-4 py-2.5 bg-gray-100 border border-gray-200 rounded-xl text-gray-500 cursor-not-allowed text-sm focus:outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
-                            <input type="text" name="name" id="edit_name" required
-                                class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-sm transition-all">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                            <input type="email" name="email" id="edit_email" required
-                                class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-sm transition-all">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Password Baru (Opsional)</label>
-                            <input type="password" name="password"
-                                class="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-violet-500 focus:border-violet-500 text-sm transition-all"
-                                placeholder="Kosongkan jika tidak ingin ganti">
-                            <p class="text-[10px] text-gray-400 mt-1 italic">*Minimal 8 karakter jika ingin diubah</p>
+                    <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+                        <h3 class="text-lg font-bold text-gray-900">Edit Data Mitra</h3>
+                        <button type="button" onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600"><i
+                                data-lucide="x" class="h-5 w-5"></i></button>
+                    </div>
+                    <div class="p-6 space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="col-span-2 sm:col-span-1">
+                                <label class="block text-xs font-bold text-gray-400 uppercase mb-1">NIK</label>
+                                <input type="text" name="nik" id="edit_nik"
+                                    class="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-violet-500">
+                            </div>
+                            <div class="col-span-2 sm:col-span-1">
+                                <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Email</label>
+                                <input type="email" name="email" id="edit_email"
+                                    class="w-full px-4 py-2 border rounded-xl bg-gray-50" readonly>
+                            </div>
+                            <div class="col-span-2">
+                                <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Nama
+                                    Mitra/Instansi</label>
+                                <input type="text" name="nama_mitra" id="edit_name"
+                                    class="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-violet-500">
+                            </div>
+                            <div class="col-span-2 sm:col-span-1">
+                                <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Nama Pemilik</label>
+                                <input type="text" name="nama_pemilik" id="edit_pemilik"
+                                    class="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-violet-500">
+                            </div>
+                            <div class="col-span-2 sm:col-span-1">
+                                <label class="block text-xs font-bold text-gray-400 uppercase mb-1">No. Rekening</label>
+                                <input type="text" name="no_rek" id="edit_rek"
+                                    class="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-violet-500">
+                            </div>
+                            <div class="col-span-2">
+                                <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Alamat</label>
+                                <textarea name="alamat" id="edit_alamat" rows="2"
+                                    class="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-violet-500"></textarea>
+                            </div>
                         </div>
                     </div>
-
-                    <div class="mt-8 flex justify-end gap-3">
+                    <div class="px-6 py-4 bg-gray-50 border-t flex justify-end gap-3">
                         <button type="button" onclick="closeEditModal()"
-                            class="px-5 py-2.5 text-sm font-semibold text-gray-700 bg-gray-100 rounded-2xl hover:bg-gray-200 transition-colors">Batal</button>
+                            class="px-6 py-2 text-sm font-bold text-gray-600 bg-white border rounded-xl hover:bg-gray-50">Batal</button>
                         <button type="submit"
-                            class="px-5 py-2.5 text-sm font-semibold text-white bg-violet-600 rounded-2xl hover:bg-violet-700 shadow-lg shadow-violet-200 transition-all">Simpan
+                            class="px-6 py-2 text-sm font-bold text-white bg-violet-600 rounded-xl hover:bg-violet-700 shadow-lg shadow-violet-200">Simpan
                             Perubahan</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
-@endsection
+    {{-- Modal Detail --}}
+    <div id="detailModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <div class="fixed inset-0 bg-gray-500/75 transition-opacity" onclick="closeDetailModal()"></div>
+            <div class="relative bg-white rounded-3xl shadow-xl max-w-lg w-full overflow-hidden">
+                {{-- Header Modal --}}
+                <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+                    <h3 class="text-lg font-bold text-gray-900">Detail Informasi Mitra</h3>
+                    <button onclick="closeDetailModal()" class="text-gray-400 hover:text-gray-600">
+                        <i data-lucide="x" class="h-5 w-5"></i>
+                    </button>
+                </div>
 
-@include('layouts.scripts')
+                {{-- Body Modal --}}
+                <div class="p-6 space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="col-span-2 sm:col-span-1">
+                            <label class="text-xs font-bold text-gray-400 uppercase">NIK</label>
+                            <p id="det_nik" class="text-sm font-semibold text-gray-900 mt-1"></p>
+                        </div>
+                        <div class="col-span-2 sm:col-span-1">
+                            <label class="text-xs font-bold text-gray-400 uppercase">No. Rekening</label>
+                            <p id="det_rek" class="text-sm font-semibold text-gray-900 mt-1"></p>
+                        </div>
+                        <div class="col-span-2">
+                            <label class="text-xs font-bold text-gray-400 uppercase">Nama Mitra / Instansi</label>
+                            <p id="det_nama" class="text-sm font-semibold text-gray-900 mt-1"></p>
+                        </div>
+                        <div class="col-span-2">
+                            <label class="text-xs font-bold text-gray-400 uppercase">Nama Pemilik</label>
+                            <p id="det_pemilik" class="text-sm font-semibold text-gray-900 mt-1"></p>
+                        </div>
+                        <div class="col-span-2">
+                            <label class="text-xs font-bold text-gray-400 uppercase">Email</label>
+                            <p id="det_email" class="text-sm font-semibold text-gray-900 mt-1"></p>
+                        </div>
+                        <div class="col-span-2">
+                            <label class="text-xs font-bold text-gray-400 uppercase">Alamat</label>
+                            <p id="det_alamat"
+                                class="text-sm text-gray-700 bg-gray-50 p-4 rounded-2xl mt-1 border border-gray-100 leading-relaxed">
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Footer Modal --}}
+                <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 text-right">
+                    <button onclick="closeDetailModal()"
+                        class="px-6 py-2 text-sm font-bold text-white bg-violet-600 rounded-xl hover:bg-violet-700 transition-all shadow-lg shadow-violet-200">
+                        Tutup
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+@endsection
+<script>
+    // 1. Fungsi Modal Edit (Sudah diperbaiki)
+    function openEditModal(id, nik, nama, email, alamat, pemilik, rek) {
+        const modal = document.getElementById('editModal');
+        const form = document.getElementById('editForm');
+        form.action = `/admin/mitra/update/${id}`;
+
+        document.getElementById('edit_nik').value = nik;
+        document.getElementById('edit_name').value = nama;
+        document.getElementById('edit_email').value = email;
+        document.getElementById('edit_alamat').value = alamat;
+        document.getElementById('edit_pemilik').value = pemilik;
+        document.getElementById('edit_rek').value = rek;
+
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeEditModal() {
+        document.getElementById('editModal').classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+
+    // 2. Fungsi Modal Detail (Baru)
+    function openDetailModal(nik, nama, email, alamat, pemilik, rek) {
+        document.getElementById('det_nik').innerText = nik;
+        document.getElementById('det_nama').innerText = nama;
+        document.getElementById('det_email').innerText = email;
+        document.getElementById('det_alamat').innerText = alamat;
+        document.getElementById('det_pemilik').innerText = pemilik;
+        document.getElementById('det_rek').innerText = rek;
+
+        document.getElementById('detailModal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeDetailModal() {
+        document.getElementById('detailModal').classList.add('hidden');
+        document.body.style.overflow = 'auto';
+    }
+
+    // Render Icon
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    });
+
+    // 3. Fungsi Konfirmasi Status (Baru)
+    function confirmStatus(userId, status, userName) {
+        const actionText = status === 'aktif' ? 'mengaktifkan' : 'menonaktifkan';
+        const confirmColor = status === 'aktif' ? '#10b981' : '#f59e0b'; // Hijau untuk aktif, Amber untuk nonaktif
+
+        Swal.fire({
+            title: 'Konfirmasi Perubahan',
+            text: `Apakah Anda yakin ingin ${actionText} akun ${userName}?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: confirmColor,
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Ya, Lanjutkan!',
+            cancelButtonText: 'Batal',
+            borderRadius: '1.5rem',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Set value input hidden dan submit form
+                document.getElementById('input-status-' + userId).value = status;
+                document.getElementById('form-status-' + userId).submit();
+            }
+        });
+    }
+</script>

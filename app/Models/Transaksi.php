@@ -11,27 +11,25 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'id_petani',
     'id_mitra',
     'tgl_transaksi',
-    'total_harga',
-    'status',
+    'status_pembayaran',
     'status_pengambilan',
-    'qr_code'
+    'qr_code',
+    'total'
 ])]
 class Transaksi extends Model
 {
-    protected $table = 'transaksi';
+    protected $table = 'tabel_transaksi';
     protected $primaryKey = 'id_transaksi';
 
-    public function petani(): BelongsTo
+    public function petani()
     {
-        return $this->belongsTo(User::class, 'id_petani');
+        return $this->belongsTo(Petani::class, 'id_petani');
     }
-
-    public function mitra(): BelongsTo
+    public function mitra()
     {
-        return $this->belongsTo(User::class, 'id_mita');
+        return $this->belongsTo(Mitra::class, 'id_mitra');
     }
-
-    public function rincian(): HasMany
+    public function rincian()
     {
         return $this->hasMany(DetailTransaksi::class, 'id_transaksi');
     }

@@ -9,8 +9,15 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[Fillable(['kode_pupuk', 'nama_pupuk', 'harga_subsidi', 'stok'])]
 class Pupuk extends Model
 {
-    protected $table = 'pupuk';
+    protected $table = 'tabel_pupuk';
     protected $primaryKey = 'id_pupuk';
+    protected $fillable = [
+        'kode_pupuk',
+        'nama_pupuk',
+        'harga_subsidi',
+        'stok',
+        'img_pupuk'
+    ];
 
     public function rincianTransaksi(): HasMany
     {

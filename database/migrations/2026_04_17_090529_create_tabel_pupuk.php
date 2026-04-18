@@ -11,11 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            // Menambahkan 'nonaktif' ke dalam daftar enum
-            $table->enum('status_akun', ['pending', 'aktif', 'ditolak', 'nonaktif'])
-                ->default('pending')
-                ->change();
+        Schema::create('tabel_pupuk', function (Blueprint $table) {
+            $table->id('id_pupuk');
+            $table->string('nama_pupuk', 50);
+            $table->decimal('harga_subsidi', 10, 2);
+            $table->integer('stok');
+            $table->timestamps();
         });
     }
 
@@ -24,8 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            //
-        });
+        Schema::dropIfExists('tabel_pupuk');
     }
 };

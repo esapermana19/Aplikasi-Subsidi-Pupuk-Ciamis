@@ -37,31 +37,34 @@
                     @csrf
 
                     <div class="space-y-1">
-                        <label class="text-xs font-bold text-gray-700">Nama Lengkap Pemilik</label>
+                        <label class="text-xs font-bold text-gray-700">Nama Lengkap Sesuai KTP</label>
                         <div class="relative">
                             <i data-lucide="user"
                                 class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"></i>
                             <input type="text" name="name" value="{{ old('name') }}"
                                 class="w-full pl-9 pr-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-green-500 outline-none"
-                                placeholder="Nama Lengkap Sesuai KTP" required>
+                                placeholder="Masukkan Nama Lengkap" required>
                         </div>
                     </div>
 
                     <div class="grid grid-cols-2 gap-3">
                         <div class="space-y-1">
                             <label class="text-xs font-bold text-gray-700">NIK (16 Digit)</label>
-                            <input type="text" name="nik_nip" maxlength="16" value="{{ old('nik_nip') }}"
-                                class="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-green-500 outline-none @error('nik_nip') border-red-500 @enderror"
+                            <input type="text" name="nik" maxlength="16" value="{{ old('nik') }}"
+                                class="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-green-500 outline-none @error('nik') border-red-500 @enderror"
                                 placeholder="3207..." required>
-                            @error('nik_nip')
+                            @error('nik')
                                 <p class="text-[10px] text-red-500">{{ $message }}</p>
                             @enderror
                         </div>
                         <div class="space-y-1">
                             <label class="text-xs font-bold text-gray-700">Email</label>
                             <input type="email" name="email" value="{{ old('email') }}"
-                                class="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-green-500 outline-none"
+                                class="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-green-500 outline-none @error('email') border-red-500 @enderror"
                                 placeholder="nama@email.com" required>
+                            @error('email')
+                                <p class="text-[10px] text-red-500">{{ $message }}</p>
+                            @enderror
                         </div>
                     </div>
 
@@ -69,21 +72,33 @@
                         <div class="space-y-1">
                             <label class="text-xs font-bold text-gray-700">Daftar Sebagai</label>
                             <select name="role" id="role_select"
-                                class="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-green-500 outline-none appearance-none">
-                                <option value="petani" {{ old('role') == 'petani' ? 'selected' : '' }}>Petani</option>
-                                <option value="mitra" {{ old('role') == 'mitra' ? 'selected' : '' }}>Mitra (Kios/Toko)
+                                class="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-green-500 outline-none appearance-none bg-white">
+                                <option value="Petani" {{ old('role') == 'Petani' ? 'selected' : '' }}>Petani</option>
+                                <option value="Mitra" {{ old('role') == 'Mitra' ? 'selected' : '' }}>Mitra (Kios/Toko)
                                 </option>
                             </select>
                         </div>
-                        <div class="space-y-1">
-                            <label class="text-xs font-bold text-gray-700">No. Telepon</label>
-                            <input type="text" name="no_telepon" value="{{ old('no_telepon') }}"
+
+                        <div class="space-y-1" id="petani_fields">
+                            <label class="text-xs font-bold text-gray-700">Jenis Kelamin</label>
+                            <select name="jenis_kelamin"
+                                class="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-green-500 outline-none bg-white">
+                                <option value="L" {{ old('jenis_kelamin') == 'L' ? 'selected' : '' }}>Laki-laki
+                                </option>
+                                <option value="P" {{ old('jenis_kelamin') == 'P' ? 'selected' : '' }}>Perempuan
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="space-y-1 hidden" id="mitra_norek_field">
+                            <label class="text-xs font-bold text-gray-700">No. Rekening</label>
+                            <input type="text" name="no_rek" value="{{ old('no_rek') }}"
                                 class="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-green-500 outline-none"
-                                placeholder="08xx..." required>
+                                placeholder="Nomor Rekening">
                         </div>
                     </div>
 
-                    <div class="space-y-1 {{ old('role') == 'mitra' ? '' : 'hidden' }}" id="nama_mitra_group">
+                    <div class="space-y-1 hidden" id="mitra_name_field">
                         <label class="text-xs font-bold text-gray-700">Nama Toko / Kios</label>
                         <div class="relative">
                             <i data-lucide="store"
@@ -176,16 +191,28 @@
     <script>
         lucide.createIcons();
 
-        // Logic Toggle Input Nama Mitra
         const roleSelect = document.getElementById('role_select');
-        const namaMitraGroup = document.getElementById('nama_mitra_group');
+        const petaniFields = document.getElementById('petani_fields');
+        const mitraNameField = document.getElementById('mitra_name_field');
+        const mitraNorekField = document.getElementById('mitra_norek_field');
+
+        function toggleFields(role) {
+            if (role === 'Mitra') {
+                petaniFields.classList.add('hidden');
+                mitraNameField.classList.remove('hidden');
+                mitraNorekField.classList.remove('hidden');
+            } else {
+                petaniFields.classList.remove('hidden');
+                mitraNameField.classList.add('hidden');
+                mitraNorekField.classList.add('hidden');
+            }
+        }
+
+        // Jalankan saat pertama kali load (untuk menangani old value)
+        toggleFields(roleSelect.value);
 
         roleSelect.addEventListener('change', function() {
-            if (this.value === 'mitra') {
-                namaMitraGroup.classList.remove('hidden');
-            } else {
-                namaMitraGroup.classList.add('hidden');
-            }
+            toggleFields(this.value);
         });
     </script>
 </body>

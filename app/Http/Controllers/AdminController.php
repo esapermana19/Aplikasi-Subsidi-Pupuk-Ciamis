@@ -5,39 +5,45 @@ namespace App\Http\Controllers;
 use App\Models\Pupuk;
 use App\Models\Transaksi;
 use App\Models\User;
+use App\Models\Petani;
+use App\Models\Mitra;
+use App\Models\LogActivity; // Asumsi nama model Log yang kita buat tadi
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class AdminController extends Controller
 {
     public function index()
     {
         $stats = [
-            'total_petani' => User::where('role', 'petani')->count(),
+            'total_petani' => Petani::count(),
             'jenis_pupuk' => Pupuk::count(),
-            'mitra_aktif' => User::where('role', 'mitra')->where('status_akun', 'aktif')->count(),
+            'mitra_aktif' => User::where('role', 'Mitra')->where('status_akun', 'aktif')->count(),
             'pending_verifikasi' => User::where('status_akun', 'pending')->count(),
-            'transaksi_hari_ini' => Transaksi::whereDate('created_at', today())->count(),
-            'total_subsidi' => Transaksi::whereMonth('created_at', now()->month)->sum('total_harga') ?? 0,
+            'transaksi_hari_ini' => Transaksi::whereDate('tgl_transaksi', today())->count(),
+            // total_harga di tabel_transaksi
+            'total_subsidi' => Transaksi::whereMonth('tgl_transaksi', now()->month)->sum('total') ?? 0,
         ];
 
-        // Mengambil 5 aktivitas terbaru
-        $recentActivities = User::with('verifiedUsers')->orderBy('updated_at', 'desc')->take(5)->get();
+        // Mengambil 5 aktivitas terbaru dari tabel log yang kita buat
+        $recentActivities = LogActivity::with('user')->latest()->take(5)->get();
 
         return view('admin.dashboard', [
             'stats' => $stats,
             'recentActivities' => $recentActivities,
-            'activeMenu' => 'dashboard' // Memberikan nilai untuk variabel $activeMenu
+            'activeMenu' => 'dashboard'
         ]);
     }
 
-    //Fungsi Verifikasi
+    // Fungsi Verifikasi (Tampilan User Pending)
     public function verifikasi(Request $request)
     {
-        $query = User::where('status_akun', 'pending');
+        // Gunakan Eager Loading agar tidak berat saat load nama dari profil
+        $query = User::with(['petani', 'mitra'])->where('status_akun', 'pending');
 
-        // Filter berdasarkan role jika ada request 'role'
-        if ($request->has('role') && $request->role != '') {
+        if ($request->filled('role')) {
             $query->where('role', $request->role);
         }
 
@@ -46,187 +52,161 @@ class AdminController extends Controller
         return view('admin.verifikasi', [
             'users' => $pendingUsers,
             'activeMenu' => 'verifikasi',
-            'currentFilter' => $request->role // Mengirim filter aktif ke view
+            'currentFilter' => $request->role
         ]);
     }
 
-    // Fungsi Approve Akun (Sinkronisasi Timestamp)
     public function approve_akun($id)
     {
         $user = User::findOrFail($id);
-        $now = now(); // Variabel waktu yang sama untuk kedua kolom
 
         $user->update([
             'status_akun' => 'aktif',
-            'verified_by' => Auth::id(),
-            'email_verified_at' => $now,
-            'updated_at' => $now, // Paksa sama agar diffInSeconds = 0
+            'verified_by' => Auth::user()->admin->id_admin, // Mencatat ID Admin dari profil admin
         ]);
 
-        return back()->with('success', 'Akun ' . $user->name . ' berhasil diverifikasi!');
+        return back()->with('success', 'Akun berhasil diverifikasi!');
     }
 
-    //Fungsi Reject Akun
     public function reject_akun($id)
     {
         $user = User::findOrFail($id);
         $user->update([
             'status_akun' => 'ditolak',
-            'verified_by' => Auth::id()
+            'verified_by' => Auth::user()->admin->id_admin
         ]);
 
-        return back()->with('success', 'Pendaftaran akun ' . $user->name . ' telah ditolak.');
+        return back()->with('success', 'Pendaftaran akun telah ditolak.');
     }
 
-    //Fungsi Ambil Data Petani
+    // List Petani dengan pencarian ke tabel_petani
     public function list_petani(Request $request)
     {
-        // 1. Mulai query dengan filter role tetap sebagai petani
-        $query = User::where('role', 'petani');
+        $query = User::where('role', 'Petani')->with('petani');
 
-        // 2. Tambahkan Filter Status (Jika admin memilih status di dropdown)
-        if ($request->has('status') && $request->status != '') {
+        if ($request->filled('status')) {
             $query->where('status_akun', $request->status);
         }
 
-        // 3. Tambahkan Filter Search (Nama atau Email)
-        if ($request->has('search') && $request->search != '') {
-            $query->where(function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->search . '%')
-                    ->orWhere('email', 'like', '%' . $request->search . '%');
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->whereHas('petani', function ($q) use ($search) {
+                $q->where('nama_petani', 'like', "%$search%")
+                    ->orWhere('nik', 'like', "%$search%");
             });
         }
 
-        // 4. Ambil data dengan pagination agar tampilan tetap rapi
         $petani = $query->latest()->paginate(10);
 
-        // 5. Kirim data ke view
         return view('admin.managepetani', [
             'petani' => $petani,
-            'activeMenu' => 'petani' // Pastikan ini sesuai dengan ID di sidebar agar menu menyala violet
+            'activeMenu' => 'petani'
         ]);
     }
-    //Fungsi Ambil Data Mitra
+
+    // List Mitra dengan pencarian ke tabel_mitra
     public function list_mitra(Request $request)
     {
-        // 1. Mulai query dengan filter role tetap sebagai mitra
-        $query = User::where('role', 'mitra');
+        $query = User::where('role', 'Mitra')->with('mitra');
 
-        // 2. Tambahkan Filter Status (Jika admin memilih status di dropdown)
-        if ($request->has('status') && $request->status != '') {
+        if ($request->filled('status')) {
             $query->where('status_akun', $request->status);
         }
 
-        // 3. Tambahkan Filter Search (Nama atau Email)
-        if ($request->has('search') && $request->search != '') {
-            $query->where(function ($q) use ($request) {
-                $q->where('name', 'like', '%' . $request->search . '%')
-                    ->orWhere('email', 'like', '%' . $request->search . '%');
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->whereHas('mitra', function ($q) use ($search) {
+                $q->where('nama_mitra', 'like', "%$search%")
+                    ->orWhere('nama_pemilik', 'like', "%$search%")
+                    ->orWhere('nik', 'like', "%$search%");
             });
         }
 
-        // 4. Ambil data dengan pagination agar tampilan tetap rapi
         $mitra = $query->latest()->paginate(10);
 
-        // 5. Kirim data ke view
         return view('admin.managemitra', [
             'mitra' => $mitra,
-            'activeMenu' => 'mitra' // Pastikan ini sesuai dengan ID di sidebar agar menu menyala violet
+            'activeMenu' => 'mitra'
         ]);
     }
 
-    //Update Status Akun Petani
-    public function update_status_petani(Request $request, $id)
-    {
-        $user = User::findOrFail($id);
-
-        // Validasi agar hanya status yang diizinkan yang masuk
-        $request->validate([
-            'status' => 'required|in:aktif,nonaktif,ditolak'
-        ]);
-
-        $user->update([
-            'status_akun' => $request->status,
-            'verified_by' => Auth::id() // Mencatat siapa yang terakhir mengubah
-        ]);
-
-        return back()->with('success', 'Status akun ' . $user->name . ' berhasil diubah menjadi ' . $request->status);
-    }
-
-    //Update Status Akun Mitra
-    public function update_status_mitra(Request $request, $id)
-    {
-        $user = User::findOrFail($id);
-
-        // Validasi agar hanya status yang diizinkan yang masuk
-        $request->validate([
-            'status' => 'required|in:aktif,nonaktif,ditolak'
-        ]);
-
-        $user->update([
-            'status_akun' => $request->status,
-            'verified_by' => Auth::id() // Mencatat siapa yang terakhir mengubah
-        ]);
-
-        return back()->with('success', 'Status akun ' . $user->name . ' berhasil diubah menjadi ' . $request->status);
-    }
-
-    //Fungsi Update Data Petani
+    // Update Data Petani (Update 2 Tabel)
     public function update_petani(Request $request, $id)
     {
         $user = User::findOrFail($id);
+
         $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $id,
+            'nama_petani' => 'required|string|max:50',
+            'email' => 'required|email|unique:tabel_users,email,' . $id . ',id_user',
         ]);
 
-        $data = [
-            'name' => $request->name,
-            'email' => $request->email,
-            'verified_by' => Auth::id()
-        ];
+        DB::transaction(function () use ($request, $user) {
+            // Update User (Email & Password)
+            $userData = ['email' => $request->email];
+            if ($request->filled('password')) {
+                $userData['password'] = Hash::make($request->password);
+            }
+            $user->update($userData);
 
-        if ($request->filled('nik_nip')) $data['nik_nip'] = $request->nik_nip;
-        if ($request->filled('password')) $data['password'] = bcrypt($request->password);
+            // Update Profil Petani
+            $user->petani->update([
+                'nama_petani' => $request->nama_petani,
+                'nik' => $request->nik,
+                'alamat_petani' => $request->alamat,
+                'jenis_kelamin' => $request->jenis_kelamin,
+            ]);
+        });
 
-        $user->update($data); // updated_at akan otomatis berubah, memicu label "Data Diperbarui"
-
-        return back()->with('success', 'Data berhasil diperbarui!');
-    }
-    public function update_m(Request $request, $id)
-    {
-        $user = User::findOrFail($id);
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $id,
-        ]);
-
-        $data = [
-            'name' => $request->name,
-            'email' => $request->email,
-            'verified_by' => Auth::id()
-        ];
-
-        if ($request->filled('nik_nip')) $data['nik_nip'] = $request->nik_nip;
-        if ($request->filled('password')) $data['password'] = bcrypt($request->password);
-
-        $user->update($data); // updated_at akan otomatis berubah, memicu label "Data Diperbarui"
-
-        return back()->with('success', 'Data berhasil diperbarui!');
+        return back()->with('success', 'Data Petani berhasil diperbarui!');
     }
 
-    // Fungsi Verifikasi Petani (Sinkronisasi Timestamp)
-    public function verifikasi_petani($id)
+    // Update Data Mitra (Update 2 Tabel)
+    public function update_mitra(Request $request, $id)
     {
         $user = User::findOrFail($id);
-        $now = now();
 
-        $user->update([
-            'status_akun' => 'aktif',
-            'email_verified_at' => $now,
-            'updated_at' => $now,
-            'verified_by' => Auth::id()
+        $request->validate([
+            'nama_mitra' => 'required|string|max:50',
+            'email' => 'required|email|unique:tabel_users,email,' . $id . ',id_user',
         ]);
-        return back();
+
+        DB::transaction(function () use ($request, $user) {
+            $userData = ['email' => $request->email];
+            if ($request->filled('password')) {
+                $userData['password'] = Hash::make($request->password);
+            }
+            $user->update($userData);
+
+            $user->mitra->update([
+                'nama_mitra' => $request->nama_mitra,
+                'nama_pemilik' => $request->nama_pemilik,
+                'no_rek' => $request->no_rek,
+                'alamat_mitra' => $request->alamat,
+            ]);
+        });
+
+        return back()->with('success', 'Data Mitra berhasil diperbarui!');
+    }
+
+    // Update Status Akun (Aktif/Nonaktif) untuk Petani dan Mitra
+    public function update_status(Request $request, $id)
+    {
+        // Validasi input status
+        $request->validate([
+            'status' => 'required|in:aktif,nonaktif,pending'
+        ]);
+
+        try {
+            $user = User::findOrFail($id);
+
+            // Update status akun di tabel_users
+            $user->update([
+                'status_akun' => $request->status
+            ]);
+
+            return back()->with('success', 'Status akun ' . $user->email . ' berhasil diubah menjadi ' . $request->status);
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal memperbarui status: ' . $e->getMessage());
+        }
     }
 }

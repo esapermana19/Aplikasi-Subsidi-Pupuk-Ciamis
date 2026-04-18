@@ -11,15 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        //Tabel Pupuk
-        Schema::create('pupuk', function (Blueprint $table) {
-            $table->id('id_pupuk');
-            $table->string('nama_pupuk', 50);
-            $table->decimal('harga_subsidi', 15, 2);
-            $table->decimal('stok', 15, 2)->default(0);
-            $table->timestamps();
+        Schema::table('tabel_pupuk', function (Blueprint $table) {
+            $table->string('img_pupuk')->nullable();
         });
-
     }
 
     /**
@@ -27,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('pupuk');
+        Schema::table('tabel_pupuk', function (Blueprint $table) {
+            $table->dropColumn('img_pupuk');
+        });
     }
 };

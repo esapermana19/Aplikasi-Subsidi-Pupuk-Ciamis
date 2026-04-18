@@ -14,11 +14,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 ])]
 class Pencairan extends Model
 {
-    protected $table = 'pencairan';
+    protected $table = 'tabel_pencairan';
     protected $primaryKey = 'id_pencairan';
 
-    public function mitra(): BelongsTo
+    public function mitra()
     {
-        return $this->belongsTo(User::class, 'id_mitra');
+        return $this->belongsTo(Mitra::class, 'id_mitra');
     }
 }

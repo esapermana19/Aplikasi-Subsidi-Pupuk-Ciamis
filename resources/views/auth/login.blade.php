@@ -24,7 +24,7 @@
 
             <div class="bg-white border border-gray-200 rounded-xl shadow-lg p-7">
                 <h2 class="text-xl font-bold text-gray-800">Masuk ke Sistem</h2>
-                <p class="text-gray-500 text-sm mb-5">Masukkan NIK / NIP dan password untuk melanjutkan</p>
+                <p class="text-gray-500 text-sm mb-5">Masukkan email dan password untuk melanjutkan</p>
 
                 @if($errors->any())
                     <div class="bg-red-50 text-red-600 p-2.5 rounded-lg mb-4 text-xs flex items-center gap-2">
@@ -36,10 +36,10 @@
                 <form action="{{ route('login.store') }}" method="POST" class="space-y-4">
                     @csrf
                     <div class="space-y-1.5">
-                        <label class="text-sm font-medium text-gray-700">NIK / NIP</label>
+                        <label class="text-sm font-medium text-gray-700">Email</label>
                         <div class="relative">
                             <i data-lucide="user" class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"></i>
-                            <input type="text" name="nik_nip" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none transition text-sm" placeholder="Masukkan NIK atau NIP" required>
+                            <input type="text" name="email" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none transition text-sm" placeholder="Masukkan Email Anda" required>
                         </div>
                     </div>
 

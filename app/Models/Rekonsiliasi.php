@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 ])]
 class Rekonsiliasi extends Model
 {
-    protected $table = 'rekonsiliasi';
+    protected $table = 'tabel_rekonsiliasi';
     protected $primaryKey = 'id_rekonsiliasi';
 
     public function transaksi(): BelongsTo

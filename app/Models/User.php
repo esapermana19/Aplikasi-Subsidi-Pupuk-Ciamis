@@ -3,30 +3,24 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+
+use App\Http\Controllers\AdminController;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 #[Fillable([
-    'name',
-    'nama_mitra',
     'email',
-    'no_telepon',
-    'nik_nip',
     'password',
     'role',
     'status_akun',
-    'alasan_penolakan',
     'verified_by',
-    'alamat',
-    'no_rek',
-    'saldo_app',
-    'jenis_kelamin'
 ])]
 
 #[Hidden(['password', 'remember_token'])]
@@ -41,24 +35,31 @@ class User extends Authenticatable
      *
      * @return array<string, string>
      */
+    protected $table = 'tabel_users';
+    protected $primaryKey = 'id_user';
+    public function admin(): HasOne
+    {
+        return $this->hasOne(Admin::class, 'id_user');
+    }
+    public function petani(): HasOne
+    {
+        return $this->hasOne(Petani::class, 'id_user');
+    }
+    public function mitra(): HasOne
+    {
+        return $this->hasOne(Mitra::class, 'id_user');
+    }
+
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'saldo_app' => 'decimail:2',
         ];
     }
 
     //Relasi: Yang memverifikasi akun
-    public function verifikator()
+    public function verifikator(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'verified_by');
-    }
-
-    //Relasi: Daftar User Yang diverifikasi
-    public function verifiedUsers(): HasMany
-    {
-        return $this->hasMany(User::class, 'verified_by');
+        return $this->belongsTo(Admin::class, 'verified_by', 'id_admin');
     }
 }
