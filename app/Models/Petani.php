@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'nik',
     'nama_petani',
     'jenis_kelamin',
+    'id_kecamatan',
+    'id_desa',
     'alamat_petani'
 ])]
 class Petani extends Model
@@ -27,5 +29,13 @@ class Petani extends Model
     public function transaksi(): HasMany
     {
         return $this->hasMany(Transaksi::class, 'id_petani');
+    }
+    public function kecamatan()
+    {
+        return $this->belongsTo(Kecamatan::class, 'id_kecamatan', 'id_kecamatan');
+    }
+    public function desa()
+    {
+        return $this->belongsTo(Desa::class, 'id_desa', 'id_desa');
     }
 }

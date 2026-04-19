@@ -9,9 +9,13 @@
         </div>
 
         {{-- Filter & Search Section --}}
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-            <div class="flex items-center gap-3">
-                <form action="{{ route('admin.list_mitra') }}" method="GET" id="filterForm" class="flex items-center gap-3">
+        <form action="{{ route('admin.list_mitra') }}" method="GET" id="filterForm">
+            <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-6">
+
+                {{-- KELOMPOK KIRI: Dropdown Filter --}}
+                <div class="flex flex-wrap items-center gap-3">
+
+                    {{-- Filter Status --}}
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                             <i data-lucide="filter" class="h-4 w-4 text-gray-400"></i>
@@ -27,38 +31,69 @@
                         </select>
                     </div>
 
-                    @if (request('search') || request('status'))
+                    {{-- Filter Kecamatan --}}
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                            <i data-lucide="map" class="h-4 w-4 text-gray-400"></i>
+                        </div>
+                        <select name="id_kecamatan" onchange="this.form.submit()"
+                            class="bg-white border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-violet-500 focus:border-violet-500 block pl-10 pr-10 py-2.5 shadow-sm appearance-none max-w-[150px] truncate">
+                            <option value="">Semua Kecamatan</option>
+                            @foreach ($kecamatans as $kec)
+                                <option value="{{ $kec->id_kecamatan }}"
+                                    {{ request('id_kecamatan') == $kec->id_kecamatan ? 'selected' : '' }}>
+                                    {{ $kec->nama_kecamatan }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    {{-- Filter Desa --}}
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                            <i data-lucide="map-pin" class="h-4 w-4 text-gray-400"></i>
+                        </div>
+                        <select name="id_desa" id="filter_desa" onchange="this.form.submit()"
+                            class="bg-white border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-violet-500 focus:border-violet-500 block pl-10 pr-10 py-2.5 shadow-sm appearance-none max-w-[150px] truncate">
+                            <option value="">Semua Desa</option>
+                            {{-- Opsi Desa akan dimuat oleh JavaScript otomatis --}}
+                        </select>
+                    </div>
+
+                    {{-- Tombol Hapus Filter --}}
+                    @if (request('search') || request('status') || request('id_kecamatan') || request('id_desa'))
                         <a href="{{ route('admin.list_mitra') }}"
                             class="flex items-center gap-1.5 px-3 py-2 bg-red-50 text-red-600 rounded-lg text-xs font-bold border border-red-100 hover:bg-red-100 transition-colors">
-                            <i data-lucide="x" class="h-3.5 w-3.5"></i> Hapus Filter
+                            <i data-lucide="x" class="h-3.5 w-3.5"></i> Reset
                         </a>
                     @endif
-                </form>
 
-                <div class="hidden md:block h-8 w-px bg-gray-200 mx-2"></div>
+                    <div class="hidden xl:block h-8 w-px bg-gray-200 mx-1"></div>
 
-                <div class="flex items-center gap-2">
-                    <span class="h-2 w-2 rounded-full bg-amber-400"></span>
-                    <p class="text-sm text-gray-500 font-medium">
-                        Menampilkan <span class="text-gray-950 font-bold">{{ $mitra->total() }}</span> total mitra
-                    </p>
+                    {{-- Total mitra --}}
+                    <div class="flex items-center gap-2">
+                        <span class="h-2 w-2 rounded-full bg-amber-400"></span>
+                        <p class="text-sm text-gray-500 font-medium">
+                            Total <span class="text-gray-950 font-bold">{{ $mitra->total() }}</span>
+                        </p>
+                    </div>
                 </div>
-            </div>
 
-            <div class="w-full md:w-80">
-                <form action="{{ route('admin.list_mitra') }}" method="GET" class="relative">
-                    @if (request('status'))
-                        <input type="hidden" name="status" value="{{ request('status') }}">
-                    @endif
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3">
-                        <i data-lucide="search" class="h-4 w-4 text-gray-400"></i>
-                    </span>
-                    <input type="text" name="search" value="{{ request('search') }}"
-                        class="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-2xl focus:ring-violet-500 focus:border-violet-500 text-sm shadow-sm transition-all"
-                        placeholder="Cari mitra...">
-                </form>
+                {{-- KELOMPOK KANAN: Search Bar --}}
+                <div class="w-full xl:w-80">
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                            <i data-lucide="search" class="h-4 w-4 text-gray-400"></i>
+                        </span>
+                        <input type="text" name="search" value="{{ request('search') }}"
+                            class="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-2xl focus:ring-violet-500 focus:border-violet-500 text-sm shadow-sm transition-all"
+                            placeholder="Cari nama atau NIK..." onkeypress="if(event.keyCode == 13) this.form.submit();">
+                        {{-- Tekan Enter untuk mencari --}}
+                    </div>
+                </div>
+
             </div>
-        </div>
+        </form>
 
         {{-- Tabel mitra --}}
         <div class="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
@@ -68,6 +103,10 @@
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama
                                 Mitra / Pemilik</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Kecamatan</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Desa
+                            </th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">NIK &
                                 Rekening</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -83,19 +122,30 @@
                                     <div class="flex items-center gap-3">
                                         <div
                                             class="h-10 w-10 rounded-full bg-violet-100 flex items-center justify-center text-violet-600 font-bold">
-                                            {{ substr($m->mitra->nama_mitra ?? 'M', 0, 1) }}
+                                            {{ substr($m->nama_mitra ?? 'M', 0, 1) }}
                                         </div>
                                         <div>
                                             <div class="text-sm font-bold text-gray-900">
-                                                {{ $m->mitra->nama_mitra ?? 'Belum Diatur' }}</div>
+                                                {{ $m->nama_mitra ?? 'Belum Diatur' }}</div>
                                             <div class="text-xs text-gray-500">Pemilik:
-                                                {{ $m->mitra->nama_pemilik ?? '-' }}</div>
+                                                {{ $m->nama_pemilik ?? '-' }}</div>
                                         </div>
                                     </div>
                                 </td>
+
+                                {{-- PERBAIKAN 1: Panggil nama kecamatan melalui relasi --}}
+                                <td class="px-6 py-4 text-sm text-gray-900">
+                                    {{ $m->kecamatan->nama_kecamatan ?? 'Belum Lengkap' }}
+                                </td>
+
+                                {{-- PERBAIKAN 2: Panggil nama desa melalui relasi --}}
+                                <td class="px-6 py-4 text-sm text-gray-900">
+                                    {{ $m->desa->nama_desa ?? 'Belum Lengkap' }}
+                                </td>
+
                                 <td class="px-6 py-4">
-                                    <div class="text-sm text-gray-900 font-medium italic">{{ $m->mitra->nik ?? '-' }}</div>
-                                    <div class="text-xs text-gray-500">Rek: {{ $m->mitra->no_rek ?? '-' }}</div>
+                                    <div class="text-sm text-gray-900 font-medium italic">{{ $m->nik ?? '-' }}</div>
+                                    <div class="text-xs text-gray-500">Rek: {{ $m->no_rek ?? '-' }}</div>
                                 </td>
                                 <td class="px-6 py-4">
                                     @php
@@ -104,23 +154,32 @@
                                                 'aktif' => 'bg-green-100 text-green-700',
                                                 'pending' => 'bg-amber-100 text-amber-700',
                                                 'nonaktif' => 'bg-red-100 text-red-700',
-                                            ][$m->status_akun] ?? 'bg-gray-100 text-gray-700';
+                                            ][$m->user->status_akun] ?? 'bg-gray-100 text-gray-700';
                                     @endphp
                                     <span class="px-3 py-1 text-xs font-bold rounded-full {{ $statusClass }}">
-                                        {{ strtoupper($m->status_akun) }}
+                                        {{ strtoupper($m->user->status_akun) }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4">
                                     <div class="flex justify-center gap-2">
                                         {{-- Tombol Detail --}}
                                         <button type="button"
-                                            onclick="openDetailModal('{{ $m->mitra->nik ?? '-' }}', '{{ addslashes($m->mitra->nama_mitra ?? '-') }}', '{{ $m->email }}', '{{ addslashes($m->mitra->alamat_mitra ?? '-') }}', '{{ addslashes($m->mitra->nama_pemilik ?? '-') }}', '{{ $m->mitra->no_rek ?? '-' }}')"
+                                            onclick="openDetailModal(
+                                            '{{ $m->nik ?? '-' }}',
+                                            '{{ addslashes($m->nama_mitra ?? '-') }}',
+                                            '{{ $m->email }}',
+                                            '{{ addslashes($m->alamat_mitra ?? '-') }}',
+                                            '{{ addslashes($m->nama_pemilik ?? '-') }}',
+                                            '{{ $m->no_rek ?? '-' }}',
+                                            '{{ $m->kecamatan->nama_kecamatan ?? '-' }}', {{-- Kirim NAMA --}}
+                                            '{{ $m->desa->nama_desa ?? '-' }}')"
+                                            {{-- Kirim NAMA --}}
                                             class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                                             title="Detail">
                                             <i data-lucide="eye" class="h-4 w-4"></i>
                                         </button>
 
-                                        {{-- Tombol Aktivasi/Nonaktifkan (Sama seperti Petani) --}}
+                                        {{-- Tombol Aktivasi/Nonaktifkan --}}
                                         <form id="form-status-{{ $m->id_user }}"
                                             action="{{ route('admin.update_status', $m->id_user) }}" method="POST"
                                             class="hidden">
@@ -144,9 +203,20 @@
                                                 <i data-lucide="user-check" class="h-4 w-4"></i>
                                             </button>
                                         @endif
-                                         {{-- Tombol Edit --}}
+
+                                        {{-- Tombol Edit --}}
                                         <button type="button"
-                                            onclick="openEditModal('{{ $m->id_user }}', '{{ $m->mitra->nik ?? '' }}', '{{ addslashes($m->mitra->nama_mitra ?? '') }}', '{{ $m->email }}', '{{ addslashes($m->mitra->alamat_mitra ?? '') }}', '{{ addslashes($m->mitra->nama_pemilik ?? '') }}', '{{ $m->mitra->no_rek ?? '' }}')"
+                                            onclick="openEditModal(
+                                            '{{ $m->id_user }}',
+                                            '{{ $m->nik ?? '' }}',
+                                            '{{ addslashes($m->nama_mitra ?? '') }}',
+                                            '{{ $m->user->email }}',
+                                            '{{ addslashes($m->alamat_mitra ?? '') }}',
+                                            '{{ addslashes($m->nama_pemilik ?? '') }}',
+                                            '{{ $m->no_rek ?? '' }}',
+                                            '{{ $m->id_kecamatan ?? '' }}', {{-- PERBAIKAN 3: Kirim ID Kecamatan --}}
+                                            '{{ $m->id_desa ?? '' }}')"
+                                            {{-- PERBAIKAN 3: Kirim ID Desa --}}
                                             class="p-2 text-violet-600 hover:bg-violet-50 rounded-lg transition-colors"
                                             title="Edit">
                                             <i data-lucide="edit-3" class="h-4 w-4"></i>
@@ -156,7 +226,8 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="px-6 py-10 text-center text-gray-400 italic">Data mitra tidak
+                                {{-- Colspan diubah ke 6 sesuai jumlah kolom tabel Anda --}}
+                                <td colspan="6" class="px-6 py-10 text-center text-gray-400 italic">Data mitra tidak
                                     ditemukan</td>
                             </tr>
                         @endforelse
@@ -206,6 +277,27 @@
                                 <input type="text" name="no_rek" id="edit_rek"
                                     class="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-violet-500">
                             </div>
+
+                            {{-- PERBAIKAN: Ubah menjadi Dropdown Select --}}
+                            <div class="col-span-2 sm:col-span-1">
+                                <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Kecamatan</label>
+                                <select name="id_kecamatan" id="edit_kecamatan" onchange="loadDesaEdit(this.value)"
+                                    required
+                                    class="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-violet-500 bg-white">
+                                    <option value="">Pilih Kecamatan</option>
+                                    @foreach ($kecamatans as $kec)
+                                        <option value="{{ $kec->id_kecamatan }}">{{ $kec->nama_kecamatan }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-span-2 sm:col-span-1">
+                                <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Desa</label>
+                                <select name="id_desa" id="edit_desa" required
+                                    class="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-violet-500 bg-white">
+                                    <option value="">Pilih Desa</option>
+                                </select>
+                            </div>
+
                             <div class="col-span-2">
                                 <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Alamat</label>
                                 <textarea name="alamat" id="edit_alamat" rows="2"
@@ -260,6 +352,14 @@
                             <label class="text-xs font-bold text-gray-400 uppercase">Email</label>
                             <p id="det_email" class="text-sm font-semibold text-gray-900 mt-1"></p>
                         </div>
+                        <div class="col-span-2 sm:col-span-1">
+                            <label class="text-xs font-bold text-gray-400 uppercase">Kecamatan</label>
+                            <p id="det_kecamatan" class="text-sm font-semibold text-gray-900 mt-1"></p>
+                        </div>
+                        <div class="col-span-2 sm:col-span-1">
+                            <label class="text-xs font-bold text-gray-400 uppercase">Desa</label>
+                            <p id="det_desa" class="text-sm font-semibold text-gray-900 mt-1"></p>
+                        </div>
                         <div class="col-span-2">
                             <label class="text-xs font-bold text-gray-400 uppercase">Alamat</label>
                             <p id="det_alamat"
@@ -282,21 +382,83 @@
 @endsection
 <script>
     // 1. Fungsi Modal Edit (Sudah diperbaiki)
-    function openEditModal(id, nik, nama, email, alamat, pemilik, rek) {
+    // Parameter disesuaikan dengan urutan tombol edit Mitra
+    function openEditModal(id_user, nik, nama_mitra, email, alamat, nama_pemilik, no_rek, id_kecamatan, id_desa) {
         const modal = document.getElementById('editModal');
         const form = document.getElementById('editForm');
-        form.action = `/admin/mitra/update/${id}`;
+
+        // Sesuaikan URL action-nya (ganti dengan route update mitra Anda)
+        form.action = `/admin/mitra/update/${id_user}`;
 
         document.getElementById('edit_nik').value = nik;
-        document.getElementById('edit_name').value = nama;
+        document.getElementById('edit_name').value = nama_mitra;
         document.getElementById('edit_email').value = email;
+        document.getElementById('edit_pemilik').value = nama_pemilik;
+        document.getElementById('edit_rek').value = no_rek;
         document.getElementById('edit_alamat').value = alamat;
-        document.getElementById('edit_pemilik').value = pemilik;
-        document.getElementById('edit_rek').value = rek;
+
+        // Set nilai Dropdown Kecamatan
+        document.getElementById('edit_kecamatan').value = id_kecamatan;
+
+        // Panggil fetch untuk mengisi Dropdown Desa secara otomatis
+        loadDesaEdit(id_kecamatan, id_desa);
 
         modal.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
     }
+
+    function loadDesaEdit(idKecamatan, selectedDesaId = null) {
+        const desaSelect = document.getElementById('edit_desa');
+        desaSelect.innerHTML = '<option value="">Pilih Desa</option>';
+
+        if (idKecamatan) {
+            fetch(`{{ url('/get-desa') }}/${idKecamatan}`)
+                .then(response => response.json())
+                .then(data => {
+                    data.forEach(desa => {
+                        const option = document.createElement('option');
+                        option.value = desa.id_desa;
+                        option.text = desa.nama_desa;
+
+                        if (desa.id_desa == selectedDesaId) {
+                            option.selected = true;
+                        }
+                        desaSelect.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error fetching desa:', error));
+        }
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+        // Ambil data kecamatan & desa dari URL (jika ada filter aktif)
+        const activeKecamatanId = "{{ request('id_kecamatan') }}";
+        const activeDesaId = "{{ request('id_desa') }}";
+
+        const filterDesaSelect = document.getElementById('filter_desa');
+
+        if (activeKecamatanId) {
+            // Fetch ke backend untuk mengambil list desa
+            fetch(`{{ url('/get-desa') }}/${activeKecamatanId}`)
+                .then(response => response.json())
+                .then(data => {
+                    data.forEach(desa => {
+                        const option = document.createElement('option');
+                        option.value = desa.id_desa;
+                        option.text = desa.nama_desa;
+
+                        // Tandai terpilih jika sesuai filter
+                        if (desa.id_desa == activeDesaId) {
+                            option.selected = true;
+                        }
+                        filterDesaSelect.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error memuat desa untuk filter:', error));
+        }
+    });
+
+    // Catatan: Fungsi loadDesaEdit(...) dan event filter lainnya SAMA PERSIS
+    // seperti yang ada di halaman Petani, Anda bisa langsung copy-paste saja.
 
     function closeEditModal() {
         document.getElementById('editModal').classList.add('hidden');
@@ -304,16 +466,42 @@
     }
 
     // 2. Fungsi Modal Detail (Baru)
-    function openDetailModal(nik, nama, email, alamat, pemilik, rek) {
+    function openDetailModal(nik, nama_mitra, email, alamat, nama_pemilik, no_rek, kecamatan, desa) {
+        // Memasukkan teks ke dalam elemen berdasarkan ID yang Anda buat di HTML
         document.getElementById('det_nik').innerText = nik;
-        document.getElementById('det_nama').innerText = nama;
+        document.getElementById('det_rek').innerText = no_rek;
+        document.getElementById('det_nama').innerText = nama_mitra;
+        document.getElementById('det_pemilik').innerText = nama_pemilik;
         document.getElementById('det_email').innerText = email;
+        document.getElementById('det_kecamatan').innerText = kecamatan;
+        document.getElementById('det_desa').innerText = desa;
         document.getElementById('det_alamat').innerText = alamat;
-        document.getElementById('det_pemilik').innerText = pemilik;
-        document.getElementById('det_rek').innerText = rek;
 
-        document.getElementById('detailModal').classList.remove('hidden');
+        // Munculkan Modal (Hapus class hidden)
+        const modal = document.getElementById('detailModal');
+        modal.classList.remove('hidden');
+
+        // Kunci scroll body agar tidak bergeser saat modal tampil
         document.body.style.overflow = 'hidden';
+    }
+
+    /**
+     * Fungsi untuk menutup Modal Detail
+     */
+    function closeDetailModal() {
+        const modal = document.getElementById('detailModal');
+        modal.classList.add('hidden');
+
+        // Kembalikan scroll body
+        document.body.style.overflow = 'auto';
+    }
+
+    // Opsional: Menutup modal jika area di luar kotak modal diklik
+    window.onclick = function(event) {
+        const detailModal = document.getElementById('detailModal');
+        const editModal = document.getElementById('editModal');
+        if (event.target == detailModal) closeDetailModal();
+        if (event.target == editModal) closeEditModal();
     }
 
     function closeDetailModal() {

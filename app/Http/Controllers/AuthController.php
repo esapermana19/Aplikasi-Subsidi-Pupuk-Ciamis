@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Petani;
 use App\Models\Mitra;
+use App\Models\Kecamatan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -23,6 +24,8 @@ class AuthController extends Controller
             'password' => 'required|string|min:8|confirmed',
             'role' => 'required|in:Petani,Mitra',
             'alamat' => 'required|string|max:100',
+            'id_kecamatan' => 'required|exists:tabel_kecamatan,id_kecamatan',
+            'id_desa' => 'required|exists:tabel_desa,id_desa',
         ];
 
         // Validasi tambahan berdasarkan role
@@ -57,6 +60,8 @@ class AuthController extends Controller
                     'nik' => $request->nik,
                     'nama_petani' => $request->name,
                     'jenis_kelamin' => $request->jenis_kelamin,
+                    'id_kecamatan' => $request->id_kecamatan,
+                    'id_desa' => $request->id_desa,
                     'alamat_petani' => $request->alamat,
                 ]);
             } elseif ($request->role === 'Mitra') {
@@ -65,6 +70,8 @@ class AuthController extends Controller
                     'nama_mitra' => $request->nama_mitra,
                     'nama_pemilik' => $request->name,
                     'nik' => $request->nik,
+                    'id_kecamatan' => $request->id_kecamatan,
+                    'id_desa' => $request->id_desa,
                     'alamat_mitra' => $request->alamat,
                     'no_rek' => $request->no_rek,
                     'saldo_app' => 0,
@@ -117,5 +124,14 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         return redirect('/');
+    }
+
+    public function create() // atau showRegistrationForm()
+    {
+        // Mengambil semua data kecamatan dari database
+        $kecamatans = Kecamatan::all();
+
+        // Kirim variabel ke view register
+        return view('auth.register', compact('kecamatans'));
     }
 }

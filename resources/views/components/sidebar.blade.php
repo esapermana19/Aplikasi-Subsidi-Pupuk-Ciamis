@@ -20,7 +20,7 @@
                         'id' => 'verifikasi',
                         'label' => 'Verifikasi Akun',
                         'icon' => 'user-check',
-                        'route' => 'verifikasi',
+                        'route' => 'admin.verifikasi',
                     ],
                     // PERBAIKAN DI SINI: Memisahkan icon dan route
                     [
@@ -40,22 +40,22 @@
                         'id' => 'approval-permintaan',
                         'label' => 'Approval Permintaan',
                         'icon' => 'file-check',
-                        'route' => 'approval-permintaan',
+                        'route' => 'admin.approval-permintaan',
                     ],
                     [
                         'id' => 'approval-pencairan',
                         'label' => 'Approval Pencairan',
                         'icon' => 'dollar-sign',
-                        'route' => 'approval-pencairan',
+                        'route' => 'admin.approval-pencairan',
                     ],
                     [
                         'id' => 'rekonsiliasi',
                         'label' => 'Rekonsiliasi Data',
                         'icon' => 'database',
-                        'route' => 'rekonsiliasi',
+                        'route' => 'admin.rekonsiliasi',
                     ],
-                    ['id' => 'transaksi', 'label' => 'Data Transaksi', 'icon' => 'receipt', 'route' => 'transaksi'],
-                    ['id' => 'laporan', 'label' => 'Laporan', 'icon' => 'file-text', 'route' => 'laporan'],
+                    ['id' => 'transaksi', 'label' => 'Data Transaksi', 'icon' => 'receipt', 'route' => 'admin.transaksi'],
+                    ['id' => 'laporan', 'label' => 'Laporan', 'icon' => 'file-text', 'route' => 'admin.laporan'],
                 ];
             @endphp
 

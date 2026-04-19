@@ -15,11 +15,15 @@ Route::middleware('guest')->group(function () {
     //Proses Login
     Route::post('/login', [AuthController::class, 'login'])->name('login.store');
     // Halaman Register
-    Route::get('/register', function () {
-        return view('auth.register'); // Pastikan Anda punya file resources/views/auth/register.blade.php
-    })->name('register');
+    // Pastikan route GET register mengarah ke method 'create'
+    Route::get('/register', [AuthController::class, 'create'])->name('register');
     // Proses Register
     Route::post('/register', [AuthController::class, 'register'])->name('register.store');
+    // API untuk mendapatkan desa berdasarkan kecamatan
+    Route::get('/get-desa/{id_kecamatan}', function ($id_kecamatan) {
+        $desa = \App\Models\Desa::where('id_kecamatan', $id_kecamatan)->get();
+        return response()->json($desa);
+    });
 });
 
 Route::middleware(['auth'])->group(function () {
@@ -29,6 +33,11 @@ Route::middleware(['auth'])->group(function () {
         request()->session()->regenerateToken();
         return redirect('/');
     })->name('logout');
+    // API untuk mendapatkan desa berdasarkan kecamatan
+    Route::get('/get-desa/{id_kecamatan}', function ($id_kecamatan) {
+        $desa = \App\Models\Desa::where('id_kecamatan', $id_kecamatan)->get();
+        return response()->json($desa);
+    });
     Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
     Route::middleware(['role:admin,superadmin'])->group(function () {
         // Gunakan URL ini agar konsisten untuk Petani dan Mitra
@@ -63,7 +72,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/admin/laporan', function () {
             return "Halaman Laporan";
         })->name('laporan');
-        Route::get('/admin/verifikasi', [AdminController::class, 'verifikasi'])->name('verifikasi');
+        Route::get('/admin/verifikasi', [AdminController::class, 'verifikasi'])->name('admin.verifikasi');
         Route::post('/admin/approve_akun/{id}', [AdminController::class, 'approve_akun'])->name('admin.approve_akun');
         Route::delete('/admin/reject_akun/{id}', [AdminController::class, 'reject_akun'])->name('admin.reject_akun');
     });

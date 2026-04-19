@@ -109,6 +109,28 @@
                         </div>
                     </div>
 
+                    <div class="grid grid-cols-2 gap-4">
+                        {{-- Dropdown Kecamatan --}}
+                        <div>
+                            <label class="text-xs font-bold text-gray-400 uppercase">Kecamatan</label>
+                            <select id="select_kecamatan" name="id_kecamatan"
+                                class="w-full pl-3 pr-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-green-500 outline-none">
+                                <option value="">Pilih Kecamatan</option>
+                                @foreach ($kecamatans as $kec)
+                                    <option value="{{ $kec->id_kecamatan }}">{{ $kec->nama_kecamatan }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        {{-- Dropdown Desa --}}
+                        <div>
+                            <label class="text-xs font-bold text-gray-400 uppercase">Desa</label>
+                            <select id="select_desa" name="id_desa"
+                                class="w-full pl-3 pr-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-green-500 outline-none">
+                                <option value="">Pilih Desa</option>
+                            </select>
+                        </div>
+                    </div>
                     <div class="space-y-1">
                         <label class="text-xs font-bold text-gray-700">Alamat Lengkap di Ciamis</label>
                         <textarea name="alamat" rows="2"
@@ -213,6 +235,29 @@
 
         roleSelect.addEventListener('change', function() {
             toggleFields(this.value);
+        });
+
+        // Logika untuk memuat desa berdasarkan kecamatan
+        document.getElementById('select_kecamatan').addEventListener('change', function() {
+            const idKecamatan = this.value;
+            const desaSelect = document.getElementById('select_desa');
+
+            // Reset Dropdown Desa
+            desaSelect.innerHTML = '<option value="">Pilih Desa</option>';
+
+            if (idKecamatan) {
+                fetch(`/get-desa/${idKecamatan}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        data.forEach(desa => {
+                            const option = document.createElement('option');
+                            option.value = desa.id_desa;
+                            option.text = desa.nama_desa;
+                            desaSelect.appendChild(option);
+                        });
+                    })
+                    .catch(error => console.error('Error fetching desa:', error));
+            }
         });
     </script>
 </body>

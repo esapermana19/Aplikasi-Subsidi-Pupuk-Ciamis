@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'nama_mitra',
     'nama_pemilik',
     'nik',
+    'id_kecamatan',
+    'id_desa',
     'alamat_mitra',
     'no_rek',
     'saldo_app'
@@ -41,5 +43,14 @@ class Mitra extends Model
     public function pencairan(): HasMany
     {
         return $this->hasMany(Pencairan::class, 'id_mitra');
+    }
+
+    public function kecamatan()
+    {
+        return $this->belongsTo(Kecamatan::class, 'id_kecamatan', 'id_kecamatan');
+    }
+    public function desa()
+    {
+        return $this->belongsTo(Desa::class, 'id_desa', 'id_desa');
     }
 }

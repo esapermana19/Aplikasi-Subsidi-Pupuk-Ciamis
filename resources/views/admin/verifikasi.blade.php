@@ -18,7 +18,8 @@
             <div class="flex flex-wrap items-center gap-4">
                 {{-- Dropdown Filter Role --}}
                 <div class="relative group">
-                    <form action="{{ route('verifikasi') }}" method="GET" id="filterForm" class="flex items-center gap-3">
+                    <form action="{{ route('admin.verifikasi') }}" method="GET" id="filterForm"
+                        class="flex items-center gap-3">
                         <div
                             class="flex items-center gap-2 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus-within:ring-2 focus-within:ring-green-500 focus-within:border-green-500 transition-all">
                             <i data-lucide="filter" class="h-4 w-4 text-gray-400"></i>
@@ -30,13 +31,44 @@
                             </select>
                         </div>
 
-                        @if (request('role'))
-                            <a href="{{ route('verifikasi') }}"
-                                class="inline-flex items-center gap-1 text-xs font-semibold text-red-500 hover:text-red-700 transition-colors bg-red-50 px-2 py-1.5 rounded-md">
-                                <i data-lucide="x" class="h-3 w-3"></i>
-                                Hapus Filter
+                        {{-- Filter Kecamatan --}}
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                <i data-lucide="map" class="h-4 w-4 text-gray-400"></i>
+                            </div>
+                            <select name="id_kecamatan" onchange="this.form.submit()"
+                                class="bg-white border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-violet-500 focus:border-violet-500 block pl-10 pr-10 py-2.5 shadow-sm appearance-none max-w-[150px] truncate">
+                                <option value="">Semua Kecamatan</option>
+                                @foreach ($kecamatans as $kec)
+                                    <option value="{{ $kec->id_kecamatan }}"
+                                        {{ request('id_kecamatan') == $kec->id_kecamatan ? 'selected' : '' }}>
+                                        {{ $kec->nama_kecamatan }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        {{-- Filter Desa --}}
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                <i data-lucide="map-pin" class="h-4 w-4 text-gray-400"></i>
+                            </div>
+                            <select name="id_desa" id="filter_desa" onchange="this.form.submit()"
+                                class="bg-white border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-violet-500 focus:border-violet-500 block pl-10 pr-10 py-2.5 shadow-sm appearance-none max-w-[150px] truncate">
+                                <option value="">Semua Desa</option>
+                                {{-- Opsi Desa akan dimuat oleh JavaScript otomatis --}}
+                            </select>
+                        </div>
+
+                        {{-- Tombol Hapus Filter --}}
+                        @if (request('search') || request('status') || request('id_kecamatan') || request('id_desa'))
+                            <a href="{{ route('admin.verifikasi') }}"
+                                class="flex items-center gap-1.5 px-3 py-2 bg-red-50 text-red-600 rounded-lg text-xs font-bold border border-red-100 hover:bg-red-100 transition-colors">
+                                <i data-lucide="x" class="h-3.5 w-3.5"></i> Reset
                             </a>
                         @endif
+
+                        <div class="hidden xl:block h-8 w-px bg-gray-200 mx-1"></div>
                     </form>
                 </div>
 
@@ -57,6 +89,7 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama / NIK</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kecamatan / Desa</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal Daftar</th>
                         <th class="px-6 py-3 text-right pr-20 text-xs font-medium text-gray-500 uppercase">Aksi</th>
@@ -73,6 +106,16 @@
                                 <div class="text-sm text-gray-500">
                                     {{-- Mengambil NIK dari relasi petani atau mitra --}}
                                     {{ $user->petani->nik ?? ($user->mitra->nik ?? '-') }}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="text-sm font-medium text-gray-900">
+                                    {{-- Mengambil nama dari relasi petani atau mitra --}}
+                                    {{ $user->petani->kecamatan->nama_kecamatan ?? ($user->mitra->kecamatan->nama_kecamatan ?? 'Tidak ada nama') }}
+                                </div>
+                                <div class="text-sm text-gray-500">
+                                    {{-- Mengambil NIK dari relasi petani atau mitra --}}
+                                    {{ $user->petani->desa->nama_desa ?? ($user->mitra->desa->nama_desa ?? 'Tidak ada nama') }}
                                 </div>
                             </td>
                             <td class="px-6 py-4">
@@ -94,8 +137,10 @@
                                             '{{ addslashes($user->petani->nama_petani ?? ($user->mitra->nama_mitra ?? '-')) }}',
                                             '{{ $user->email }}',
                                             '{{ addslashes($user->petani->alamat_petani ?? ($user->mitra->alamat_mitra ?? '-')) }}',
+                                            '{{ $user->petani->kecamatan->nama_kecamatan ?? ($user->mitra->kecamatan->nama_kecamatan ?? '-') }}', {{-- KECAMATAN --}}
+                                            '{{ $user->petani->desa->nama_desa ?? ($user->mitra->desa->nama_desa ?? '-') }}',                   {{-- DESA --}}
                                             '{{ $user->petani->jenis_kelamin ?? '-' }}',
-                                            '{{ $user->mitra->nama_pemilik ?? '-' }}',
+                                            '{{ addslashes($user->mitra->nama_pemilik ?? '-') }}',
                                             '{{ $user->mitra->no_rek ?? '-' }}'
                                         )"
                                         class="text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors">
@@ -133,85 +178,148 @@
         </div>
     </div>
     <div id="detailModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
-    <div class="flex items-center justify-center min-h-screen p-4">
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="closeModal()"></div>
-        <div class="relative bg-white rounded-3xl shadow-xl max-w-lg w-full overflow-hidden">
-            <div class="px-6 py-4 border-b flex justify-between items-center bg-gray-50">
-                <h3 class="text-lg font-bold text-gray-900">Detail Pendaftaran <span id="title_role" class="text-gray-900"></span></h3>
-                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600"><i data-lucide="x" class="h-5 w-5"></i></button>
-            </div>
-            <div class="p-6 space-y-4 text-left">
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="col-span-1">
-                        <label class="text-xs font-bold text-gray-400 uppercase">NIK</label>
-                        <p id="det_nik" class="text-sm font-semibold text-gray-900"></p>
-                    </div>
-                    <div class="col-span-1" id="box_jk">
-                        <label class="text-xs font-bold text-gray-400 uppercase">Jenis Kelamin</label>
-                        <p id="det_jk" class="text-sm font-semibold text-gray-900"></p>
-                    </div>
-                    <div class="col-span-2">
-                        <label class="text-xs font-bold text-gray-400 uppercase">Nama Lengkap / Instansi</label>
-                        <p id="det_nama" class="text-sm font-semibold text-gray-900"></p>
-                    </div>
-                    <div id="box_mitra_only" class="col-span-2 grid grid-cols-2 gap-4 hidden">
-                        <div>
-                            <label class="text-xs font-bold text-gray-400 uppercase">Nama Pemilik</label>
-                            <p id="det_pemilik" class="text-sm font-semibold text-gray-900"></p>
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="closeModal()"></div>
+            <div class="relative bg-white rounded-3xl shadow-xl max-w-lg w-full overflow-hidden">
+                <div class="px-6 py-4 border-b flex justify-between items-center bg-gray-50">
+                    <h3 class="text-lg font-bold text-gray-900">Detail Pendaftaran <span id="title_role"
+                            class="text-gray-900"></span></h3>
+                    <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600"><i data-lucide="x"
+                            class="h-5 w-5"></i></button>
+                </div>
+                <div class="p-6 space-y-4 text-left">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="col-span-1">
+                            <label class="text-xs font-bold text-gray-400 uppercase">NIK</label>
+                            <p id="det_nik" class="text-sm font-semibold text-gray-900"></p>
                         </div>
-                        <div>
-                            <label class="text-xs font-bold text-gray-400 uppercase">No. Rekening</label>
-                            <p id="det_rek" class="text-sm font-semibold text-gray-900"></p>
+                        <div class="col-span-1" id="box_jk">
+                            <label class="text-xs font-bold text-gray-400 uppercase">Jenis Kelamin</label>
+                            <p id="det_jk" class="text-sm font-semibold text-gray-900"></p>
                         </div>
-                    </div>
-                    <div class="col-span-2">
-                        <label class="text-xs font-bold text-gray-400 uppercase">Email Login</label>
-                        <p id="det_email" class="text-sm font-semibold text-gray-900"></p>
-                    </div>
-                    <div class="col-span-2 border-t pt-3">
-                        <label class="text-xs font-bold text-gray-400 uppercase">Alamat Lengkap</label>
-                        <p id="det_alamat" class="text-sm text-gray-700 bg-gray-50 p-3 rounded-xl mt-1"></p>
+                        <div class="col-span-2">
+                            <label class="text-xs font-bold text-gray-400 uppercase">Nama Lengkap / Instansi</label>
+                            <p id="det_nama" class="text-sm font-semibold text-gray-900"></p>
+                        </div>
+                        <div class="col-span-1">
+                            <label class="text-xs font-bold text-gray-400 uppercase">Kecamatan</label>
+                            <p id="det_kecamatan" class="text-sm font-semibold text-gray-900"></p>
+                        </div>
+                        <div class="col-span-1">
+                            <label class="text-xs font-bold text-gray-400 uppercase">Desa</label>
+                            <p id="det_desa" class="text-sm font-semibold text-gray-900"></p>
+                        </div>
+                        <div id="box_mitra_only" class="col-span-2 grid grid-cols-2 gap-4 hidden">
+                            <div>
+                                <label class="text-xs font-bold text-gray-400 uppercase">Nama Pemilik</label>
+                                <p id="det_pemilik" class="text-sm font-semibold text-gray-900"></p>
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-gray-400 uppercase">No. Rekening</label>
+                                <p id="det_rek" class="text-sm font-semibold text-gray-900"></p>
+                            </div>
+                        </div>
+                        <div class="col-span-2">
+                            <label class="text-xs font-bold text-gray-400 uppercase">Email Login</label>
+                            <p id="det_email" class="text-sm font-semibold text-gray-900"></p>
+                        </div>
+                        <div class="col-span-2 border-t pt-3">
+                            <label class="text-xs font-bold text-gray-400 uppercase">Alamat Lengkap</label>
+                            <p id="det_alamat" class="text-sm text-gray-700 bg-gray-50 p-3 rounded-xl mt-1"></p>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="px-6 py-4 bg-gray-50 text-right">
-                <button onclick="closeModal()" class="px-6 py-2 bg-violet-600 text-white rounded-xl text-sm font-bold">Tutup</button>
+                <div class="px-6 py-4 bg-gray-50 text-right">
+                    <button onclick="closeModal()"
+                        class="px-6 py-2 bg-violet-600 text-white rounded-xl text-sm font-bold">Tutup</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<script>
-function openDetailVerifikasi(role, nik, nama, email, alamat, jk, pemilik, rek) {
-    document.getElementById('title_role').innerText = role.toUpperCase();
-    document.getElementById('det_nik').innerText = nik;
-    document.getElementById('det_nama').innerText = nama;
-    document.getElementById('det_email').innerText = email;
-    document.getElementById('det_alamat').innerText = alamat;
+    <script>
+        function openDetailVerifikasi(role, nik, nama, email, alamat, kecamatan, desa, jk, pemilik, rek) {
+            document.getElementById('title_role').innerText = role.toUpperCase();
+            document.getElementById('det_nik').innerText = nik;
+            document.getElementById('det_nama').innerText = nama;
+            document.getElementById('det_email').innerText = email;
+            document.getElementById('det_alamat').innerText = alamat;
+            document.getElementById('det_kecamatan').innerText = kecamatan;
+            document.getElementById('det_desa').innerText = desa;
 
-    // Logic tampilan berdasarkan Role
-    const boxMitra = document.getElementById('box_mitra_only');
-    const boxJk = document.getElementById('box_jk');
+            // Logic tampilan berdasarkan Role
+            const boxMitra = document.getElementById('box_mitra_only');
+            const boxJk = document.getElementById('box_jk');
 
-    if(role.toLowerCase() === 'mitra') {
-        boxMitra.classList.remove('hidden');
-        boxJk.classList.add('hidden');
-        document.getElementById('det_pemilik').innerText = pemilik;
-        document.getElementById('det_rek').innerText = rek;
-    } else {
-        boxMitra.classList.add('hidden');
-        boxJk.classList.remove('hidden');
-        document.getElementById('det_jk').innerText = jk === 'L' ? 'Laki-laki' : (jk === 'P' ? 'Perempuan' : '-');
-    }
+            if (role.toLowerCase() === 'mitra') {
+                boxMitra.classList.remove('hidden');
+                boxJk.classList.add('hidden');
+                document.getElementById('det_pemilik').innerText = pemilik;
+                document.getElementById('det_rek').innerText = rek;
+            } else {
+                boxMitra.classList.add('hidden');
+                boxJk.classList.remove('hidden');
+                document.getElementById('det_jk').innerText = jk === 'L' ? 'Laki-laki' : (jk === 'P' ? 'Perempuan' : '-');
+            }
 
-    document.getElementById('detailModal').classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
-    if (typeof lucide !== 'undefined') lucide.createIcons();
-}
+            document.getElementById('detailModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
 
-function closeModal() {
-    document.getElementById('detailModal').classList.add('hidden');
-    document.body.style.overflow = 'auto';
-}
-</script>
+        function loadDesaEdit(idKecamatan, selectedDesaId = null) {
+            const desaSelect = document.getElementById('edit_desa');
+            desaSelect.innerHTML = '<option value="">Pilih Desa</option>';
+
+            if (idKecamatan) {
+                fetch(`{{ url('/get-desa') }}/${idKecamatan}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        data.forEach(desa => {
+                            const option = document.createElement('option');
+                            option.value = desa.id_desa;
+                            option.text = desa.nama_desa;
+
+                            if (desa.id_desa == selectedDesaId) {
+                                option.selected = true;
+                            }
+                            desaSelect.appendChild(option);
+                        });
+                    })
+                    .catch(error => console.error('Error fetching desa:', error));
+            }
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            // Ambil data kecamatan & desa dari URL (jika ada filter aktif)
+            const activeKecamatanId = "{{ request('id_kecamatan') }}";
+            const activeDesaId = "{{ request('id_desa') }}";
+
+            const filterDesaSelect = document.getElementById('filter_desa');
+
+            if (activeKecamatanId) {
+                // Fetch ke backend untuk mengambil list desa
+                fetch(`{{ url('/get-desa') }}/${activeKecamatanId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        data.forEach(desa => {
+                            const option = document.createElement('option');
+                            option.value = desa.id_desa;
+                            option.text = desa.nama_desa;
+
+                            // Tandai terpilih jika sesuai filter
+                            if (desa.id_desa == activeDesaId) {
+                                option.selected = true;
+                            }
+                            filterDesaSelect.appendChild(option);
+                        });
+                    })
+                    .catch(error => console.error('Error memuat desa untuk filter:', error));
+            }
+        });
+
+        function closeModal() {
+            document.getElementById('detailModal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+    </script>
 @endsection

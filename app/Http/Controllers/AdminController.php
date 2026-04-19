@@ -40,19 +40,50 @@ class AdminController extends Controller
     // Fungsi Verifikasi (Tampilan User Pending)
     public function verifikasi(Request $request)
     {
-        // Gunakan Eager Loading agar tidak berat saat load nama dari profil
-        $query = User::with(['petani', 'mitra'])->where('status_akun', 'pending');
-
+        // PERBAIKAN: Tambahkan relasi kecamatan dan desa untuk petani maupun mitra
+        $query = User::with([
+            'petani.kecamatan',
+            'petani.desa',
+            'mitra.kecamatan',
+            'mitra.desa'
+        ])->where('status_akun', 'pending');
+        // 1. Filter Role (Petani / Mitra)
         if ($request->filled('role')) {
             $query->where('role', $request->role);
         }
 
+        // 2. Filter Kecamatan
+        if ($request->filled('id_kecamatan')) {
+            $id_kecamatan = $request->id_kecamatan;
+            $query->where(function ($q) use ($id_kecamatan) {
+                $q->whereHas('petani', function ($queryPetani) use ($id_kecamatan) {
+                    $queryPetani->where('id_kecamatan', $id_kecamatan);
+                })->orWhereHas('mitra', function ($queryMitra) use ($id_kecamatan) {
+                    $queryMitra->where('id_kecamatan', $id_kecamatan);
+                });
+            });
+        }
+
+        // 3. Filter Desa
+        if ($request->filled('id_desa')) {
+            $id_desa = $request->id_desa;
+            $query->where(function ($q) use ($id_desa) {
+                $q->whereHas('petani', function ($queryPetani) use ($id_desa) {
+                    $queryPetani->where('id_desa', $id_desa);
+                })->orWhereHas('mitra', function ($queryMitra) use ($id_desa) {
+                    $queryMitra->where('id_desa', $id_desa);
+                });
+            });
+        }
+
         $pendingUsers = $query->latest()->get();
+        $kecamatans = \App\Models\Kecamatan::all();
 
         return view('admin.verifikasi', [
             'users' => $pendingUsers,
             'activeMenu' => 'verifikasi',
-            'currentFilter' => $request->role
+            'currentFilter' => $request->role,
+            'kecamatans' => $kecamatans
         ]);
     }
 
@@ -80,52 +111,90 @@ class AdminController extends Controller
     }
 
     // List Petani dengan pencarian ke tabel_petani
+    // AdminController.php
+
+    // app/Http/Controllers/AdminController.php
+
     public function list_petani(Request $request)
     {
-        $query = User::where('role', 'Petani')->with('petani');
+        $query = Petani::with(['user', 'kecamatan', 'desa']);
 
+        // 1. Filter Status Akun
         if ($request->filled('status')) {
-            $query->where('status_akun', $request->status);
-        }
-
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->whereHas('petani', function ($q) use ($search) {
-                $q->where('nama_petani', 'like', "%$search%")
-                    ->orWhere('nik', 'like', "%$search%");
+            $query->whereHas('user', function ($q) use ($request) {
+                $q->where('status_akun', $request->status);
             });
         }
 
-        $petani = $query->latest()->paginate(10);
+        // 2. Filter Pencarian (Nama / NIK)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('nama_petani', 'like', "%{$search}%")
+                    ->orWhere('nik', 'like', "%{$search}%");
+            });
+        }
 
-        return view('admin.managepetani', [
-            'petani' => $petani,
-            'activeMenu' => 'petani'
-        ]);
+        // 3. Filter Kecamatan
+        if ($request->filled('id_kecamatan')) {
+            $query->where('id_kecamatan', $request->id_kecamatan);
+        }
+
+        // 4. Filter Desa
+        if ($request->filled('id_desa')) {
+            $query->where('id_desa', $request->id_desa);
+        }
+
+        // Gunakan withQueryString() agar saat klik Next Page, filternya tetap terbawa!
+        $list_petani = $query->paginate(10)->withQueryString();
+
+        $kecamatans = \App\Models\Kecamatan::all();
+
+        return view('admin.managepetani', compact('list_petani', 'kecamatans'));
     }
 
     // List Mitra dengan pencarian ke tabel_mitra
     public function list_mitra(Request $request)
     {
-        $query = User::where('role', 'Mitra')->with('mitra');
+        // Query langsung dari model Mitra, persis seperti Petani
+        $query = Mitra::with(['user', 'kecamatan', 'desa']);
 
+        // 1. Filter Status Akun (Karena status ada di tabel users, kita pakai whereHas)
         if ($request->filled('status')) {
-            $query->where('status_akun', $request->status);
-        }
-
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->whereHas('mitra', function ($q) use ($search) {
-                $q->where('nama_mitra', 'like', "%$search%")
-                    ->orWhere('nama_pemilik', 'like', "%$search%")
-                    ->orWhere('nik', 'like', "%$search%");
+            $query->whereHas('user', function ($q) use ($request) {
+                $q->where('status_akun', $request->status);
             });
         }
 
-        $mitra = $query->latest()->paginate(10);
+        // 2. Filter Pencarian (Karena field ini ada di tabel mitra, langsung pakai where)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('nama_mitra', 'like', "%{$search}%")
+                    ->orWhere('nama_pemilik', 'like', "%{$search}%")
+                    ->orWhere('nik', 'like', "%{$search}%");
+            });
+        }
+
+        // 3. Filter Kecamatan (Langsung ke tabel mitra)
+        if ($request->filled('id_kecamatan')) {
+            $query->where('id_kecamatan', $request->id_kecamatan);
+        }
+
+        // 4. Filter Desa (Langsung ke tabel mitra)
+        if ($request->filled('id_desa')) {
+            $query->where('id_desa', $request->id_desa);
+        }
+
+        // Gunakan withQueryString() agar filter tidak mereset saat pindah halaman
+        $mitra = $query->latest('id_mitra')->paginate(10)->withQueryString();
+
+        // Ambil data kecamatan untuk ditampilkan di dropdown filter
+        $kecamatans = \App\Models\Kecamatan::all();
 
         return view('admin.managemitra', [
             'mitra' => $mitra,
+            'kecamatans' => $kecamatans,
             'activeMenu' => 'mitra'
         ]);
     }
@@ -154,6 +223,8 @@ class AdminController extends Controller
                 'nik' => $request->nik,
                 'alamat_petani' => $request->alamat,
                 'jenis_kelamin' => $request->jenis_kelamin,
+                'id_kecamatan' => $request->id_kecamatan,
+                'id_desa' => $request->id_desa,
             ]);
         });
 
@@ -171,17 +242,23 @@ class AdminController extends Controller
         ]);
 
         DB::transaction(function () use ($request, $user) {
+            // Update data Akun
             $userData = ['email' => $request->email];
             if ($request->filled('password')) {
                 $userData['password'] = Hash::make($request->password);
             }
             $user->update($userData);
 
+            // Update data Mitra
             $user->mitra->update([
                 'nama_mitra' => $request->nama_mitra,
                 'nama_pemilik' => $request->nama_pemilik,
                 'no_rek' => $request->no_rek,
-                'alamat_mitra' => $request->alamat,
+                'alamat_mitra' => $request->alamat, // Atau $request->alamat_mitra, sesuaikan dengan name di form HTML Anda
+
+                // --- TAMBAHKAN DUA BARIS INI ---
+                'id_kecamatan' => $request->id_kecamatan,
+                'id_desa' => $request->id_desa,
             ]);
         });
 
