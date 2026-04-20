@@ -9,6 +9,12 @@ use App\Http\Controllers\PetaniController;
 use App\Http\Controllers\PupukController;
 use Illuminate\Support\Facades\Route;
 
+// API untuk mendapatkan desa berdasarkan kecamatan
+Route::get('/get-desa/{id_kecamatan}', function ($id_kecamatan) {
+    $desa = \App\Models\Desa::where('id_kecamatan', $id_kecamatan)->get();
+    return response()->json($desa);
+});
+
 Route::middleware('guest')->group(function () {
     Route::get('/', function () {
         return view('auth.login');
@@ -20,11 +26,6 @@ Route::middleware('guest')->group(function () {
     Route::get('/register', [AuthController::class, 'create'])->name('register');
     // Proses Register
     Route::post('/register', [AuthController::class, 'register'])->name('register.store');
-    // API untuk mendapatkan desa berdasarkan kecamatan
-    Route::get('/get-desa/{id_kecamatan}', function ($id_kecamatan) {
-        $desa = \App\Models\Desa::where('id_kecamatan', $id_kecamatan)->get();
-        return response()->json($desa);
-    });
 });
 
 Route::middleware(['auth'])->group(function () {
@@ -34,11 +35,6 @@ Route::middleware(['auth'])->group(function () {
         request()->session()->regenerateToken();
         return redirect('/');
     })->name('logout');
-    // API untuk mendapatkan desa berdasarkan kecamatan
-    Route::get('/get-desa/{id_kecamatan}', function ($id_kecamatan) {
-        $desa = \App\Models\Desa::where('id_kecamatan', $id_kecamatan)->get();
-        return response()->json($desa);
-    });
     Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
     Route::middleware(['role:admin,superadmin'])->group(function () {
         Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');

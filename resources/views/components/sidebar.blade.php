@@ -115,18 +115,18 @@
                                 ],
                             ],
                         ],
-                        [
-                            'id' => 'mitra.pencairan',
-                            'label' => 'Pencairan',
-                            'icon' => 'banknote',
-                            'route' => 'mitra.pencairan',
-                        ],
                         ['id' => 'mitra.scan', 'label' => 'Scan QR', 'icon' => 'qr-code', 'route' => 'mitra.scan'],
                         [
                             'id' => 'mitra.transaksi',
                             'label' => 'Transaksi',
                             'icon' => 'receipt',
                             'route' => 'mitra.transaksi',
+                        ],
+                        [
+                            'id' => 'mitra.pencairan',
+                            'label' => 'Pencairan',
+                            'icon' => 'banknote',
+                            'route' => 'mitra.pencairan',
                         ],
                         [
                             'id' => 'mitra.tarik_saldo',
