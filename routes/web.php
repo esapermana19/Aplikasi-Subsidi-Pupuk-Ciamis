@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MitraController;
+use App\Http\Controllers\PermintaanController;
 use App\Http\Controllers\PetaniController;
 use App\Http\Controllers\PupukController;
 use Illuminate\Support\Facades\Route;
@@ -40,6 +41,7 @@ Route::middleware(['auth'])->group(function () {
     });
     Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
     Route::middleware(['role:admin,superadmin'])->group(function () {
+        Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
         // Gunakan URL ini agar konsisten untuk Petani dan Mitra
         Route::patch('/admin/status/update/{id}', [AdminController::class, 'update_status'])->name('admin.update_status');
         // Manajemen Pupuk
@@ -81,8 +83,18 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/petani/kuota', [PetaniController::class, 'index'])->name('petani.kuota');
     });
 
-    // Khusus Mitra (Scan QR)
+    // Khusus Mitra
     Route::middleware(['role:mitra'])->group(function () {
-        Route::get('/mitra/transaksi', [MitraController::class, 'index'])->name('mitra.transaksi');
+        Route::get('/mitra/dashboard', [MitraController::class, 'index'])->name('mitra.dashboard');
+        Route::get('/mitra/permintaan', [MitraController::class, 'permintaan'])->name('mitra.permintaan');
+        Route::get('/mitra/riwayat_permintaan', [PermintaanController::class, 'index'])->name('mitra.riwayat_permintaan');
+        Route::get('/mitra/buat_permintaan', [PermintaanController::class, 'create'])->name('mitra.buat_permintaan');
+        Route::post('/mitra/simpan-permintaan', [PermintaanController::class, 'store'])->name('mitra.store_permintaan');
+        Route::get('/mitra/pupuk_tersedia', [MitraController::class, 'pupuk_tersedia'])->name('mitra.pupuk_tersedia');
+        Route::get('/mitra/pencairan', [MitraController::class, 'pencairan'])->name('mitra.pencairan');
+        Route::get('/mitra/scan', [MitraController::class, 'scan'])->name('mitra.scan');
+        Route::get('/mitra/transaksi', [MitraController::class, 'transaksi'])->name('mitra.transaksi');
+        Route::get('/mitra/tarik_saldo', [MitraController::class, 'tarik_saldo'])->name('mitra.tarik_saldo');
+        Route::get('/mitra/laporan', [MitraController::class, 'laporan'])->name('mitra.laporan');
     });
 });

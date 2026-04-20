@@ -35,11 +35,6 @@ class Mitra extends Model
         return $this->belongsTo(User::class, 'id_user');
     }
 
-    public function transaksi(): HasMany
-    {
-        return $this->hasMany(Transaksi::class, 'id_mitra');
-    }
-
     public function pencairan(): HasMany
     {
         return $this->hasMany(Pencairan::class, 'id_mitra');
@@ -52,5 +47,14 @@ class Mitra extends Model
     public function desa()
     {
         return $this->belongsTo(Desa::class, 'id_desa', 'id_desa');
+    }
+    public function permintaan()
+    {
+        return $this->hasMany(Permintaan::class, 'id_pupuk');
+    }
+
+    public function transaksi()
+    {
+        return $this->hasMany(Transaksi::class, 'id_pupuk', 'id_mitra');
     }
 }

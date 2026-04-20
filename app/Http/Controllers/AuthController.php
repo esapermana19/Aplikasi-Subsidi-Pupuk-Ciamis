@@ -94,7 +94,7 @@ class AuthController extends Controller
         if (Auth::attempt($credentials)) {
             $user = Auth::user();
 
-            // Cek apakah akun aktif
+            // 1. Cek apakah akun aktif
             if ($user->status_akun !== 'aktif') {
                 $status = $user->status_akun;
                 Auth::logout();
@@ -109,8 +109,18 @@ class AuthController extends Controller
                 throw ValidationException::withMessages(['email' => $message]);
             }
 
+            // 2. Regenerasi session untuk keamanan
             $request->session()->regenerate();
-            return redirect()->route('dashboard');
+
+            // 3. Logika Pengalihan Berdasarkan Role
+            if ($user->role === 'admin' || $user->role === 'superadmin') {
+                return redirect()->route('admin.dashboard');
+            } elseif ($user->role === 'mitra') {
+                return redirect()->route('mitra.dashboard');
+            }
+
+            // default
+            return redirect('/');
         }
 
         throw ValidationException::withMessages([

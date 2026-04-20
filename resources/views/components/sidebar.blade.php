@@ -1,3 +1,16 @@
+<head>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <style>
+        [x-cloak] {
+            display: none !important;
+        }
+    </style>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</head>
 @props(['activeMenu', 'pendingCount'])
 
 <div class="flex h-screen w-64 flex-col border-r bg-white fixed left-0 top-0">
@@ -14,78 +27,192 @@
     <div class="flex-1 overflow-y-auto px-3 py-4">
         <div class="space-y-1">
             @php
-                $menuItems = [
-                    ['id' => 'dashboard', 'label' => 'Dashboard', 'icon' => 'layout-dashboard', 'route' => 'dashboard'],
-                    [
-                        'id' => 'verifikasi',
-                        'label' => 'Verifikasi Akun',
-                        'icon' => 'user-check',
-                        'route' => 'admin.verifikasi',
-                    ],
-                    // PERBAIKAN DI SINI: Memisahkan icon dan route
-                    [
-                        'id' => 'petani',
-                        'label' => 'Kelola Akun Petani',
-                        'icon' => 'users',
-                        'route' => 'admin.list_petani',
-                    ],
-                    [
-                        'id' => 'mitra',
-                        'label' => 'Kelola Akun Mitra',
-                        'icon' => 'building-2',
-                        'route' => 'admin.list_mitra',
-                    ],
-                    ['id' => 'pupuk', 'label' => 'Kelola Pupuk', 'icon' => 'leaf', 'route' => 'admin.pupuk.index'],
-                    [
-                        'id' => 'approval-permintaan',
-                        'label' => 'Approval Permintaan',
-                        'icon' => 'file-check',
-                        'route' => 'admin.approval-permintaan',
-                    ],
-                    [
-                        'id' => 'approval-pencairan',
-                        'label' => 'Approval Pencairan',
-                        'icon' => 'dollar-sign',
-                        'route' => 'admin.approval-pencairan',
-                    ],
-                    [
-                        'id' => 'rekonsiliasi',
-                        'label' => 'Rekonsiliasi Data',
-                        'icon' => 'database',
-                        'route' => 'admin.rekonsiliasi',
-                    ],
-                    ['id' => 'transaksi', 'label' => 'Data Transaksi', 'icon' => 'receipt', 'route' => 'admin.transaksi'],
-                    ['id' => 'laporan', 'label' => 'Laporan', 'icon' => 'file-text', 'route' => 'admin.laporan'],
-                ];
+                // Ambil role user dan ubah ke huruf kecil untuk menghindari typo
+                $userRole = strtolower(auth()->user()->role);
+                $menuItems = [];
+
+                // 1. MENU UNTUK ADMIN & SUPERADMIN
+                if ($userRole === 'admin' || $userRole === 'superadmin') {
+                    $menuItems = [
+                        [
+                            'id' => 'dashboard',
+                            'label' => 'Dashboard',
+                            'icon' => 'layout-dashboard',
+                            'route' => 'admin.dashboard',
+                        ],
+                        [
+                            'id' => 'verifikasi',
+                            'label' => 'Verifikasi Akun',
+                            'icon' => 'user-check',
+                            'route' => 'admin.verifikasi',
+                        ],
+                        [
+                            'id' => 'petani',
+                            'label' => 'Kelola Akun Petani',
+                            'icon' => 'users',
+                            'route' => 'admin.list_petani',
+                        ],
+                        [
+                            'id' => 'mitra',
+                            'label' => 'Kelola Akun Mitra',
+                            'icon' => 'building-2',
+                            'route' => 'admin.list_mitra',
+                        ],
+                        ['id' => 'pupuk', 'label' => 'Kelola Pupuk', 'icon' => 'leaf', 'route' => 'admin.pupuk.index'],
+                        [
+                            'id' => 'approval-permintaan',
+                            'label' => 'Approval Permintaan',
+                            'icon' => 'file-check',
+                            'route' => 'admin.approval-permintaan',
+                        ],
+                        [
+                            'id' => 'approval-pencairan',
+                            'label' => 'Approval Pencairan',
+                            'icon' => 'dollar-sign',
+                            'route' => 'admin.approval-pencairan',
+                        ],
+                        [
+                            'id' => 'rekonsiliasi',
+                            'label' => 'Rekonsiliasi Data',
+                            'icon' => 'database',
+                            'route' => 'admin.rekonsiliasi',
+                        ],
+                        [
+                            'id' => 'transaksi',
+                            'label' => 'Data Transaksi',
+                            'icon' => 'receipt',
+                            'route' => 'admin.transaksi',
+                        ],
+                        ['id' => 'laporan', 'label' => 'Laporan', 'icon' => 'file-text', 'route' => 'admin.laporan'],
+                    ];
+                }
+                // 2. MENU UNTUK MITRA
+                elseif ($userRole === 'mitra') {
+                    $menuItems = [
+                        [
+                            'id' => 'mitra.dashboard',
+                            'label' => 'Dashboard',
+                            'icon' => 'layout-dashboard',
+                            'route' => 'mitra.dashboard',
+                        ],
+                        [
+                            'id' => 'manajemen_pupuk',
+                            'label' => 'Manajemen Pupuk',
+                            'icon' => 'package',
+                            'is_dropdown' => true,
+                            'sub_menu' => [
+                                [
+                                    'id' => 'mitra.pupuk_tersedia',
+                                    'label' => 'Pupuk Tersedia',
+                                    'icon' => 'package', // Coba ganti ke 'package' jika 'package-check' tidak muncul
+                                    'route' => 'mitra.pupuk_tersedia',
+                                ],
+                                [
+                                    'id' => 'mitra.riwayat_permintaan',
+                                    'label' => 'Riwayat Permintaan',
+                                    'icon' => 'clock', // 'clock' lebih universal dibanding 'history' di beberapa versi
+                                    'route' => 'mitra.riwayat_permintaan',
+                                ],
+                            ],
+                        ],
+                        [
+                            'id' => 'mitra.pencairan',
+                            'label' => 'Pencairan',
+                            'icon' => 'banknote',
+                            'route' => 'mitra.pencairan',
+                        ],
+                        ['id' => 'mitra.scan', 'label' => 'Scan QR', 'icon' => 'qr-code', 'route' => 'mitra.scan'],
+                        [
+                            'id' => 'mitra.transaksi',
+                            'label' => 'Transaksi',
+                            'icon' => 'receipt',
+                            'route' => 'mitra.transaksi',
+                        ],
+                        [
+                            'id' => 'mitra.tarik_saldo',
+                            'label' => 'Tarik Saldo',
+                            'icon' => 'wallet',
+                            'route' => 'mitra.tarik_saldo',
+                        ],
+                        [
+                            'id' => 'mitra.laporan',
+                            'label' => 'Laporan',
+                            'icon' => 'file-text',
+                            'route' => 'mitra.laporan',
+                        ],
+                    ];
+                }
+                // Jika Anda punya role Petani nantinya, bisa tambahkan elseif ($userRole === 'petani') di sini
             @endphp
 
             @foreach ($menuItems as $item)
                 @php
-                    // Cek apakah aktif berdasarkan variabel $activeMenu ATAU berdasarkan nama route saat ini
-                    $isActive = ($activeMenu ?? '') === $item['id'] || request()->routeIs($item['route']);
+                    $hasSubmenu = isset($item['is_dropdown']) && $item['is_dropdown'];
+
+                    // Cek apakah salah satu sub-menu sedang aktif untuk otomatis buka dropdown
+                    $isParentActive = false;
+                    if ($hasSubmenu) {
+                        foreach ($item['sub_menu'] as $sub) {
+                            if (request()->routeIs($sub['route'] ?? '')) {
+                                $isParentActive = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    $isActive = ($activeMenu ?? '') === ($item['id'] ?? '') || request()->routeIs($item['route'] ?? '');
                 @endphp
 
-                <a href="{{ Route::has($item['route']) ? route($item['route']) : '#' }}"
-                    class="{{ $isActive
-                        ? 'flex items-center justify-between px-3 py-2 rounded-lg transition-colors text-sm font-medium bg-green-600 text-white shadow-sm'
-                        : 'flex items-center justify-between px-3 py-2 rounded-lg transition-colors text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900' }}">
+                @if ($hasSubmenu)
+                    {{-- Logika Dropdown dengan Alpine.js --}}
+                    <div x-data="{ open: {{ $isParentActive ? 'true' : 'false' }} }" class="space-y-1">
+                        <button @click="open = !open" type="button"
+                            class="flex w-full items-center justify-between px-3 py-2 rounded-lg transition-colors text-sm font-medium {{ $isParentActive ? 'text-green-700 bg-green-50' : 'text-gray-700 hover:bg-gray-100' }}">
+                            <div class="flex items-center gap-3">
+                                <i data-lucide="{{ $item['icon'] }}" class="h-5 w-5"></i>
+                                {{ $item['label'] }}
+                            </div>
+                            {{-- Icon Chevron yang berputar --}}
+                            <i data-lucide="chevron-down" class="h-4 w-4 transition-transform duration-200"
+                                :class="open ? 'rotate-180' : ''"></i>
+                        </button>
 
-                    <div class="flex items-center gap-3">
-                        <i data-lucide="{{ $item['icon'] }}" class="h-5 w-5"></i>
-                        {{ $item['label'] }}
+                        {{-- Isi Submenu --}}
+                        <div x-show="open" x-cloak x-transition.origin.top class="pl-6 space-y-1">
+                            @foreach ($item['sub_menu'] as $sub)
+                                <a href="{{ Route::has($sub['route']) ? route($sub['route']) : '#' }}"
+                                    class="flex items-center gap-1 px-3 py-2 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs($sub['route']) ? 'text-green-600 bg-green-100' : 'text-gray-600 hover:bg-gray-100' }}">
+                                    <i data-lucide="{{ $sub['icon'] ?? 'circle' }}" class="h-4 w-4"></i>
+                                    {{ $sub['label'] }}
+                                </a>
+                            @endforeach
+                        </div>
                     </div>
+                @else
+                    {{-- Menu Biasa --}}
+                    <a href="{{ isset($item['route']) && Route::has($item['route']) ? route($item['route']) : '#' }}"
+                        class="{{ $isActive
+                            ? 'flex items-center justify-between px-3 py-2 rounded-lg transition-colors text-sm font-medium bg-green-600 text-white shadow-sm'
+                            : 'flex items-center justify-between px-3 py-2 rounded-lg transition-colors text-sm font-medium text-gray-700 hover:bg-gray-100' }}">
 
-                    @if ($item['id'] === 'verifikasi' && ($pendingCount ?? 0) > 0)
-                        <span class="relative flex h-5 w-5">
-                            <span
-                                class="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                            <span
-                                class="relative inline-flex rounded-full h-5 w-5 bg-orange-500 text-[10px] text-white items-center justify-center font-bold">
-                                {{ $pendingCount }}
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="{{ $item['icon'] ?? 'circle' }}" class="h-5 w-5"></i>
+                            {{ $item['label'] }}
+                        </div>
+
+                        {{-- Badge Notifikasi tetap dipertahankan --}}
+                        @if (($item['id'] ?? '') === 'verifikasi' && ($pendingCount ?? 0) > 0)
+                            <span class="relative flex h-5 w-5">
+                                <span
+                                    class="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                                <span
+                                    class="relative inline-flex rounded-full h-5 w-5 bg-orange-500 text-[10px] text-white items-center justify-center font-bold">
+                                    {{ $pendingCount }}
+                                </span>
                             </span>
-                        </span>
-                    @endif
-                </a>
+                        @endif
+                    </a>
+                @endif
             @endforeach
         </div>
     </div>
