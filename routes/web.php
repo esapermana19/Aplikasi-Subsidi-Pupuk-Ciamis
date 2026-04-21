@@ -54,10 +54,17 @@ Route::middleware(['auth'])->group(function () {
         Route::patch('/admin/mitra/update/{id}', [AdminController::class, 'update_mitra'])->name('admin.mitra.update');
         Route::patch('/admin/user/update-status/{id}', [AdminController::class, 'update_status'])->name('admin.update_status');
         Route::patch('/admin/update_status_mitra/{id}', [AdminController::class, 'update_status_mitra'])->name('admin.mitra.update_status');
+        // Verifikasi Akun
+        Route::get('/admin/verifikasi', [AdminController::class, 'verifikasi'])->name('admin.verifikasi');
+        Route::post('/admin/approve_akun/{id}', [AdminController::class, 'approve_akun'])->name('admin.approve_akun');
+        Route::delete('/admin/reject_akun/{id}', [AdminController::class, 'reject_akun'])->name('admin.reject_akun');
+        // Halaman List Approval Permintaan
+        Route::get('/admin/approval-permintaan', [AdminController::class, 'approval_permintaan'])->name('admin.approval_permintaan');
+        // API untuk mengambil detail permintaan (dipanggil lewat JS Modal)
+        Route::get('/admin/permintaan/{id}/detail', [AdminController::class, 'detail_permintaan']);
+        // Proses Simpan Approval (Setujui / Tolak)
+        Route::post('/admin/permintaan/{id}/update', [AdminController::class, 'update_permintaan'])->name('admin.permintaan.update');
 
-        Route::get('/admin/approval-permintaan', function () {
-            return "Halaman Req";
-        })->name('approval-permintaan');
         Route::get('/admin/approval-pencairan', function () {
             return "Halaman Cair";
         })->name('approval-pencairan');
@@ -70,9 +77,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/admin/laporan', function () {
             return "Halaman Laporan";
         })->name('laporan');
-        Route::get('/admin/verifikasi', [AdminController::class, 'verifikasi'])->name('admin.verifikasi');
-        Route::post('/admin/approve_akun/{id}', [AdminController::class, 'approve_akun'])->name('admin.approve_akun');
-        Route::delete('/admin/reject_akun/{id}', [AdminController::class, 'reject_akun'])->name('admin.reject_akun');
+
     });
     // Khusus Petani
     Route::middleware(['role:petani'])->group(function () {
@@ -83,9 +88,11 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['role:mitra'])->group(function () {
         Route::get('/mitra/dashboard', [MitraController::class, 'index'])->name('mitra.dashboard');
         Route::get('/mitra/permintaan', [MitraController::class, 'permintaan'])->name('mitra.permintaan');
+
         Route::get('/mitra/riwayat_permintaan', [PermintaanController::class, 'index'])->name('mitra.riwayat_permintaan');
-        Route::get('/mitra/buat_permintaan', [PermintaanController::class, 'create'])->name('mitra.buat_permintaan');
+        Route::get('/mitra/permintaan/{id}/detail', [PermintaanController::class, 'detail']);
         Route::post('/mitra/simpan-permintaan', [PermintaanController::class, 'store'])->name('mitra.store_permintaan');
+
         Route::get('/mitra/pupuk_tersedia', [MitraController::class, 'pupuk_tersedia'])->name('mitra.pupuk_tersedia');
         Route::get('/mitra/pencairan', [MitraController::class, 'pencairan'])->name('mitra.pencairan');
         Route::get('/mitra/scan', [MitraController::class, 'scan'])->name('mitra.scan');

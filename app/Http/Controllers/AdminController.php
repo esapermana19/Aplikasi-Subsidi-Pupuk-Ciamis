@@ -286,4 +286,85 @@ class AdminController extends Controller
             return back()->with('error', 'Gagal memperbarui status: ' . $e->getMessage());
         }
     }
+
+    public function approval_permintaan()
+    {
+        // Ambil semua permintaan beserta nama mitra/tokonya
+        $permintaans = DB::table('tabel_permintaan')
+            // Asumsi: Anda punya tabel_mitra dan punya relasi ke sana
+            ->join('tabel_mitra', 'tabel_permintaan.id_mitra', '=', 'tabel_mitra.id_mitra')
+            ->select('tabel_permintaan.*', 'tabel_mitra.nama_mitra')
+            ->orderBy('tabel_permintaan.created_at', 'desc')
+            ->get();
+
+        return view('admin.approval_permintaan', compact('permintaans'));
+    }
+
+    /**
+     * API untuk mengambil detail isi pupuk yang diminta
+     */
+    public function detail_permintaan($id)
+    {
+        $details = DB::table('tabel_detail_permintaan')
+            ->join('tabel_pupuk', 'tabel_detail_permintaan.id_pupuk', '=', 'tabel_pupuk.id_pupuk')
+            ->where('id_permintaan', $id)
+            ->select('tabel_detail_permintaan.*', 'tabel_pupuk.nama_pupuk')
+            ->get();
+
+        return response()->json($details);
+    }
+
+    /**
+     * Approval Permintaan
+     * Proses Update Status & Jumlah yang Disetujui
+     */
+    public function update_permintaan(Request $request, $id)
+    {
+        $action = $request->input('action');
+
+        // 1. CARI id_admin yang benar dari tabel_admin
+        $admin = DB::table('tabel_admin')
+            ->where('id_user', Auth::user()->id_user)
+            ->first();
+
+        // Validasi jika user login ternyata tidak terdaftar di tabel_admin
+        if (!$admin) {
+            return redirect()->back()->with('error', 'Gagal: Akun Anda tidak terdaftar sebagai Admin di sistem.');
+        }
+
+        DB::beginTransaction();
+        try {
+            if ($action == 'setujui') {
+                // 2. Update tabel_permintaan menggunakan $admin->id_admin
+                DB::table('tabel_permintaan')->where('id_permintaan', $id)->update([
+                    'status_permintaan' => 'disetujui',
+                    'id_admin' => $admin->id_admin, // <-- Gunakan ini, bukan Auth::id()
+                    'updated_at' => now()
+                ]);
+
+                $pupuk_disetujui = $request->input('pupuk_disetujui', []);
+                foreach ($pupuk_disetujui as $id_detail => $jml) {
+                    DB::table('tabel_detail_permintaan')
+                        ->where('id_detail_permintaan', $id_detail)
+                        ->update(['jml_disetujui' => $jml]);
+                }
+
+                $pesan = 'Permintaan berhasil disetujui.';
+            } else {
+                DB::table('tabel_permintaan')->where('id_permintaan', $id)->update([
+                    'status_permintaan' => 'ditolak',
+                    'id_admin' => $admin->id_admin, // <-- Gunakan ini juga di sini
+                    'updated_at' => now()
+                ]);
+
+                $pesan = 'Permintaan telah ditolak.';
+            }
+
+            DB::commit();
+            return redirect()->back()->with('success', $pesan);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
 }

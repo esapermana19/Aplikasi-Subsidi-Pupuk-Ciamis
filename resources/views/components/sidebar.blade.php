@@ -63,7 +63,7 @@
                             'id' => 'approval-permintaan',
                             'label' => 'Approval Permintaan',
                             'icon' => 'file-check',
-                            'route' => 'admin.approval-permintaan',
+                            'route' => 'admin.approval_permintaan',
                         ],
                         [
                             'id' => 'approval-pencairan',

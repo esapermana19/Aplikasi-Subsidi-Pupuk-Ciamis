@@ -14,11 +14,9 @@
             </div>
             <div>
                 {{-- Tombol jika Mitra ingin melakukan permintaan stok baru ke pusat --}}
-                <a href="{{ route('mitra.permintaan') }}"
-                    class="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-xl font-medium text-sm transition-colors shadow-sm">
-                    <i data-lucide="plus" class="h-4 w-4"></i>
-                    Buat Permintaan Baru
-                </a>
+                <button id="btnOpenModal" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded">
+                    + Buat Permintaan Baru
+                </button>
             </div>
         </div>
 
@@ -84,6 +82,93 @@
                 </div>
             @endforelse
         </div>
-
     </div>
+    {{-- Modal Permintaan --}}
+    <div id="modalPermintaan" class="fixed inset-0 z-50 hidden bg-black bg-opacity-50 flex items-center justify-center">
+
+        <div class="bg-white rounded-lg shadow-lg w-11/12 md:w-1/2 lg:w-1/3 p-6 relative max-h-[90vh] overflow-y-auto">
+
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-gray-800">Form Permintaan Pupuk</h2>
+                <button id="btnCloseModal" class="text-gray-500 hover:text-red-500 text-2xl font-bold">&times;</button>
+            </div>
+
+            <form action="{{ route('mitra.store_permintaan') }}" method="POST">
+                @csrf
+
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Tanggal Permintaan</label>
+                    <input type="date" name="tgl_permintaan" required value="{{ date('Y-m-d') }}"
+                        class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-green-500">
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Jumlah Diminta (Kosongkan jika tidak
+                        perlu)</label>
+                    <div class="space-y-3 bg-gray-50 p-4 rounded border border-gray-200">
+
+                        @foreach ($pupukList as $pupuk)
+                            <div class="flex items-center justify-between">
+                                <span class="font-medium text-gray-700">{{ $pupuk->nama_pupuk }}</span>
+                                <div class="flex items-center gap-2">
+                                    <input type="number" name="pupuk[{{ $pupuk->id_pupuk }}]" min="0"
+                                        placeholder="0"
+                                        class="w-24 border border-gray-300 rounded px-2 py-1 text-right focus:outline-none focus:border-green-500">
+                                    <span class="text-sm text-gray-500">Kg/Zak</span>
+                                </div>
+                            </div>
+                        @endforeach
+
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Catatan Tambahan (Opsional)</label>
+                    <textarea name="catatan" rows="3" placeholder="Tuliskan pesan atau catatan untuk admin..."
+                        class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:border-green-500"></textarea>
+                </div>
+
+                <div class="flex justify-end gap-3">
+                    <button type="button" id="btnCancelModal"
+                        class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
+                        Batal
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+                        Kirim Permintaan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {{-- Script untuk Modal --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('modalPermintaan');
+            const btnOpen = document.getElementById('btnOpenModal');
+            const btnClose = document.getElementById('btnCloseModal');
+            const btnCancel = document.getElementById('btnCancelModal');
+
+            // Fungsi buka modal
+            if (btnOpen) {
+                btnOpen.addEventListener('click', function() {
+                    modal.classList.remove('hidden');
+                });
+            }
+
+            // Fungsi tutup modal
+            function closeModal() {
+                modal.classList.add('hidden');
+            }
+
+            if (btnClose) btnClose.addEventListener('click', closeModal);
+            if (btnCancel) btnCancel.addEventListener('click', closeModal);
+
+            // Tutup modal jika user klik area gelap di luar box putih
+            window.addEventListener('click', function(event) {
+                if (event.target === modal) {
+                    closeModal();
+                }
+            });
+        });
+    </script>
 @endsection
