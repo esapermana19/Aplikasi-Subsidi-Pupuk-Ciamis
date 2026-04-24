@@ -17,6 +17,9 @@ Route::get('/get-desa/{id_kecamatan}', function ($id_kecamatan) {
 
 Route::middleware('guest')->group(function () {
     Route::get('/', function () {
+        return view('welcome');
+    })->name('welcome');
+    Route::get('/login', function () {
         return view('auth.login');
     })->name('login');
     //Proses Login

@@ -95,23 +95,12 @@
                 <div class="space-y-4 max-w-md">
                     <h3 class="text-3xl font-bold leading-tight">Sistem Informasi Manajemen Subsidi Pupuk</h3>
                     <p class="text-base opacity-90">Platform terintegrasi untuk mengelola distribusi pupuk bersubsidi kepada petani di Kabupaten Ciamis.</p>
-
-                    <div class="space-y-3 pt-2">
-                        <div class="flex items-center gap-3">
-                            <div class="bg-white/20 p-1.5 rounded-lg"><i data-lucide="check" class="h-4 w-4"></i></div>
-                            <p class="text-sm font-medium">Manajemen Data Terpusat</p>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <div class="bg-white/20 p-1.5 rounded-lg"><i data-lucide="check" class="h-4 w-4"></i></div>
-                            <p class="text-sm font-medium">Proses Approval Digital</p>
-                        </div>
-                    </div>
                 </div>
             </div>
 
             <div class="mt-4">
                 <div class="rounded-2xl overflow-hidden shadow-2xl border-4 border-white/20">
-                    <img src="https://images.unsplash.com/photo-1671811904398-62918b4f814a?q=80&w=1080"
+                    <img src="{{ asset('assets/images/sawah2.jpg') }}"
                          alt="Pertanian" class="w-full h-56 object-cover">
                 </div>
             </div>
