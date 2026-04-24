@@ -46,6 +46,7 @@ Route::middleware(['auth'])->group(function () {
         Route::patch('/admin/pupuk/update/{id}', [PupukController::class, 'update'])->name('admin.pupuk.update');
         Route::delete('/admin/pupuk/delete/{id}', [PupukController::class, 'destroy'])->name('admin.pupuk.destroy');
         Route::get('/admin/petani', [AdminController::class, 'list_petani'])->name('admin.list_petani');
+        Route::post('/admin/pupuk/{id}/tambah-stok', [PupukController::class, 'tambahStok'])->name('admin.pupuk.tambah_stok');
         // Manajemen Petani
         Route::patch('/admin/petani/update/{id}', [AdminController::class, 'update_petani'])->name('admin.petani.update');
         Route::patch('/admin/update_status_petani/{id}', [AdminController::class, 'update_status_petani'])->name('admin.petani.update_status');
@@ -92,6 +93,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/mitra/riwayat_permintaan', [PermintaanController::class, 'index'])->name('mitra.riwayat_permintaan');
         Route::get('/mitra/permintaan/{id}/detail', [PermintaanController::class, 'detail']);
         Route::post('/mitra/simpan-permintaan', [PermintaanController::class, 'store'])->name('mitra.store_permintaan');
+        Route::post('/mitra/riwayat_permintaan/{id}/terima', [PermintaanController::class, 'terimaPermintaan'])->name('mitra.permintaan.terima');
 
         Route::get('/mitra/pupuk_tersedia', [MitraController::class, 'pupuk_tersedia'])->name('mitra.pupuk_tersedia');
         Route::get('/mitra/pencairan', [MitraController::class, 'pencairan'])->name('mitra.pencairan');

@@ -37,7 +37,7 @@
                                 <i data-lucide="map" class="h-4 w-4 text-gray-400"></i>
                             </div>
                             <select name="id_kecamatan" onchange="this.form.submit()"
-                                class="bg-white border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-violet-500 focus:border-violet-500 block pl-10 pr-10 py-2.5 shadow-sm appearance-none max-w-[150px] truncate">
+                                class="bg-white border border-gray-200 text-gray-900 text-sm rounded-md focus:ring-violet-500 focus:border-violet-500 block pl-10 pr-10 py-2.5 shadow-sm appearance-none max-w-[150px] truncate">
                                 <option value="">Semua Kecamatan</option>
                                 @foreach ($kecamatans as $kec)
                                     <option value="{{ $kec->id_kecamatan }}"
@@ -54,7 +54,7 @@
                                 <i data-lucide="map-pin" class="h-4 w-4 text-gray-400"></i>
                             </div>
                             <select name="id_desa" id="filter_desa" onchange="this.form.submit()"
-                                class="bg-white border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-violet-500 focus:border-violet-500 block pl-10 pr-10 py-2.5 shadow-sm appearance-none max-w-[150px] truncate">
+                                class="bg-white border border-gray-200 text-gray-900 text-sm rounded-md focus:ring-violet-500 focus:border-violet-500 block pl-10 pr-10 py-2.5 shadow-sm appearance-none max-w-[150px] truncate">
                                 <option value="">Semua Desa</option>
                                 {{-- Opsi Desa akan dimuat oleh JavaScript otomatis --}}
                             </select>
@@ -84,7 +84,7 @@
                 </div>
             </div>
         </div>
-        <div class="bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden">
+        <div class="bg-white border border-gray-100 rounded-md shadow-sm overflow-hidden">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
@@ -180,7 +180,7 @@
     <div id="detailModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
         <div class="flex items-center justify-center min-h-screen p-4">
             <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="closeModal()"></div>
-            <div class="relative bg-white rounded-3xl shadow-xl max-w-lg w-full overflow-hidden">
+            <div class="relative bg-white rounded-2xl shadow-xl max-w-lg w-full overflow-hidden">
                 <div class="px-6 py-4 border-b flex justify-between items-center bg-gray-50">
                     <h3 class="text-lg font-bold text-gray-900">Detail Pendaftaran <span id="title_role"
                             class="text-gray-900"></span></h3>
@@ -225,13 +225,13 @@
                         </div>
                         <div class="col-span-2 border-t pt-3">
                             <label class="text-xs font-bold text-gray-400 uppercase">Alamat Lengkap</label>
-                            <p id="det_alamat" class="text-sm text-gray-700 bg-gray-50 p-3 rounded-xl mt-1"></p>
+                            <p id="det_alamat" class="text-sm text-gray-700 bg-gray-50 p-3 rounded-md mt-1"></p>
                         </div>
                     </div>
                 </div>
                 <div class="px-6 py-4 bg-gray-50 text-right">
                     <button onclick="closeModal()"
-                        class="px-6 py-2 bg-violet-600 text-white rounded-xl text-sm font-bold">Tutup</button>
+                        class="px-6 py-2 bg-violet-600 text-white rounded-md text-sm font-bold">Tutup</button>
                 </div>
             </div>
         </div>

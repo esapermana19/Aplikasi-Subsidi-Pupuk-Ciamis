@@ -21,7 +21,7 @@
                             <i data-lucide="filter" class="h-4 w-4 text-gray-400"></i>
                         </div>
                         <select name="status" onchange="this.form.submit()"
-                            class="bg-white border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-violet-500 focus:border-violet-500 block pl-10 pr-10 py-2.5 shadow-sm appearance-none">
+                            class="bg-white border border-gray-200 text-gray-900 text-sm rounded-md focus:ring-violet-500 focus:border-violet-500 block pl-10 pr-10 py-2.5 shadow-sm appearance-none">
                             <option value="">Semua Status</option>
                             <option value="aktif" {{ request('status') == 'aktif' ? 'selected' : '' }}>Aktif</option>
                             <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
@@ -37,7 +37,7 @@
                             <i data-lucide="map" class="h-4 w-4 text-gray-400"></i>
                         </div>
                         <select name="id_kecamatan" onchange="this.form.submit()"
-                            class="bg-white border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-violet-500 focus:border-violet-500 block pl-10 pr-10 py-2.5 shadow-sm appearance-none max-w-[150px] truncate">
+                            class="bg-white border border-gray-200 text-gray-900 text-sm rounded-md focus:ring-violet-500 focus:border-violet-500 block pl-10 pr-10 py-2.5 shadow-sm appearance-none max-w-[150px] truncate">
                             <option value="">Semua Kecamatan</option>
                             @foreach ($kecamatans as $kec)
                                 <option value="{{ $kec->id_kecamatan }}"
@@ -54,7 +54,7 @@
                             <i data-lucide="map-pin" class="h-4 w-4 text-gray-400"></i>
                         </div>
                         <select name="id_desa" id="filter_desa" onchange="this.form.submit()"
-                            class="bg-white border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-violet-500 focus:border-violet-500 block pl-10 pr-10 py-2.5 shadow-sm appearance-none max-w-[150px] truncate">
+                            class="bg-white border border-gray-200 text-gray-900 text-sm rounded-md focus:ring-violet-500 focus:border-violet-500 block pl-10 pr-10 py-2.5 shadow-sm appearance-none max-w-[150px] truncate">
                             <option value="">Semua Desa</option>
                             {{-- Opsi Desa akan dimuat oleh JavaScript otomatis --}}
                         </select>
@@ -232,7 +232,7 @@
             </div>
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
             <div
-                class="inline-block align-bottom bg-white rounded-3xl text-left shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full p-6">
+                class="inline-block align-bottom bg-white rounded-2xl text-left shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full p-6">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-lg font-bold text-gray-900">Edit Data Petani</h3>
                     <button type="button" onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600">
@@ -246,22 +246,22 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">NIK</label>
                             <input type="text" name="nik" id="edit_nik" required
-                                class="w-full px-4 py-2 border rounded-xl">
+                                class="w-full px-4 py-2 border rounded-md">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
                             <input type="text" name="nama_petani" id="edit_name" required
-                                class="w-full px-4 py-2 border rounded-xl">
+                                class="w-full px-4 py-2 border rounded-md">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
                             <input type="email" name="email" id="edit_email" required
-                                class="w-full px-4 py-2 border rounded-xl">
+                                class="w-full px-4 py-2 border rounded-md">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Kelamin</label>
                             <select name="jenis_kelamin" id="edit_jk" required
-                                class="w-full px-4 py-2 border rounded-xl">
+                                class="w-full px-4 py-2 border rounded-md">
                                 <option value="L">L</option>
                                 <option value="P">P</option>
                             </select>
@@ -270,7 +270,7 @@
                             <label class="block text-sm font-medium text-gray-700 mb-1">Kecamatan</label>
                             {{-- Tambahkan event onchange untuk memicu pengambilan data desa --}}
                             <select name="id_kecamatan" id="edit_kecamatan" onchange="loadDesaEdit(this.value)" required
-                                class="w-full rounded-xl border border-gray-200 px-4 py-2 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-violet-500 transition-all">
+                                class="w-full rounded-md border border-gray-200 px-4 py-2 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-violet-500 transition-all">
                                 <option value="">Pilih Kecamatan</option>
                                 {{-- Looping data kecamatan dari Controller --}}
                                 @foreach ($kecamatans as $kec)
@@ -282,19 +282,19 @@
                         <div class="col-span-2 sm:col-span-1">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Desa</label>
                             <select name="id_desa" id="edit_desa" required
-                                class="w-full rounded-xl border border-gray-200 px-4 py-2 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-violet-500 transition-all">
+                                class="w-full rounded-md border border-gray-200 px-4 py-2 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-violet-500 transition-all">
                                 <option value="">Pilih Desa</option>
                                 {{-- Opsi desa akan diisi otomatis oleh JavaScript di bawah --}}
                             </select>
                         </div>
                         <div class="md:col-span-2">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Alamat</label>
-                            <textarea name="alamat" id="edit_alamat" rows="2" class="w-full px-4 py-2 border rounded-xl"></textarea>
+                            <textarea name="alamat" id="edit_alamat" rows="2" class="w-full px-4 py-2 border rounded-md"></textarea>
                         </div>
                         <div class="md:col-span-2">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Password Baru (Kosongkan jika tidak
                                 ganti)</label>
-                            <input type="password" name="password" class="w-full px-4 py-2 border rounded-xl">
+                            <input type="password" name="password" class="w-full px-4 py-2 border rounded-md">
                         </div>
                     </div>
 
@@ -315,7 +315,7 @@
             <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" onclick="closeDetailModal()"></div>
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
             <div
-                class="inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-3xl shadow-xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                class="inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-2xl shadow-xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                 <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                     <h3 class="text-lg font-bold text-gray-900">Detail Informasi Petani</h3>
                     <button onclick="closeDetailModal()" class="text-gray-400 hover:text-gray-600">
@@ -361,14 +361,14 @@
                         <div class="col-span-2">
                             <label class="text-xs font-semibold text-gray-400 uppercase">Alamat</label>
                             <p id="det_alamat"
-                                class="text-sm font-medium text-gray-900 mt-1 p-3 bg-gray-50 rounded-xl border border-gray-100">
+                                class="text-sm font-medium text-gray-900 mt-1 p-3 bg-gray-50 rounded-md border border-gray-100">
                             </p>
                         </div>
                     </div>
                 </div>
                 <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 text-right">
                     <button onclick="closeDetailModal()"
-                        class="px-6 py-2 text-sm font-bold text-white bg-violet-600 rounded-xl hover:bg-violet-700 transition-all">Tutup</button>
+                        class="px-6 py-2 text-sm font-bold text-white bg-violet-600 rounded-md hover:bg-violet-700 transition-all">Tutup</button>
                 </div>
             </div>
         </div>

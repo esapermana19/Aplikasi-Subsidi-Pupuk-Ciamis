@@ -5,12 +5,24 @@
         <!-- Statistik Ringkas -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-                <p class="text-gray-500 text-xs font-medium uppercase tracking-wider">Total Jenis</p>
-                <p class="text-xl font-bold text-gray-900">{{ $pupuk->count() }} Jenis</p>
+                <p class="text-gray-500 text-xs font-medium uppercase tracking-wider">Stok Pusat</p>
+                <p class="text-xl font-bold text-violet-600">{{ number_format($pupuk->sum('stok_pusat')) }} Kg</p>
             </div>
+
             <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-                <p class="text-gray-500 text-xs font-medium uppercase tracking-wider">Total Stok</p>
-                <p class="text-xl font-bold text-green-600">{{ number_format($pupuk->sum('stok')) }} Kg</p>
+                <p class="text-gray-500 text-xs font-medium uppercase tracking-wider">Sedang Diproses</p>
+                <p class="text-xl font-bold text-blue-500">{{ number_format($pupuk->sum('sedang_diproses')) }} Kg</p>
+                <p class="text-[10px] text-gray-400">*Dalam perjalanan ke mitra</p>
+            </div>
+
+            <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+                <p class="text-gray-500 text-xs font-medium uppercase tracking-wider">Stok di Mitra</p>
+                <p class="text-xl font-bold text-orange-500">{{ number_format($pupuk->sum('stok_mitra')) }} Kg</p>
+            </div>
+
+            <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+                <p class="text-gray-500 text-xs font-medium uppercase tracking-wider">Total Stok Sistem</p>
+                <p class="text-xl font-bold text-green-600">{{ number_format($pupuk->sum('total_stok')) }} Kg</p>
             </div>
         </div>
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
@@ -51,17 +63,25 @@
                 </div>
             </div>
 
-            <div class="w-full md:w-72">
-                <form action="{{ route('admin.pupuk.index') }}" method="GET">
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                            <i data-lucide="search" class="h-4 w-4 text-gray-400"></i>
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                <div class="flex flex-wrap items-center gap-3">
+                    <form action="{{ route('admin.pupuk.index') }}" method="GET" class="flex items-center gap-3">
+                        <div class="relative">
+                            <input type="text" name="search" value="{{ request('search') }}"
+                                placeholder="Cari pupuk..."
+                                class="pl-10 pr-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-violet-500 focus:border-violet-500 w-64">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i data-lucide="search" class="h-5 w-5 text-gray-400"></i>
+                            </div>
                         </div>
-                        <input type="text" name="search" value="{{ request('search') }}"
-                            class="bg-white border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-green-500 focus:border-green-500 block w-full pl-10 py-2.5 shadow-sm"
-                            placeholder="Cari pupuk...">
-                    </div>
-                </form>
+                    </form>
+                </div>
+
+                <button onclick="openAddModal()"
+                    class="inline-flex items-center gap-2 px-4 py-2 bg-violet-600 text-white font-semibold rounded-md hover:bg-violet-700 transition-all shadow-md shadow-violet-200">
+                    <i data-lucide="plus" class="w-5 h-5"></i>
+                    <span>Tambah Pupuk Baru</span>
+                </button>
             </div>
         </div>
 
@@ -90,7 +110,9 @@
                         <th class="px-6 py-4">Kode</th>
                         <th class="px-6 py-4">Nama Pupuk</th>
                         <th class="px-6 py-4">Harga Subsidi</th>
-                        <th class="px-6 py-4">Stok (Kg)</th>
+                        <th class="px-6 py-3">Stok Pusat</th>
+                        <th class="px-6 py-3">Stok Mitra</th>
+                        <th class="px-6 py-3">Total Stok</th>
                         <th class="px-6 py-4 text-right">Aksi</th>
                     </tr>
                 </thead>
@@ -102,34 +124,49 @@
                             <td class="px-6 py-4 text-gray-900 font-medium">Rp
                                 {{ number_format($p->harga_subsidi, 0, ',', '.') }}</td>
                             <td class="px-6 py-4">
-                                @if ($p->stok < 1000)
+                                @if ($p->stok_pusat < 1000)
                                     <span class="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold">
-                                        {{ number_format($p->stok) }} Kg
+                                        {{ number_format($p->stok_pusat) }} Kg
                                     </span>
-                                @elseif($p->stok <= 5000)
+                                @elseif($p->stok_pusat <= 5000)
                                     <span
                                         class="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-semibold">
-                                        {{ number_format($p->stok) }} Kg
+                                        {{ number_format($p->stok_pusat) }} Kg
                                     </span>
                                 @else
                                     <span class="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
-                                        {{ number_format($p->stok) }} Kg
+                                        {{ number_format($p->stok_pusat) }} Kg
                                     </span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 text-right flex justify-end gap-2">
-                                <button onclick="openEditModal({{ json_encode($p) }})"
-                                    class="p-2 text-gray-400 hover:text-violet-600 hover:bg-violet-50 rounded-lg transition-all">
-                                    <i data-lucide="edit-3" class="w-4 h-4"></i>
-                                </button>
-                                <form action="{{ route('admin.pupuk.destroy', $p->id_pupuk) }}" method="POST"
-                                    onsubmit="return confirm('Apakah Anda yakin ingin menghapus pupuk ini?')">
-                                    @csrf @method('DELETE')
-                                    <button type="submit"
-                                        class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
-                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            <td class="px-6 py-4 text-sm text-gray-900">{{ number_format($p->stok_mitra) }} Kg</td>
+                            <td class="px-6 py-4 text-sm font-bold text-green-700">{{ number_format($p->total_stok) }} Kg
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <div class="flex items-center justify-end gap-2">
+                                    <button onclick="openStockModal({{ $p->id_pupuk }}, '{{ $p->nama_pupuk }}')"
+                                        class="p-2 text-gray-500 hover:text-violet-700 hover:bg-violet-100 rounded-lg transition-colors shadow-sm"
+                                        title="Tambah Stok Pusat">
+                                        <i data-lucide="plus-circle" class="w-4 h-4"></i>
                                     </button>
-                                </form>
+
+                                    <button onclick="openEditModal({{ json_encode($p) }})"
+                                        class="p-2 text-gray-500 hover:text-violet-700 hover:bg-violet-100 rounded-lg transition-colors shadow-sm"
+                                        title="Edit Pupuk">
+                                        <i data-lucide="edit-3" class="w-4 h-4"></i>
+                                    </button>
+
+                                    <form action="{{ route('admin.pupuk.destroy', $p->id_pupuk) }}" method="POST"
+                                        onsubmit="return confirm('Apakah Anda yakin ingin menghapus pupuk ini?')"
+                                        class="m-0">
+                                        @csrf @method('DELETE')
+                                        <button type="submit"
+                                            class="p-2 text-gray-500 hover:text-red-700 hover:bg-red-100 rounded-lg transition-colors shadow-sm"
+                                            title="Hapus Pupuk">
+                                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     @empty
@@ -222,6 +259,38 @@
         </div>
     </div>
 
+    {{-- Modal Tambah Stok --}}
+    <div id="stockModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div class="bg-white rounded-xl shadow-lg w-full max-w-md p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-gray-900">Tambah Stok Pusat</h3>
+                <button onclick="closeStockModal()" class="text-gray-400 hover:text-gray-600">
+                    <i data-lucide="x" class="h-5 w-5"></i>
+                </button>
+            </div>
+
+            <p id="stockModalPupukName" class="text-sm font-semibold text-violet-700 mb-4 bg-violet-50 p-2 rounded-md">
+            </p>
+
+            <form id="stockForm" method="POST" action="">
+                @csrf
+                <div class="mb-5">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Jumlah Tambahan Stok (Kg)</label>
+                    <input type="number" name="tambahan_stok" required min="1" placeholder="Contoh: 5000"
+                        class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-violet-500 focus:border-violet-500">
+                    <p class="text-xs text-gray-500 mt-1">*Stok ini akan ditambahkan ke total Stok Pusat saat ini.</p>
+                </div>
+
+                <div class="flex justify-end gap-3">
+                    <button type="button" onclick="closeStockModal()"
+                        class="px-4 py-2 text-sm text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200">Batal</button>
+                    <button type="submit"
+                        class="px-4 py-2 text-sm bg-violet-600 text-white rounded-lg hover:bg-violet-700">Tambahkan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         const modal = document.getElementById('pupukModal');
         const form = document.getElementById('pupukForm');
@@ -257,7 +326,6 @@
             document.body.style.overflow = 'auto';
         }
 
-        //
         document.getElementById('img_pupuk').addEventListener('change', function(e) {
             const fileName = e.target.files[0].name;
             const labelText = this.parentElement.querySelector('.text-sm.font-medium');
@@ -271,5 +339,29 @@
                 subText.innerText = "Klik lagi untuk mengganti file";
             }
         });
+
+        // Fungsi untuk Modal Tambah Stok
+        function openStockModal(id, nama_pupuk) {
+            const modal = document.getElementById('stockModal');
+            const nameLabel = document.getElementById('stockModalPupukName');
+            const form = document.getElementById('stockForm');
+
+            // Set teks nama pupuk
+            nameLabel.innerText = 'Pupuk: ' + nama_pupuk;
+
+            // Set action form ke URL yang benar
+            form.action = `/admin/pupuk/${id}/tambah-stok`;
+
+            // Tampilkan modal
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeStockModal() {
+            document.getElementById('stockModal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+            // Reset form setelah ditutup
+            document.getElementById('stockForm').reset();
+        }
     </script>
 @endsection

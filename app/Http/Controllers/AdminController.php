@@ -322,41 +322,48 @@ class AdminController extends Controller
     {
         $action = $request->input('action');
 
-        // 1. CARI id_admin yang benar dari tabel_admin
+        // 1. Cari id_admin yang benar
         $admin = DB::table('tabel_admin')
             ->where('id_user', Auth::user()->id_user)
             ->first();
 
-        // Validasi jika user login ternyata tidak terdaftar di tabel_admin
         if (!$admin) {
-            return redirect()->back()->with('error', 'Gagal: Akun Anda tidak terdaftar sebagai Admin di sistem.');
+            return redirect()->back()->with('error', 'Gagal: Anda bukan Admin.');
         }
 
         DB::beginTransaction();
         try {
             if ($action == 'setujui') {
-                // 2. Update tabel_permintaan menggunakan $admin->id_admin
+                // Update status menjadi 'diproses'
                 DB::table('tabel_permintaan')->where('id_permintaan', $id)->update([
-                    'status_permintaan' => 'disetujui',
-                    'id_admin' => $admin->id_admin, // <-- Gunakan ini, bukan Auth::id()
+                    'status_permintaan' => 'diproses', // Menggunakan enum baru Anda
+                    'id_admin' => $admin->id_admin,
                     'updated_at' => now()
                 ]);
 
                 $pupuk_disetujui = $request->input('pupuk_disetujui', []);
                 foreach ($pupuk_disetujui as $id_detail => $jml) {
+                    $detail = DB::table('tabel_detail_permintaan')->where('id_detail_permintaan', $id_detail)->first();
+
+                    // Simpan jumlah yang disetujui
                     DB::table('tabel_detail_permintaan')
                         ->where('id_detail_permintaan', $id_detail)
                         ->update(['jml_disetujui' => $jml]);
+
+                    // KURANGI STOK PUSAT
+                    DB::table('tabel_pupuk')
+                        ->where('id_pupuk', $detail->id_pupuk)
+                        ->decrement('stok', $jml);
                 }
 
-                $pesan = 'Permintaan berhasil disetujui.';
+                $pesan = 'Permintaan berhasil disetujui dan sedang diproses.';
             } else {
+                // Jika ditolak
                 DB::table('tabel_permintaan')->where('id_permintaan', $id)->update([
                     'status_permintaan' => 'ditolak',
-                    'id_admin' => $admin->id_admin, // <-- Gunakan ini juga di sini
+                    'id_admin' => $admin->id_admin,
                     'updated_at' => now()
                 ]);
-
                 $pesan = 'Permintaan telah ditolak.';
             }
 

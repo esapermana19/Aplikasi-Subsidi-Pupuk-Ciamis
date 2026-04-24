@@ -118,4 +118,31 @@ class PermintaanController extends Controller
 
         return response()->json($details);
     }
+
+    public function terimaPermintaan($id)
+    {
+        $user = Auth::user();
+        // Ambil data mitra
+        $mitra = \DB::table('tabel_mitra')->where('id_user', $user->id_user)->first();
+
+        $permintaan = \DB::table('tabel_permintaan')
+            ->where('id_permintaan', $id)
+            ->where('id_mitra', $mitra->id_mitra)
+            ->first();
+
+        // Validasi: Pastikan statusnya 'diproses'
+        if (!$permintaan || $permintaan->status_permintaan !== 'diproses') {
+            return redirect()->back()->with('error', 'Gagal: Permintaan belum diproses admin.');
+        }
+
+        // UPDATE STATUS SAJA MENJADI 'diterima'
+        \DB::table('tabel_permintaan')
+            ->where('id_permintaan', $id)
+            ->update([
+                'status_permintaan' => 'diterima',
+                'updated_at' => now()
+            ]);
+
+        return redirect()->back()->with('success', 'Barang berhasil diterima! Stok di toko Anda telah bertambah.');
+    }
 }

@@ -20,7 +20,7 @@ class MitraController extends Controller
         $total_masuk = \DB::table('tabel_detail_permintaan')
             ->join('tabel_permintaan', 'tabel_detail_permintaan.id_permintaan', '=', 'tabel_permintaan.id_permintaan')
             ->where('tabel_permintaan.id_mitra', $user->mitra->id_mitra)
-            ->where('tabel_permintaan.status_permintaan', 'disetujui')
+            ->where('tabel_permintaan.status_permintaan', 'diterima')
             ->sum('tabel_detail_permintaan.jml_disetujui');
 
         // 2. Hitung Total Keseluruhan Pupuk Keluar (Penjualan ke Petani)
@@ -82,7 +82,7 @@ class MitraController extends Controller
                 ->join('tabel_permintaan', 'tabel_detail_permintaan.id_permintaan', '=', 'tabel_permintaan.id_permintaan')
                 ->where('tabel_permintaan.id_mitra', $mitra->id_mitra)
                 ->where('tabel_detail_permintaan.id_pupuk', $pupuk->id_pupuk)
-                ->where('tabel_permintaan.status_permintaan', 'disetujui')
+                ->where('tabel_permintaan.status_permintaan', 'diterima')
                 ->sum('tabel_detail_permintaan.jml_disetujui');
 
             // 2. Hitung TOTAL KELUAR (dari detail transaksi penjualan ke petani)

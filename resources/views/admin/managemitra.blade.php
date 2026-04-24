@@ -21,7 +21,7 @@
                             <i data-lucide="filter" class="h-4 w-4 text-gray-400"></i>
                         </div>
                         <select name="status" onchange="this.form.submit()"
-                            class="bg-white border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-violet-500 focus:border-violet-500 block pl-10 pr-10 py-2.5 shadow-sm appearance-none">
+                            class="bg-white border border-gray-200 text-gray-900 text-sm rounded-md focus:ring-violet-500 focus:border-violet-500 block pl-10 pr-10 py-2.5 shadow-sm appearance-none">
                             <option value="">Semua Status</option>
                             <option value="aktif" {{ request('status') == 'aktif' ? 'selected' : '' }}>Aktif</option>
                             <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
@@ -37,7 +37,7 @@
                             <i data-lucide="map" class="h-4 w-4 text-gray-400"></i>
                         </div>
                         <select name="id_kecamatan" onchange="this.form.submit()"
-                            class="bg-white border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-violet-500 focus:border-violet-500 block pl-10 pr-10 py-2.5 shadow-sm appearance-none max-w-[150px] truncate">
+                            class="bg-white border border-gray-200 text-gray-900 text-sm rounded-md focus:ring-violet-500 focus:border-violet-500 block pl-10 pr-10 py-2.5 shadow-sm appearance-none max-w-[150px] truncate">
                             <option value="">Semua Kecamatan</option>
                             @foreach ($kecamatans as $kec)
                                 <option value="{{ $kec->id_kecamatan }}"
@@ -54,7 +54,7 @@
                             <i data-lucide="map-pin" class="h-4 w-4 text-gray-400"></i>
                         </div>
                         <select name="id_desa" id="filter_desa" onchange="this.form.submit()"
-                            class="bg-white border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-violet-500 focus:border-violet-500 block pl-10 pr-10 py-2.5 shadow-sm appearance-none max-w-[150px] truncate">
+                            class="bg-white border border-gray-200 text-gray-900 text-sm rounded-md focus:ring-violet-500 focus:border-violet-500 block pl-10 pr-10 py-2.5 shadow-sm appearance-none max-w-[150px] truncate">
                             <option value="">Semua Desa</option>
                             {{-- Opsi Desa akan dimuat oleh JavaScript otomatis --}}
                         </select>
@@ -167,7 +167,7 @@
                                             onclick="openDetailModal(
                                             '{{ $m->nik ?? '-' }}',
                                             '{{ addslashes($m->nama_mitra ?? '-') }}',
-                                            '{{ $m->email }}',
+                                            '{{ $m->user->email ?? '-' }}',
                                             '{{ addslashes($m->alamat_mitra ?? '-') }}',
                                             '{{ addslashes($m->nama_pemilik ?? '-') }}',
                                             '{{ $m->no_rek ?? '-' }}',
@@ -210,7 +210,7 @@
                                             '{{ $m->id_user }}',
                                             '{{ $m->nik ?? '' }}',
                                             '{{ addslashes($m->nama_mitra ?? '') }}',
-                                            '{{ $m->user->email }}',
+                                            '{{ $m->user->email ?? '-' }}',
                                             '{{ addslashes($m->alamat_mitra ?? '') }}',
                                             '{{ addslashes($m->nama_pemilik ?? '') }}',
                                             '{{ $m->no_rek ?? '' }}',
@@ -241,7 +241,7 @@
     <div id="editModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
         <div class="flex items-center justify-center min-h-screen px-4">
             <div class="fixed inset-0 bg-gray-500/75 transition-opacity" onclick="closeEditModal()"></div>
-            <div class="relative bg-white rounded-3xl shadow-xl max-w-lg w-full overflow-hidden">
+            <div class="relative bg-white rounded-2xl shadow-xl max-w-lg w-full overflow-hidden">
                 <form id="editForm" method="POST">
                     @csrf @method('PATCH')
                     <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
@@ -254,28 +254,28 @@
                             <div class="col-span-2 sm:col-span-1">
                                 <label class="block text-xs font-bold text-gray-400 uppercase mb-1">NIK</label>
                                 <input type="text" name="nik" id="edit_nik"
-                                    class="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-violet-500">
+                                    class="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-violet-500">
                             </div>
                             <div class="col-span-2 sm:col-span-1">
                                 <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Email</label>
                                 <input type="email" name="email" id="edit_email"
-                                    class="w-full px-4 py-2 border rounded-xl bg-gray-50" readonly>
+                                    class="w-full px-4 py-2 border rounded-md bg-gray-50" readonly>
                             </div>
                             <div class="col-span-2">
                                 <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Nama
                                     Mitra/Instansi</label>
                                 <input type="text" name="nama_mitra" id="edit_name"
-                                    class="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-violet-500">
+                                    class="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-violet-500">
                             </div>
                             <div class="col-span-2 sm:col-span-1">
                                 <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Nama Pemilik</label>
                                 <input type="text" name="nama_pemilik" id="edit_pemilik"
-                                    class="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-violet-500">
+                                    class="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-violet-500">
                             </div>
                             <div class="col-span-2 sm:col-span-1">
                                 <label class="block text-xs font-bold text-gray-400 uppercase mb-1">No. Rekening</label>
                                 <input type="text" name="no_rek" id="edit_rek"
-                                    class="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-violet-500">
+                                    class="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-violet-500">
                             </div>
 
                             {{-- PERBAIKAN: Ubah menjadi Dropdown Select --}}
@@ -283,7 +283,7 @@
                                 <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Kecamatan</label>
                                 <select name="id_kecamatan" id="edit_kecamatan" onchange="loadDesaEdit(this.value)"
                                     required
-                                    class="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-violet-500 bg-white">
+                                    class="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-violet-500 bg-white">
                                     <option value="">Pilih Kecamatan</option>
                                     @foreach ($kecamatans as $kec)
                                         <option value="{{ $kec->id_kecamatan }}">{{ $kec->nama_kecamatan }}</option>
@@ -293,7 +293,7 @@
                             <div class="col-span-2 sm:col-span-1">
                                 <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Desa</label>
                                 <select name="id_desa" id="edit_desa" required
-                                    class="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-violet-500 bg-white">
+                                    class="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-violet-500 bg-white">
                                     <option value="">Pilih Desa</option>
                                 </select>
                             </div>
@@ -301,15 +301,15 @@
                             <div class="col-span-2">
                                 <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Alamat</label>
                                 <textarea name="alamat" id="edit_alamat" rows="2"
-                                    class="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-violet-500"></textarea>
+                                    class="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-violet-500"></textarea>
                             </div>
                         </div>
                     </div>
                     <div class="px-6 py-4 bg-gray-50 border-t flex justify-end gap-3">
                         <button type="button" onclick="closeEditModal()"
-                            class="px-6 py-2 text-sm font-bold text-gray-600 bg-white border rounded-xl hover:bg-gray-50">Batal</button>
+                            class="px-6 py-2 text-sm font-bold text-gray-600 bg-white border rounded-md hover:bg-gray-50">Batal</button>
                         <button type="submit"
-                            class="px-6 py-2 text-sm font-bold text-white bg-violet-600 rounded-xl hover:bg-violet-700 shadow-lg shadow-violet-200">Simpan
+                            class="px-6 py-2 text-sm font-bold text-white bg-violet-600 rounded-md hover:bg-violet-700 shadow-lg shadow-violet-200">Simpan
                             Perubahan</button>
                     </div>
                 </form>
@@ -320,7 +320,7 @@
     <div id="detailModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
         <div class="flex items-center justify-center min-h-screen px-4">
             <div class="fixed inset-0 bg-gray-500/75 transition-opacity" onclick="closeDetailModal()"></div>
-            <div class="relative bg-white rounded-3xl shadow-xl max-w-lg w-full overflow-hidden">
+            <div class="relative bg-white rounded-2xl shadow-xl max-w-lg w-full overflow-hidden">
                 {{-- Header Modal --}}
                 <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
                     <h3 class="text-lg font-bold text-gray-900">Detail Informasi Mitra</h3>
@@ -372,7 +372,7 @@
                 {{-- Footer Modal --}}
                 <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 text-right">
                     <button onclick="closeDetailModal()"
-                        class="px-6 py-2 text-sm font-bold text-white bg-violet-600 rounded-xl hover:bg-violet-700 transition-all shadow-lg shadow-violet-200">
+                        class="px-6 py-2 text-sm font-bold text-white bg-violet-600 rounded-md hover:bg-violet-700 transition-all shadow-lg shadow-violet-200">
                         Tutup
                     </button>
                 </div>

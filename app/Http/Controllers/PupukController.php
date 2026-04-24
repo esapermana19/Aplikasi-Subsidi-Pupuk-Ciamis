@@ -9,13 +9,15 @@ class PupukController extends Controller
 {
     public function index(Request $request)
     {
-        //Mengambil semua data pupuk
+        // Mengambil query dasar data pupuk
         $query = Pupuk::query();
+
+        // 1. Filter Pencarian
         if ($request->has('search') && $request->search != '') {
             $query->where('nama_pupuk', 'like', '%' . $request->search . '%');
         }
 
-        // Filter berdasarkan status stok
+        // 2. Filter berdasarkan status stok (Sekarang mengacu ke Stok Pusat)
         if ($request->has('status_stok') && $request->status_stok != '') {
             switch ($request->status_stok) {
                 case 'kritis':
@@ -29,7 +31,40 @@ class PupukController extends Controller
                     break;
             }
         }
-        $pupuk = $query->get();
+
+        // 3. Ambil data hasil filter, lalu hitung kalkulasi stok pecahannya
+        $pupuk = \App\Models\Pupuk::all()->map(function ($item) {
+            // 1. Stok Pusat (Stok yang ada di gudang pusat saat ini)
+            $item->stok_pusat = $item->stok;
+
+            // 2. Stok di Mitra (Permintaan 'diterima' - Penjualan 'sudah')
+            $total_masuk_mitra = \DB::table('tabel_detail_permintaan')
+                ->join('tabel_permintaan', 'tabel_detail_permintaan.id_permintaan', '=', 'tabel_permintaan.id_permintaan')
+                ->where('id_pupuk', $item->id_pupuk)
+                ->where('status_permintaan', 'diterima')
+                ->sum('jml_disetujui');
+
+            $total_keluar_mitra = \DB::table('tabel_detail_transaksi')
+                ->join('tabel_transaksi', 'tabel_detail_transaksi.id_transaksi', '=', 'tabel_transaksi.id_transaksi')
+                ->where('id_pupuk', $item->id_pupuk)
+                ->where('status_pengambilan', 'sudah')
+                ->sum('jml_beli');
+
+            $item->stok_mitra = $total_masuk_mitra - $total_keluar_mitra;
+
+            // 3. Sedang Diproses (Stok berkurang dari pusat tapi belum diterima mitra)
+            $item->sedang_diproses = \DB::table('tabel_detail_permintaan')
+                ->join('tabel_permintaan', 'tabel_detail_permintaan.id_permintaan', '=', 'tabel_permintaan.id_permintaan')
+                ->where('id_pupuk', $item->id_pupuk)
+                ->where('status_permintaan', 'diproses')
+                ->sum('jml_disetujui');
+
+            // 4. Total Stok Sistem (Gabungan stok fisik pusat + mitra + dalam perjalanan)
+            $item->total_stok = $item->stok_pusat + $item->stok_mitra + $item->sedang_diproses;
+
+            return $item;
+        });
+
         return view('admin.managepupuk', [
             'pupuk' => $pupuk,
             'activeMenu' => 'pupuk', // Agar menu di sidebar menyala hijau
@@ -91,5 +126,21 @@ class PupukController extends Controller
         $pupuk->delete();
 
         return back()->with('success', 'Pupuk berhasil dihapus!');
+    }
+
+    public function tambahStok(Request $request, $id)
+    {
+        // Validasi input
+        $request->validate([
+            'tambahan_stok' => 'required|integer|min:1'
+        ]);
+
+        // Cari data pupuk
+        $pupuk = Pupuk::findOrFail($id);
+
+        // Tambahkan stok lama dengan stok baru
+        $pupuk->increment('stok', $request->tambahan_stok);
+
+        return back()->with('success', "Stok pusat untuk pupuk {$pupuk->nama_pupuk} berhasil ditambahkan!");
     }
 }
