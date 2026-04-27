@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -20,8 +21,20 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         view()->composer('*', function ($view) {
-        $count = \App\Models\User::where('status_akun', 'pending')->count();
-        $view->with('pendingCount', $count);
-    });
+            $count = \App\Models\User::where('status_akun', 'pending')->count();
+            $view->with('pendingCount', $count);
+        });
+
+        View()->composer('*', function ($view) {
+            // Menghitung permintaan pupuk yang masih 'pending'
+            $pendingPermintaanCount = DB::table('tabel_permintaan')
+                ->where('status_permintaan', 'pending')
+                ->count();
+
+            // (Opsional) Menghitung verifikasi jika Anda belum memasukkannya di provider
+            // $pendingCount = DB::table('tabel_user')->where('status', 'pending')->count();
+
+            $view->with('pendingPermintaanCount', $pendingPermintaanCount);
+        });
     }
 }

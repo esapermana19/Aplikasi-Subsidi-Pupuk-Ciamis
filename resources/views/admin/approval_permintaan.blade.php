@@ -1,17 +1,27 @@
 @extends('layouts.app') @section('content')
-    <div class="container mx-auto px-4 py-8">
-        <h2 class="text-2xl font-bold mb-6 text-gray-800">Approval Permintaan Pupuk</h2>
+    <div class="space-y-6">
+        {{-- Header --}}
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">Hallo. {{ Auth::user()->admin->nama_admin ?? Auth::user()->name }},</h1>
+                <p class="text-sm text-gray-500 mt-1">Kelola dan setujui permintaan stok pupuk dari mitra.</p>
+            </div>
+        </div>
 
         @if (session('success'))
-            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">{{ session('success') }}
+            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg relative shadow-sm">
+                {{ session('success') }}
             </div>
         @endif
         @if (session('error'))
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">{{ session('error') }}</div>
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative shadow-sm">
+                {{ session('error') }}
+            </div>
         @endif
 
-        <div class="bg-white rounded-lg shadow overflow-hidden">
-            <table class="min-w-full leading-normal">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full leading-normal">
                 <thead>
                     <tr>
                         <th

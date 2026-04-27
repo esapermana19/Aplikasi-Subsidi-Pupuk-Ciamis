@@ -7,6 +7,8 @@ use App\Http\Controllers\MitraController;
 use App\Http\Controllers\PermintaanController;
 use App\Http\Controllers\PetaniController;
 use App\Http\Controllers\PupukController;
+use App\Http\Controllers\TransaksiController;
+use App\Models\Transaksi;
 use Illuminate\Support\Facades\Route;
 
 // API untuk mendapatkan desa berdasarkan kecamatan
@@ -81,11 +83,15 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/admin/laporan', function () {
             return "Halaman Laporan";
         })->name('laporan');
-
     });
     // Khusus Petani
     Route::middleware(['role:petani'])->group(function () {
-        Route::get('/petani/kuota', [PetaniController::class, 'index'])->name('petani.kuota');
+        Route::get('/petani/dashboard', [PetaniController::class, 'index'])->name('petani.dashboard');
+        Route::get('/petani/beli-pupuk', [PetaniController::class, 'beliPupuk'])->name('petani.beli_pupuk');
+        Route::get('/petani/riwayat-transaksi', [PetaniController::class, 'riwayatTransaksi'])->name('petani.riwayat_transaksi');
+        Route::get('/petani/transaksi/{id}', [PetaniController::class, 'detailTransaksi'])->name('petani.detail_transaksi');
+        // routes/web.php
+        Route::get('/api/mitra/{id_mitra}/pupuk', [TransaksiController::class, 'getPupukByMitra']);
     });
 
     // Khusus Mitra

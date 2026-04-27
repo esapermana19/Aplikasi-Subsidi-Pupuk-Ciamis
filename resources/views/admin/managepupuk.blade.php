@@ -1,87 +1,88 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="p-6">
+    <div class="space-y-6">
+        {{-- Header --}}
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">Hallo. {{ Auth::user()->admin->nama_admin ?? Auth::user()->name }},</h1>
+                <p class="text-sm text-gray-500 mt-1">Kelola stok dan data pupuk subsidi pusat di sini.</p>
+            </div>
+            <button onclick="openAddModal()"
+                class="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-violet-600 text-white font-bold rounded-xl hover:bg-violet-700 transition-all shadow-lg shadow-violet-100">
+                <i data-lucide="plus" class="w-5 h-5"></i>
+                <span>Tambah Pupuk</span>
+            </button>
+        </div>
+
         <!-- Statistik Ringkas -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-                <p class="text-gray-500 text-xs font-medium uppercase tracking-wider">Stok Pusat</p>
-                <p class="text-xl font-bold text-violet-600">{{ number_format($pupuk->sum('stok_pusat')) }} Kg</p>
+                <p class="text-gray-400 text-[10px] font-bold uppercase tracking-wider">Stok Pusat</p>
+                <p class="text-lg font-bold text-violet-600 mt-1">{{ number_format($pupuk->sum('stok_pusat')) }} Kg</p>
             </div>
 
             <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-                <p class="text-gray-500 text-xs font-medium uppercase tracking-wider">Sedang Diproses</p>
-                <p class="text-xl font-bold text-blue-500">{{ number_format($pupuk->sum('sedang_diproses')) }} Kg</p>
-                <p class="text-[10px] text-gray-400">*Dalam perjalanan ke mitra</p>
+                <p class="text-gray-400 text-[10px] font-bold uppercase tracking-wider">Sedang Diproses</p>
+                <p class="text-lg font-bold text-blue-500 mt-1">{{ number_format($pupuk->sum('sedang_diproses')) }} Kg</p>
             </div>
 
             <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-                <p class="text-gray-500 text-xs font-medium uppercase tracking-wider">Stok di Mitra</p>
-                <p class="text-xl font-bold text-orange-500">{{ number_format($pupuk->sum('stok_mitra')) }} Kg</p>
+                <p class="text-gray-400 text-[10px] font-bold uppercase tracking-wider">Stok di Mitra</p>
+                <p class="text-lg font-bold text-orange-500 mt-1">{{ number_format($pupuk->sum('stok_mitra')) }} Kg</p>
             </div>
 
             <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-                <p class="text-gray-500 text-xs font-medium uppercase tracking-wider">Total Stok Sistem</p>
-                <p class="text-xl font-bold text-green-600">{{ number_format($pupuk->sum('total_stok')) }} Kg</p>
+                <p class="text-gray-400 text-[10px] font-bold uppercase tracking-wider">Total Stok</p>
+                <p class="text-lg font-bold text-green-600 mt-1">{{ number_format($pupuk->sum('total_stok')) }} Kg</p>
             </div>
         </div>
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-            <div class="flex flex-wrap items-center gap-3">
-                <form action="{{ route('admin.pupuk.index') }}" method="GET" id="filterForm"
-                    class="flex items-center gap-3">
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                            <i data-lucide="filter" class="h-4 w-4 text-gray-400"></i>
-                        </div>
-                        <select name="status_stok" onchange="this.form.submit()"
-                            class="bg-white border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-green-500 focus:border-green-500 block pl-10 pr-10 py-2.5 shadow-sm appearance-none cursor-pointer">
-                            <option value="">Semua Status Stok</option>
-                            <option value="kritis" {{ request('status_stok') == 'kritis' ? 'selected' : '' }}> Stok Kritis
-                            </option>
-                            <option value="menipis" {{ request('status_stok') == 'menipis' ? 'selected' : '' }}> Stok
-                                Menipis</option>
-                            <option value="aman" {{ request('status_stok') == 'aman' ? 'selected' : '' }}> Stok Aman
-                            </option>
-                        </select>
-                    </div>
 
-                    @if (request('search') || request('status_stok'))
-                        <a href="{{ route('admin.pupuk.index') }}"
-                            class="flex items-center gap-1.5 px-3 py-2 bg-red-50 text-red-600 rounded-lg text-xs font-bold border border-red-100 hover:bg-red-100 transition-colors">
-                            <i data-lucide="x" class="h-3.5 w-3.5"></i> Hapus Filter
-                        </a>
-                    @endif
-                </form>
-
-                <div class="hidden md:block h-8 w-px bg-gray-200 mx-2"></div>
-
-                <div class="flex items-center gap-2">
-                    <span class="h-2 w-2 rounded-full bg-amber-400"></span>
-                    <p class="text-sm text-gray-500 font-medium">
-                        Menampilkan <span class="text-gray-950 font-bold">{{ $pupuk->count() }}</span> total pupuk
-                    </p>
-                </div>
-            </div>
-
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-                <div class="flex flex-wrap items-center gap-3">
-                    <form action="{{ route('admin.pupuk.index') }}" method="GET" class="flex items-center gap-3">
+        <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                <div class="flex flex-col sm:flex-row sm:items-center gap-3 flex-1">
+                    <form action="{{ route('admin.pupuk.index') }}" method="GET" id="filterForm" class="flex-1 min-w-[200px]">
                         <div class="relative">
-                            <input type="text" name="search" value="{{ request('search') }}"
-                                placeholder="Cari pupuk..."
-                                class="pl-10 pr-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-violet-500 focus:border-violet-500 w-64">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <i data-lucide="search" class="h-5 w-5 text-gray-400"></i>
+                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                <i data-lucide="filter" class="h-4 w-4 text-gray-400"></i>
                             </div>
+                            <select name="status_stok" onchange="this.form.submit()"
+                                class="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-green-500 focus:border-green-500 block pl-10 pr-10 py-2.5 appearance-none cursor-pointer">
+                                <option value="">Semua Status Stok</option>
+                                <option value="kritis" {{ request('status_stok') == 'kritis' ? 'selected' : '' }}>Stok Kritis</option>
+                                <option value="menipis" {{ request('status_stok') == 'menipis' ? 'selected' : '' }}>Stok Menipis</option>
+                                <option value="aman" {{ request('status_stok') == 'aman' ? 'selected' : '' }}>Stok Aman</option>
+                            </select>
+                        </div>
+                    </form>
+
+                    <form action="{{ route('admin.pupuk.index') }}" method="GET" class="flex-1 min-w-[200px]">
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                <i data-lucide="search" class="h-4 w-4 text-gray-400"></i>
+                            </span>
+                            <input type="text" name="search" value="{{ request('search') }}"
+                                class="block w-full pl-10 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-violet-500 focus:border-violet-500 text-sm transition-all"
+                                placeholder="Cari nama pupuk...">
                         </div>
                     </form>
                 </div>
 
-                <button onclick="openAddModal()"
-                    class="inline-flex items-center gap-2 px-4 py-2 bg-violet-600 text-white font-semibold rounded-md hover:bg-violet-700 transition-all shadow-md shadow-violet-200">
-                    <i data-lucide="plus" class="w-5 h-5"></i>
-                    <span>Tambah Pupuk Baru</span>
-                </button>
+                <div class="flex items-center justify-between lg:justify-end gap-3 lg:border-l lg:pl-4 border-gray-100">
+                    @if (request('search') || request('status_stok'))
+                        <a href="{{ route('admin.pupuk.index') }}"
+                            class="flex items-center gap-1.5 px-3 py-2 bg-red-50 text-red-600 rounded-lg text-xs font-bold border border-red-100 hover:bg-red-100 transition-colors">
+                            <i data-lucide="x" class="h-3.5 w-3.5"></i> Reset
+                        </a>
+                    @endif
+
+                    <div class="flex items-center gap-2">
+                        <span class="h-2 w-2 rounded-full bg-amber-400"></span>
+                        <p class="text-xs text-gray-500 font-medium">
+                            <span class="text-gray-950 font-bold">{{ $pupuk->count() }}</span> Jenis Pupuk
+                        </p>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -104,7 +105,8 @@
 
         <!-- Tabel Data -->
         <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-            <table class="w-full text-left border-collapse">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
                 <thead class="bg-gray-50 text-gray-600 text-xs uppercase font-semibold">
                     <tr>
                         <th class="px-6 py-4">Kode</th>

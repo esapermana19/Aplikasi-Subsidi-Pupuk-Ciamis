@@ -13,7 +13,8 @@
 </head>
 @props(['activeMenu', 'pendingCount'])
 
-<div class="flex h-screen w-64 flex-col border-r bg-white fixed left-0 top-0">
+<div :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'" 
+    class="flex h-screen w-64 flex-col border-r bg-white fixed left-0 top-0 z-50 transition-transform duration-300 lg:translate-x-0">
     <div class="flex h-16 items-center gap-3 border-b px-6">
         <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-green-600">
             <i data-lucide="leaf" class="h-6 w-6 text-white"></i>
@@ -142,7 +143,29 @@
                         ],
                     ];
                 }
-                // Jika Anda punya role Petani nantinya, bisa tambahkan elseif ($userRole === 'petani') di sini
+                // 3. MENU UNTUK PETANI
+                elseif ($userRole === 'petani') {
+                    $menuItems = [
+                        [
+                            'id' => 'petani.dashboard',
+                            'label' => 'Dashboard',
+                            'icon' => 'layout-dashboard',
+                            'route' => 'petani.dashboard',
+                        ],
+                        [
+                            'id' => 'petani.beli_pupuk',
+                            'label' => 'Beli Pupuk',
+                            'icon' => 'shopping-bag',
+                            'route' => 'petani.beli_pupuk',
+                        ],
+                        [
+                            'id' => 'petani.riwayat_transaksi',
+                            'label' => 'Riwayat Transaksi',
+                            'icon' => 'history',
+                            'route' => 'petani.riwayat_transaksi',
+                        ],
+                    ];
+                }
             @endphp
 
             @foreach ($menuItems as $item)
@@ -208,6 +231,17 @@
                                 <span
                                     class="relative inline-flex rounded-full h-5 w-5 bg-orange-500 text-[10px] text-white items-center justify-center font-bold">
                                     {{ $pendingCount }}
+                                </span>
+                            </span>
+                        @endif
+
+                        @if (($item['id'] ?? '') === 'approval-permintaan' && ($pendingPermintaanCount ?? 0) > 0)
+                            <span class="relative flex h-5 w-5">
+                                <span
+                                    class="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                                <span
+                                    class="relative inline-flex rounded-full h-5 w-5 bg-orange-500 text-[10px] text-white items-center justify-center font-bold">
+                                    {{ $pendingPermintaanCount }}
                                 </span>
                             </span>
                         @endif

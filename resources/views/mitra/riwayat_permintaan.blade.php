@@ -1,16 +1,20 @@
 @extends('layouts.app') @section('content')
-    <div class="container mx-auto px-4 py-8">
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-gray-800">Riwayat Permintaan Pupuk</h2>
+    <div class="space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-800">Riwayat Permintaan Pupuk</h2>
+                <p class="text-sm text-gray-500 mt-1">Pantau status permintaan stok pupuk Anda ke distributor.</p>
+            </div>
 
             <a href="{{ route('mitra.pupuk_tersedia') }}"
-                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded font-semibold text-sm">
-                + Permintaan Baru
+                class="inline-flex items-center justify-center bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-lg font-semibold text-sm transition-all shadow-sm">
+                <i data-lucide="plus" class="w-4 h-4 mr-2"></i> Permintaan Baru
             </a>
         </div>
 
-        <div class="bg-white rounded-lg shadow overflow-hidden">
-            <table class="min-w-full leading-normal">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full leading-normal">
                 <thead>
                     <tr>
                         <th

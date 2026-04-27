@@ -2,96 +2,90 @@
 
 @section('content')
     <div class="space-y-6">
+    <div class="space-y-6">
         {{-- Header --}}
-        <div>
-            <h1 class="text-2xl font-bold text-gray-900">Kelola Akun mitra</h1>
-            <p class="text-gray-500 mt-1">Daftar seluruh mitra yang terdaftar di sistem ASUP Ciamis</p>
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">Hallo. {{ Auth::user()->admin->nama_admin ?? Auth::user()->name }},</h1>
+                <p class="text-sm text-gray-500 mt-1">Daftar seluruh mitra yang terdaftar di sistem ASUP Ciamis</p>
+            </div>
         </div>
 
         {{-- Filter & Search Section --}}
         <form action="{{ route('admin.list_mitra') }}" method="GET" id="filterForm">
-            <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-6">
-
-                {{-- KELOMPOK KIRI: Dropdown Filter --}}
-                <div class="flex flex-wrap items-center gap-3">
-
-                    {{-- Filter Status --}}
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                            <i data-lucide="filter" class="h-4 w-4 text-gray-400"></i>
+            <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm space-y-4">
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                    <div class="flex flex-wrap items-center gap-3">
+                        {{-- Filter Status --}}
+                        <div class="relative flex-1 min-w-[140px]">
+                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                <i data-lucide="filter" class="h-4 w-4 text-gray-400"></i>
+                            </div>
+                            <select name="status" onchange="this.form.submit()"
+                                class="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-violet-500 focus:border-violet-500 block pl-10 pr-10 py-2.5 appearance-none cursor-pointer">
+                                <option value="">Semua Status</option>
+                                <option value="aktif" {{ request('status') == 'aktif' ? 'selected' : '' }}>Aktif</option>
+                                <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
+                                <option value="nonaktif" {{ request('status') == 'nonaktif' ? 'selected' : '' }}>Nonaktif</option>
+                                <option value="ditolak" {{ request('status') == 'ditolak' ? 'selected' : '' }}>Ditolak</option>
+                            </select>
                         </div>
-                        <select name="status" onchange="this.form.submit()"
-                            class="bg-white border border-gray-200 text-gray-900 text-sm rounded-md focus:ring-violet-500 focus:border-violet-500 block pl-10 pr-10 py-2.5 shadow-sm appearance-none">
-                            <option value="">Semua Status</option>
-                            <option value="aktif" {{ request('status') == 'aktif' ? 'selected' : '' }}>Aktif</option>
-                            <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
-                            <option value="nonaktif" {{ request('status') == 'nonaktif' ? 'selected' : '' }}>Nonaktif
-                            </option>
-                            <option value="ditolak" {{ request('status') == 'ditolak' ? 'selected' : '' }}>Ditolak</option>
-                        </select>
-                    </div>
 
-                    {{-- Filter Kecamatan --}}
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                            <i data-lucide="map" class="h-4 w-4 text-gray-400"></i>
+                        {{-- Filter Kecamatan --}}
+                        <div class="relative flex-1 min-w-[140px]">
+                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                <i data-lucide="map" class="h-4 w-4 text-gray-400"></i>
+                            </div>
+                            <select name="id_kecamatan" onchange="this.form.submit()"
+                                class="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-violet-500 focus:border-violet-500 block pl-10 pr-10 py-2.5 appearance-none cursor-pointer">
+                                <option value="">Semua Kecamatan</option>
+                                @foreach ($kecamatans as $kec)
+                                    <option value="{{ $kec->id_kecamatan }}"
+                                        {{ request('id_kecamatan') == $kec->id_kecamatan ? 'selected' : '' }}>
+                                        {{ $kec->nama_kecamatan }}
+                                    </option>
+                                @endforeach
+                            </select>
                         </div>
-                        <select name="id_kecamatan" onchange="this.form.submit()"
-                            class="bg-white border border-gray-200 text-gray-900 text-sm rounded-md focus:ring-violet-500 focus:border-violet-500 block pl-10 pr-10 py-2.5 shadow-sm appearance-none max-w-[150px] truncate">
-                            <option value="">Semua Kecamatan</option>
-                            @foreach ($kecamatans as $kec)
-                                <option value="{{ $kec->id_kecamatan }}"
-                                    {{ request('id_kecamatan') == $kec->id_kecamatan ? 'selected' : '' }}>
-                                    {{ $kec->nama_kecamatan }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
 
-                    {{-- Filter Desa --}}
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                            <i data-lucide="map-pin" class="h-4 w-4 text-gray-400"></i>
+                        {{-- Filter Desa --}}
+                        <div class="relative flex-1 min-w-[140px]">
+                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                <i data-lucide="map-pin" class="h-4 w-4 text-gray-400"></i>
+                            </div>
+                            <select name="id_desa" id="filter_desa" onchange="this.form.submit()"
+                                class="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-violet-500 focus:border-violet-500 block pl-10 pr-10 py-2.5 appearance-none cursor-pointer">
+                                <option value="">Semua Desa</option>
+                            </select>
                         </div>
-                        <select name="id_desa" id="filter_desa" onchange="this.form.submit()"
-                            class="bg-white border border-gray-200 text-gray-900 text-sm rounded-md focus:ring-violet-500 focus:border-violet-500 block pl-10 pr-10 py-2.5 shadow-sm appearance-none max-w-[150px] truncate">
-                            <option value="">Semua Desa</option>
-                            {{-- Opsi Desa akan dimuat oleh JavaScript otomatis --}}
-                        </select>
                     </div>
 
-                    {{-- Tombol Hapus Filter --}}
-                    @if (request('search') || request('status') || request('id_kecamatan') || request('id_desa'))
-                        <a href="{{ route('admin.list_mitra') }}"
-                            class="flex items-center gap-1.5 px-3 py-2 bg-red-50 text-red-600 rounded-lg text-xs font-bold border border-red-100 hover:bg-red-100 transition-colors">
-                            <i data-lucide="x" class="h-3.5 w-3.5"></i> Reset
-                        </a>
-                    @endif
-
-                    <div class="hidden xl:block h-8 w-px bg-gray-200 mx-1"></div>
-
-                    {{-- Total mitra --}}
-                    <div class="flex items-center gap-2">
-                        <span class="h-2 w-2 rounded-full bg-amber-400"></span>
-                        <p class="text-sm text-gray-500 font-medium">
-                            Total <span class="text-gray-950 font-bold">{{ $mitra->total() }}</span>
-                        </p>
-                    </div>
-                </div>
-
-                {{-- KELOMPOK KANAN: Search Bar --}}
-                <div class="w-full xl:w-80">
-                    <div class="relative">
+                    {{-- Search Bar --}}
+                    <div class="relative w-full lg:w-72">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                             <i data-lucide="search" class="h-4 w-4 text-gray-400"></i>
                         </span>
                         <input type="text" name="search" value="{{ request('search') }}"
-                            class="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-2xl focus:ring-violet-500 focus:border-violet-500 text-sm shadow-sm transition-all"
-                            placeholder="Cari nama atau NIK..." onkeypress="if(event.keyCode == 13) this.form.submit();">
-                        {{-- Tekan Enter untuk mencari --}}
+                            class="block w-full pl-10 pr-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-violet-500 focus:border-violet-500 text-sm transition-all"
+                            placeholder="Cari nama mitra atau pemilik..." onkeypress="if(event.keyCode == 13) this.form.submit();">
                     </div>
                 </div>
 
+                <div class="flex items-center justify-between border-t border-gray-50 pt-3">
+                    <div class="flex items-center gap-2">
+                        <span class="h-2 w-2 rounded-full bg-amber-400"></span>
+                        <p class="text-xs text-gray-500 font-medium">
+                            Total <span class="text-gray-950 font-bold">{{ $mitra->total() }}</span> Mitra
+                        </p>
+                    </div>
+
+                    @if (request('search') || request('status') || request('id_kecamatan') || request('id_desa'))
+                        <a href="{{ route('admin.list_mitra') }}"
+                            class="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-xs font-bold border border-red-100 hover:bg-red-100 transition-colors">
+                            <i data-lucide="x" class="h-3.5 w-3.5"></i> Reset Filter
+                        </a>
+                    @endif
+                </div>
             </div>
         </form>
 
@@ -171,9 +165,9 @@
                                             '{{ addslashes($m->alamat_mitra ?? '-') }}',
                                             '{{ addslashes($m->nama_pemilik ?? '-') }}',
                                             '{{ $m->no_rek ?? '-' }}',
-                                            '{{ $m->kecamatan->nama_kecamatan ?? '-' }}', {{-- Kirim NAMA --}}
-                                            '{{ $m->desa->nama_desa ?? '-' }}')"
-                                            {{-- Kirim NAMA --}}
+                                            '{{ $m->kecamatan->nama_kecamatan ?? '-' }}', 
+                                            '{{ $m->desa->nama_desa ?? '-' }}',
+                                            '{{ $m->user->status_akun }}')"
                                             class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                                             title="Detail">
                                             <i data-lucide="eye" class="h-4 w-4"></i>
@@ -318,61 +312,110 @@
     </div>
     {{-- Modal Detail --}}
     <div id="detailModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
-        <div class="flex items-center justify-center min-h-screen px-4">
-            <div class="fixed inset-0 bg-gray-500/75 transition-opacity" onclick="closeDetailModal()"></div>
-            <div class="relative bg-white rounded-2xl shadow-xl max-w-lg w-full overflow-hidden">
-                {{-- Header Modal --}}
-                <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
-                    <h3 class="text-lg font-bold text-gray-900">Detail Informasi Mitra</h3>
-                    <button onclick="closeDetailModal()" class="text-gray-400 hover:text-gray-600">
-                        <i data-lucide="x" class="h-5 w-5"></i>
-                    </button>
-                </div>
-
-                {{-- Body Modal --}}
-                <div class="p-6 space-y-4">
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="col-span-2 sm:col-span-1">
-                            <label class="text-xs font-bold text-gray-400 uppercase">NIK</label>
-                            <p id="det_nik" class="text-sm font-semibold text-gray-900 mt-1"></p>
+        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 transition-opacity bg-gray-900/60 backdrop-blur-sm" onclick="closeDetailModal()"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+            
+            <div class="inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-2xl shadow-2xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-gray-100">
+                {{-- Modal Header --}}
+                <div class="relative px-6 py-4 bg-gradient-to-br from-violet-600 to-violet-700 text-white overflow-hidden">
+                    <div class="absolute top-0 right-0 -mt-2 -mr-2 h-16 w-16 bg-white/10 rounded-full blur-xl"></div>
+                    <div class="relative z-10 flex justify-between items-center">
+                        <div>
+                            <h3 class="text-lg font-bold">Detail Mitra</h3>
+                            <p class="text-violet-100 text-[10px] mt-0.5 font-medium">Informasi profil dan operasional</p>
                         </div>
-                        <div class="col-span-2 sm:col-span-1">
-                            <label class="text-xs font-bold text-gray-400 uppercase">No. Rekening</label>
-                            <p id="det_rek" class="text-sm font-semibold text-gray-900 mt-1"></p>
-                        </div>
-                        <div class="col-span-2">
-                            <label class="text-xs font-bold text-gray-400 uppercase">Nama Mitra / Instansi</label>
-                            <p id="det_nama" class="text-sm font-semibold text-gray-900 mt-1"></p>
-                        </div>
-                        <div class="col-span-2">
-                            <label class="text-xs font-bold text-gray-400 uppercase">Nama Pemilik</label>
-                            <p id="det_pemilik" class="text-sm font-semibold text-gray-900 mt-1"></p>
-                        </div>
-                        <div class="col-span-2">
-                            <label class="text-xs font-bold text-gray-400 uppercase">Email</label>
-                            <p id="det_email" class="text-sm font-semibold text-gray-900 mt-1"></p>
-                        </div>
-                        <div class="col-span-2 sm:col-span-1">
-                            <label class="text-xs font-bold text-gray-400 uppercase">Kecamatan</label>
-                            <p id="det_kecamatan" class="text-sm font-semibold text-gray-900 mt-1"></p>
-                        </div>
-                        <div class="col-span-2 sm:col-span-1">
-                            <label class="text-xs font-bold text-gray-400 uppercase">Desa</label>
-                            <p id="det_desa" class="text-sm font-semibold text-gray-900 mt-1"></p>
-                        </div>
-                        <div class="col-span-2">
-                            <label class="text-xs font-bold text-gray-400 uppercase">Alamat</label>
-                            <p id="det_alamat"
-                                class="text-sm text-gray-700 bg-gray-50 p-4 rounded-2xl mt-1 border border-gray-100 leading-relaxed">
-                            </p>
-                        </div>
+                        <button onclick="closeDetailModal()" class="p-1.5 hover:bg-white/20 rounded-lg transition-colors text-white/80 hover:text-white">
+                            <i data-lucide="x" class="h-5 w-5"></i>
+                        </button>
                     </div>
                 </div>
 
-                {{-- Footer Modal --}}
-                <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 text-right">
+                <div class="p-5 space-y-5">
+                    {{-- Profile Header Section --}}
+                    <div class="flex items-center gap-4 bg-gray-50 p-4 rounded-xl border border-gray-100">
+                        <div class="h-14 w-14 rounded-xl bg-green-100 border border-green-200 flex items-center justify-center text-green-600 shrink-0">
+                            <i data-lucide="store" class="h-7 w-7"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h4 id="det_nama" class="text-lg font-bold text-gray-900 truncate"></h4>
+                            <div class="flex flex-wrap items-center gap-x-3 gap-y-1 mt-0.5">
+                                <span id="det_status_badge" class="px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider border"></span>
+                                <span class="text-gray-400 text-[10px] flex items-center gap-1 font-medium">
+                                    <i data-lucide="user-circle" class="h-3 w-3"></i>
+                                    <span id="det_pemilik"></span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                        {{-- Identity Section --}}
+                        <div class="space-y-3">
+                            <h5 class="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                                Legalitas & Akun
+                            </h5>
+                            
+                            <div class="space-y-2.5">
+                                <div>
+                                    <label class="text-[9px] font-bold text-gray-400 uppercase flex items-center gap-1 mb-0.5">
+                                        <i data-lucide="credit-card" class="h-2.5 w-2.5"></i> NIK Pemilik
+                                    </label>
+                                    <p id="det_nik" class="text-xs font-bold text-gray-800 bg-white px-2 py-1.5 rounded-lg border border-gray-200 shadow-sm"></p>
+                                </div>
+                                <div>
+                                    <label class="text-[9px] font-bold text-gray-400 uppercase flex items-center gap-1 mb-0.5">
+                                        <i data-lucide="wallet" class="h-2.5 w-2.5"></i> No. Rekening
+                                    </label>
+                                    <p id="det_rek" class="text-xs font-bold text-gray-800 bg-white px-2 py-1.5 rounded-lg border border-gray-200 shadow-sm"></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- Contact & Address Section --}}
+                        <div class="space-y-3">
+                            <h5 class="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                                Kontak & Wilayah
+                            </h5>
+
+                            <div class="space-y-2.5">
+                                <div>
+                                    <label class="text-[9px] font-bold text-gray-400 uppercase flex items-center gap-1 mb-0.5">
+                                        <i data-lucide="mail" class="h-2.5 w-2.5"></i> Email
+                                    </label>
+                                    <p id="det_email" class="text-xs font-bold text-gray-800 bg-white px-2 py-1.5 rounded-lg border border-gray-200 shadow-sm truncate"></p>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label class="text-[9px] font-bold text-gray-400 uppercase flex items-center gap-1 mb-0.5">
+                                            <i data-lucide="map" class="h-2.5 w-2.5"></i> Kecamatan
+                                        </label>
+                                        <p id="det_kecamatan" class="text-xs font-bold text-gray-800 bg-white px-2 py-1.5 rounded-lg border border-gray-200 shadow-sm truncate"></p>
+                                    </div>
+                                    <div>
+                                        <label class="text-[9px] font-bold text-gray-400 uppercase flex items-center gap-1 mb-0.5">
+                                            <i data-lucide="map-pin" class="h-2.5 w-2.5"></i> Desa
+                                        </label>
+                                        <p id="det_desa" class="text-xs font-bold text-gray-800 bg-white px-2 py-1.5 rounded-lg border border-gray-200 shadow-sm truncate"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Address --}}
+                    <div>
+                        <label class="text-[9px] font-bold text-gray-400 uppercase flex items-center gap-1 mb-1">
+                            <i data-lucide="navigation" class="h-2.5 w-2.5"></i> Alamat Lengkap Kios
+                        </label>
+                        <div id="det_alamat" class="text-xs font-medium text-gray-700 bg-green-50/50 p-3 rounded-xl border border-green-100 leading-relaxed italic"></div>
+                    </div>
+                </div>
+
+                {{-- Modal Footer --}}
+                <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end">
                     <button onclick="closeDetailModal()"
-                        class="px-6 py-2 text-sm font-bold text-white bg-violet-600 rounded-md hover:bg-violet-700 transition-all shadow-lg shadow-violet-200">
+                        class="w-full sm:w-auto px-10 py-2.5 text-sm font-bold text-white bg-green-600 rounded-xl hover:bg-green-700 transition-all shadow-md shadow-green-200">
                         Tutup
                     </button>
                 </div>
@@ -466,8 +509,7 @@
     }
 
     // 2. Fungsi Modal Detail (Baru)
-    function openDetailModal(nik, nama_mitra, email, alamat, nama_pemilik, no_rek, kecamatan, desa) {
-        // Memasukkan teks ke dalam elemen berdasarkan ID yang Anda buat di HTML
+    function openDetailModal(nik, nama_mitra, email, alamat, nama_pemilik, no_rek, kecamatan, desa, status) {
         document.getElementById('det_nik').innerText = nik;
         document.getElementById('det_rek').innerText = no_rek;
         document.getElementById('det_nama').innerText = nama_mitra;
@@ -477,12 +519,27 @@
         document.getElementById('det_desa').innerText = desa;
         document.getElementById('det_alamat').innerText = alamat;
 
+        const badge = document.getElementById('det_status_badge');
+        badge.innerText = status.toUpperCase();
+        
+        // Reset classes
+        badge.className = "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border";
+        
+        if (status === 'aktif') {
+            badge.classList.add('bg-green-50', 'text-green-700', 'border-green-200');
+        } else if (status === 'pending') {
+            badge.classList.add('bg-amber-50', 'text-amber-700', 'border-amber-200');
+        } else {
+            badge.classList.add('bg-red-50', 'text-red-700', 'border-red-200');
+        }
+
         // Munculkan Modal (Hapus class hidden)
         const modal = document.getElementById('detailModal');
         modal.classList.remove('hidden');
 
         // Kunci scroll body agar tidak bergeser saat modal tampil
         document.body.style.overflow = 'hidden';
+        if (window.lucide) lucide.createIcons();
     }
 
     /**

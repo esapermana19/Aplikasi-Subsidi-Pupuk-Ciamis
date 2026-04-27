@@ -3,10 +3,16 @@
 @section('content')
     <div class="space-y-6">
         {{-- Header --}}
-        <div>
-            <h1 class="text-3xl font-bold tracking-tight text-green-700">Dashboard Mitra</h1>
-            <p class="text-gray-500">Selamat datang di portal <span
-                    class="font-semibold">{{ Auth::user()->mitra->nama_mitra ?? 'Kios Tani' }}</span>.</p>
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+                <h1 class="text-2xl font-bold tracking-tight text-green-700">Hallo!! {{ Auth::user()->mitra->nama_mitra ?? Auth::user()->name }},</h1>
+                <p class="text-sm text-gray-500 mt-1">Selamat datang kembali! Pantau dan kelola stok pupuk di kios Anda.</p>
+            </div>
+            <div class="hidden md:block text-right">
+                <p class="text-xs font-bold text-green-600 bg-green-50 px-3 py-1 rounded-full border border-green-100">
+                    {{ now()->translatedFormat('l, d F Y') }}
+                </p>
+            </div>
         </div>
 
         {{-- Top Cards --}}

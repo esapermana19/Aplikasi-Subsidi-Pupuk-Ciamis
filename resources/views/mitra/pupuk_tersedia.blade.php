@@ -2,20 +2,19 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="p-6 sm:p-10 space-y-6">
+    <div class="space-y-6">
 
         {{-- Header Section --}}
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
                 <h1 class="text-2xl font-bold text-gray-900">Pupuk Tersedia</h1>
                 <p class="text-sm text-gray-500 mt-1">
-                    Ketersediaan stok pupuk subsidi di kios Anda (Berdasarkan sisa dari transaksi & permintaan).
+                    Ketersediaan stok pupuk subsidi di kios Anda.
                 </p>
             </div>
             <div>
-                {{-- Tombol jika Mitra ingin melakukan permintaan stok baru ke pusat --}}
-                <button id="btnOpenModal" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded">
-                    + Buat Permintaan Baru
+                <button id="btnOpenModal" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-semibold py-2.5 px-5 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2">
+                    <i data-lucide="plus" class="w-4 h-4"></i> Buat Permintaan Baru
                 </button>
             </div>
         </div>

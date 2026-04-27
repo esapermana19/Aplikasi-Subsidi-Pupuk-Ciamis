@@ -98,6 +98,17 @@
                         </div>
                     </div>
 
+                    {{-- TAMBAHAN: Field No KK (Khusus Petani) --}}
+                    <div class="space-y-1" id="petani_nokk_field">
+                        <label class="text-xs font-bold text-gray-700">No. Kartu Keluarga (16 Digit)</label>
+                        <input type="text" name="no_kk" maxlength="16" value="{{ old('no_kk') }}"
+                            class="w-full px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-1 focus:ring-green-500 outline-none @error('no_kk') border-red-500 @enderror"
+                            placeholder="Masukkan 16 Digit No KK">
+                        @error('no_kk')
+                            <p class="text-[10px] text-red-500">{{ $message }}</p>
+                        @enderror
+                    </div>
+
                     <div class="space-y-1 hidden" id="mitra_name_field">
                         <label class="text-xs font-bold text-gray-700">Nama Toko / Kios</label>
                         <div class="relative">
@@ -131,6 +142,7 @@
                             </select>
                         </div>
                     </div>
+
                     <div class="space-y-1">
                         <label class="text-xs font-bold text-gray-700">Alamat Lengkap di Ciamis</label>
                         <textarea name="alamat" rows="2"
@@ -191,8 +203,8 @@
             </div>
             <div class="mt-4">
                 <div class="rounded-2xl overflow-hidden shadow-2xl border-4 border-white/20">
-                    <img src="{{asset('assets/images/sawah4.jpg')}}"
-                        alt="Pertanian" class="w-full h-56 object-cover">
+                    <img src="{{ asset('assets/images/sawah4.jpg') }}" alt="Pertanian"
+                        class="w-full h-56 object-cover">
                 </div>
             </div>
         </div>
@@ -203,16 +215,19 @@
 
         const roleSelect = document.getElementById('role_select');
         const petaniFields = document.getElementById('petani_fields');
+        const petaniNokkField = document.getElementById('petani_nokk_field'); // Tambahan field No KK
         const mitraNameField = document.getElementById('mitra_name_field');
         const mitraNorekField = document.getElementById('mitra_norek_field');
 
         function toggleFields(role) {
             if (role === 'Mitra') {
                 petaniFields.classList.add('hidden');
+                petaniNokkField.classList.add('hidden'); // Sembunyikan No KK untuk Mitra
                 mitraNameField.classList.remove('hidden');
                 mitraNorekField.classList.remove('hidden');
             } else {
                 petaniFields.classList.remove('hidden');
+                petaniNokkField.classList.remove('hidden'); // Tampilkan No KK untuk Petani
                 mitraNameField.classList.add('hidden');
                 mitraNorekField.classList.add('hidden');
             }
