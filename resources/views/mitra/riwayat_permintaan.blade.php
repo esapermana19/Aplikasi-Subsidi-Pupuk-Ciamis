@@ -56,7 +56,7 @@
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                 <div class="flex justify-end gap-2">
                                     <button
-                                        onclick="lihatDetail({{ $req->id_permintaan }}, '{{ $req->status_permintaan }}')"
+                                        onclick="lihatDetail('{{ $req->id_permintaan }}', '{{ $req->status_permintaan }}')"
                                         class="bg-violet-500 hover:bg-violet-600 text-white font-bold py-1 px-3 rounded text-xs transition duration-200">
                                         Detail
                                     </button>

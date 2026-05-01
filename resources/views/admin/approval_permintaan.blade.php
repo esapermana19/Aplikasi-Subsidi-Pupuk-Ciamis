@@ -61,7 +61,7 @@
                                 </span>
                             </td>
                             <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                <button onclick="openModal({{ $req->id_permintaan }}, '{{ $req->status_permintaan }}')"
+                                <button onclick="openModal('{{ $req->id_permintaan }}', '{{ $req->status_permintaan }}')"
                                     class="bg-violet-500 hover:bg-violet-700 text-white font-bold py-1 px-3 rounded text-xs">
                                     Detail / Proses
                                 </button>

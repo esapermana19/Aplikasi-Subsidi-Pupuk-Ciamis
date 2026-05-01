@@ -97,7 +97,7 @@
                             <div class="text-right">
                                 <p class="text-sm font-bold text-green-600">+Rp {{ number_format($t->total, 0, ',', '.') }}
                                 </p>
-                                <p class="text-[10px] text-gray-400">{{ $t->created_at->format('d M, H:i') }} WIB</p>
+                                <p class="text-[10px] text-gray-400">{{ $t->created_at ? $t->created_at->format('d M, H:i') : \Carbon\Carbon::parse($t->tgl_transaksi)->format('d M, H:i') }} WIB</p>
                             </div>
                         </div>
                     @empty

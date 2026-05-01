@@ -20,6 +20,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        config(['app.locale' => 'id']);
+        \Carbon\Carbon::setLocale('id');
+        date_default_timezone_set('Asia/Jakarta');
         view()->composer('*', function ($view) {
             $count = \App\Models\User::where('status_akun', 'pending')->count();
             $view->with('pendingCount', $count);

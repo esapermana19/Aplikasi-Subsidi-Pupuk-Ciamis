@@ -1,4 +1,6 @@
-{{-- Asumsi Anda menggunakan layout utama app.blade.php --}}
+<head>
+    <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ env('MIDTRANS_CLIENT_KEY') }}"></script>
+</head>
 @extends('layouts.app')
 
 @section('content')
@@ -13,7 +15,8 @@
                 </p>
             </div>
             <div>
-                <button id="btnOpenModal" class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-semibold py-2.5 px-5 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2">
+                <button id="btnOpenModal"
+                    class="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-semibold py-2.5 px-5 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2">
                     <i data-lucide="plus" class="w-4 h-4"></i> Buat Permintaan Baru
                 </button>
             </div>
@@ -169,5 +172,52 @@
                 }
             });
         });
+
+        async function bayarSekarang() {
+            // Kumpulkan data
+            const payload = {
+                id_mitra: selectedMitraId,
+                total_pembayaran: keranjang.reduce((sum, item) => sum + item.subtotal, 0),
+                keranjang: keranjang,
+                _token: '{{ csrf_token() }}' // Penting untuk Laravel POST
+            };
+
+            try {
+                // Tampilkan loading di tombol...
+
+                // Kirim request ke backend
+                const response = await fetch('/api/checkout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                // Panggil Midtrans Snap Popup
+                window.snap.pay(data.snap_token, {
+                    onSuccess: function(result) {
+                        alert("Pembayaran berhasil!");
+                        goToStep(4); // Pindah ke halaman sukses
+                    },
+                    onPending: function(result) {
+                        alert("Menunggu pembayaran Anda.");
+                    },
+                    onError: function(result) {
+                        alert("Pembayaran gagal!");
+                    },
+                    onClose: function() {
+                        alert('Anda menutup popup tanpa menyelesaikan pembayaran');
+                    }
+                });
+
+            } catch (error) {
+                console.error('Checkout error:', error);
+                alert('Gagal memproses pembayaran');
+            }
+        }
     </script>
 @endsection

@@ -17,6 +17,9 @@ Route::get('/get-desa/{id_kecamatan}', function ($id_kecamatan) {
     return response()->json($desa);
 });
 
+// Midtrans Webhook (harus di luar middleware auth)
+Route::post('/api/midtrans-callback', [TransaksiController::class, 'notificationHandler']);
+
 Route::middleware('guest')->group(function () {
     Route::get('/', function () {
         return view('welcome');
@@ -88,10 +91,12 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['role:petani'])->group(function () {
         Route::get('/petani/dashboard', [PetaniController::class, 'index'])->name('petani.dashboard');
         Route::get('/petani/beli-pupuk', [PetaniController::class, 'beliPupuk'])->name('petani.beli_pupuk');
-        Route::get('/petani/riwayat-transaksi', [PetaniController::class, 'riwayatTransaksi'])->name('petani.riwayat_transaksi');
+        Route::get('/petani/riwayat-transaksi', [TransaksiController::class, 'riwayat'])->name('petani.riwayat_transaksi');
         Route::get('/petani/transaksi/{id}', [PetaniController::class, 'detailTransaksi'])->name('petani.detail_transaksi');
         // routes/web.php
         Route::get('/api/mitra/{id_mitra}/pupuk', [TransaksiController::class, 'getPupukByMitra']);
+        Route::post('/api/checkout', [TransaksiController::class, 'prosesCheckout']);
+        Route::get('/api/transaksi/detail/{id}', [TransaksiController::class, 'detail']);
     });
 
     // Khusus Mitra

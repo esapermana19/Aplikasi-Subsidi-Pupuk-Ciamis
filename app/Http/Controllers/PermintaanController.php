@@ -33,8 +33,26 @@ class PermintaanController extends Controller
         // 3. Mulai proses simpan ke 2 tabel menggunakan Transaction
         DB::beginTransaction();
         try {
-            // A. Simpan ke tabel_permintaan dan ambil ID barunya
-            $id_permintaan = DB::table('tabel_permintaan')->insertGetId([
+            // Generate custom ID: REQ-YYMMDDNN
+            $prefix = 'REQ-' . now()->format('ymd'); // Contoh: REQ-260501
+            $lastPermintaan = DB::table('tabel_permintaan')
+                ->where('id_permintaan', 'LIKE', $prefix . '%')
+                ->orderBy('id_permintaan', 'desc')
+                ->first();
+
+            if ($lastPermintaan) {
+                $lastId = (string)$lastPermintaan->id_permintaan;
+                $sequence = (int)substr($lastId, -3);
+                $newSequence = str_pad($sequence + 1, 3, '0', STR_PAD_LEFT);
+            } else {
+                $newSequence = '001';
+            }
+
+            $id_permintaan = $prefix . $newSequence;
+
+            // A. Simpan ke tabel_permintaan
+            DB::table('tabel_permintaan')->insert([
+                'id_permintaan' => $id_permintaan,
                 'id_mitra' => $id_mitra,
                 'tgl_permintaan' => $request->tgl_permintaan,
                 'status_permintaan' => 'pending', // Default saat baru dibuat
@@ -142,6 +160,27 @@ class PermintaanController extends Controller
                 'status_permintaan' => 'diterima',
                 'updated_at' => now()
             ]);
+
+        // LOG KE TABEL_DETAIL_STOK
+        $details = \DB::table('tabel_detail_permintaan')->where('id_permintaan', $id)->get();
+        foreach ($details as $item) {
+            // Hitung stok awal mitra saat ini (opsional, untuk histori yang rapi)
+            $stok_sekarang = \DB::table('tabel_detail_stok')
+                ->where('id_mitra', $mitra->id_mitra)
+                ->where('id_pupuk', $item->id_pupuk)
+                ->sum('jml_perubahan');
+
+            \DB::table('tabel_detail_stok')->insert([
+                'id_pupuk' => $item->id_pupuk,
+                'id_mitra' => $mitra->id_mitra,
+                'id_detail_permintaan' => $item->id_detail_permintaan,
+                'stok_awal' => $stok_sekarang,
+                'jml_perubahan' => $item->jml_disetujui,
+                'stok_akhir' => $stok_sekarang + $item->jml_disetujui,
+                'ket' => 'Penerimaan Pupuk (REQ: ' . $id . ')',
+                'created_at' => now()
+            ]);
+        }
 
         return redirect()->back()->with('success', 'Barang berhasil diterima! Stok di toko Anda telah bertambah.');
     }

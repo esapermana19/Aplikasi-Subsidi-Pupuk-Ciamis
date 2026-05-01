@@ -37,20 +37,10 @@ class PupukController extends Controller
             // 1. Stok Pusat (Stok yang ada di gudang pusat saat ini)
             $item->stok_pusat = $item->stok;
 
-            // 2. Stok di Mitra (Permintaan 'diterima' - Penjualan 'sudah')
-            $total_masuk_mitra = \DB::table('tabel_detail_permintaan')
-                ->join('tabel_permintaan', 'tabel_detail_permintaan.id_permintaan', '=', 'tabel_permintaan.id_permintaan')
+            // 2. Stok di Mitra (Total dari tabel_detail_stok)
+            $item->stok_mitra = \DB::table('tabel_detail_stok')
                 ->where('id_pupuk', $item->id_pupuk)
-                ->where('status_permintaan', 'diterima')
-                ->sum('jml_disetujui');
-
-            $total_keluar_mitra = \DB::table('tabel_detail_transaksi')
-                ->join('tabel_transaksi', 'tabel_detail_transaksi.id_transaksi', '=', 'tabel_transaksi.id_transaksi')
-                ->where('id_pupuk', $item->id_pupuk)
-                ->where('status_pengambilan', 'sudah')
-                ->sum('jml_beli');
-
-            $item->stok_mitra = $total_masuk_mitra - $total_keluar_mitra;
+                ->sum('jml_perubahan');
 
             // 3. Sedang Diproses (Stok berkurang dari pusat tapi belum diterima mitra)
             $item->sedang_diproses = \DB::table('tabel_detail_permintaan')

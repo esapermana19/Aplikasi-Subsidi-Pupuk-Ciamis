@@ -186,7 +186,7 @@
                                         <div class="flex-1 min-w-0">
                                             <h3 class="font-semibold text-gray-900 text-sm">{{ $transaksi->mitra->nama_mitra ?? 'Mitra' }}</h3>
                                             <p class="text-xs text-gray-500">
-                                                {{ $transaksi->created_at->format('d M Y, H:i') }}
+                                                {{ $transaksi->created_at ? $transaksi->created_at->format('d M Y, H:i') : '-' }}
                                             </p>
                                         </div>
                                     </div>

@@ -16,22 +16,10 @@ class MitraController extends Controller
         $user = Auth::user();
         $id_user = $user->id_user;
 
-        // 1. Hitung Total Keseluruhan Pupuk Masuk (Permintaan Disetujui)
-        $total_masuk = \DB::table('tabel_detail_permintaan')
-            ->join('tabel_permintaan', 'tabel_detail_permintaan.id_permintaan', '=', 'tabel_permintaan.id_permintaan')
-            ->where('tabel_permintaan.id_mitra', $user->mitra->id_mitra)
-            ->where('tabel_permintaan.status_permintaan', 'diterima')
-            ->sum('tabel_detail_permintaan.jml_disetujui');
-
-        // 2. Hitung Total Keseluruhan Pupuk Keluar (Penjualan ke Petani)
-        $total_keluar = \DB::table('tabel_detail_transaksi')
-            ->join('tabel_transaksi', 'tabel_detail_transaksi.id_transaksi', '=', 'tabel_transaksi.id_transaksi')
-            ->where('tabel_transaksi.id_mitra', $user->mitra->id_mitra)
-            ->where('tabel_transaksi.status_pengambilan', 'sudah')
-            ->sum('tabel_detail_transaksi.jml_beli');
-
-        // 3. Hitung Sisa Stok Keseluruhan Mitra
-        $total_stok_mitra = $total_masuk - $total_keluar;
+        // 1. Hitung Sisa Stok Keseluruhan Mitra dari tabel_detail_stok
+        $total_stok_mitra = \DB::table('tabel_detail_stok')
+            ->where('id_mitra', $user->mitra->id_mitra)
+            ->sum('jml_perubahan');
 
         // Siapkan data statistik untuk dashboard
         $stats = [
@@ -76,27 +64,11 @@ class MitraController extends Controller
         // Ambil semua jenis pupuk dari tabel_pupuk
         $pupukList = Pupuk::all()->map(function ($pupuk) use ($mitra) {
 
-            // 1. Hitung TOTAL MASUK (dari detail permintaan yang disetujui)
-            // Join antara tabel_permintaan dan tabel_detail_permintaan
-            $total_masuk = \DB::table('tabel_detail_permintaan')
-                ->join('tabel_permintaan', 'tabel_detail_permintaan.id_permintaan', '=', 'tabel_permintaan.id_permintaan')
-                ->where('tabel_permintaan.id_mitra', $mitra->id_mitra)
-                ->where('tabel_detail_permintaan.id_pupuk', $pupuk->id_pupuk)
-                ->where('tabel_permintaan.status_permintaan', 'diterima')
-                ->sum('tabel_detail_permintaan.jml_disetujui');
-
-            // 2. Hitung TOTAL KELUAR (dari detail transaksi penjualan ke petani)
-            // Join antara tabel_transaksi dan tabel_detail_transaksi
-            $total_keluar = \DB::table('tabel_detail_transaksi')
-                ->join('tabel_transaksi', 'tabel_detail_transaksi.id_transaksi', '=', 'tabel_transaksi.id_transaksi')
-                ->where('tabel_transaksi.id_mitra', $mitra->id_mitra)
-                ->where('tabel_detail_transaksi.id_pupuk', $pupuk->id_pupuk)
-                // Asumsi: status_pengambilan 'sudah' berarti barang sudah keluar dari gudang mitra
-                ->where('tabel_transaksi.status_pengambilan', 'sudah')
-                ->sum('tabel_detail_transaksi.jml_beli');
-
-            // 3. Hitung Sisa Stok
-            $pupuk->stok_mitra = $total_masuk - $total_keluar;
+            // Hitung Sisa Stok dari tabel_detail_stok
+            $pupuk->stok_mitra = \DB::table('tabel_detail_stok')
+                ->where('id_mitra', $mitra->id_mitra)
+                ->where('id_pupuk', $pupuk->id_pupuk)
+                ->sum('jml_perubahan');
 
             return $pupuk;
         });

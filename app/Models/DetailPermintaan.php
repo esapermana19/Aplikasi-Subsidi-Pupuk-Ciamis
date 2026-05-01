@@ -6,17 +6,23 @@ use Illuminate\Database\Eloquent\Model;
 
 class DetailPermintaan extends Model
 {
-    protected $table = 'detail_permintaan';
+    protected $table = 'tabel_detail_permintaan';
+    protected $primaryKey = 'id_detail_permintaan';
 
     protected $fillable = [
-        'permintaan_id',
-        'nama_barang',
-        'jumlah',
-        'keterangan',
+        'id_permintaan',
+        'id_pupuk',
+        'jml_diminta',
+        'jml_disetujui',
     ];
 
     public function permintaan()
     {
-        return $this->belongsTo(Permintaan::class, 'permintaan_id');
+        return $this->belongsTo(Permintaan::class, 'id_permintaan');
+    }
+
+    public function pupuk()
+    {
+        return $this->belongsTo(Pupuk::class, 'id_pupuk');
     }
 }

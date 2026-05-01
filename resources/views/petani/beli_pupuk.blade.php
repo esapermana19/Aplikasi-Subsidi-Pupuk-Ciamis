@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+    <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ env('MIDTRANS_CLIENT_KEY') }}"></script>
     <div class="mb-6">
         <h2 class="text-2xl font-bold text-green-700">Beli Pupuk</h2>
         <p class="text-sm text-gray-500 mt-1">Pilih mitra terdekat dan beli pupuk subsidi secara digital.</p>
@@ -160,38 +161,29 @@
             </button>
             <button id="btn-lanjut-bayar" disabled onclick="goToStep(3)"
                 class="bg-gray-300 text-gray-500 cursor-not-allowed font-medium py-2 px-5 rounded-lg transition-colors text-sm flex items-center gap-2">
-                Lanjut Pembayaran <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                Lanjut ke Pembayaran <i data-lucide="arrow-right" class="w-4 h-4"></i>
             </button>
         </div>
     </div>
 
     <div id="step-3"
-        class="bg-white border border-green-500 rounded-xl shadow-sm overflow-hidden hidden max-w-xl mx-auto">
-        <div class="p-6 text-center">
-            <h3 class="font-bold text-gray-800 mb-1">Langkah 3: Pembayaran QRIS</h3>
-            <p class="text-[13px] text-gray-500 mb-6">Scan QRIS di bawah ini dengan aplikasi M-Banking atau E-Wallet Anda.
-            </p>
+        class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden hidden max-w-xl mx-auto p-6">
+        <h3 class="font-bold text-gray-800 mb-2">Langkah 3: Ringkasan Belanja</h3>
+        <p class="text-[13px] text-gray-500 mb-6">Pastikan pesanan Anda sudah benar sebelum melanjutkan pembayaran.</p>
 
-            <div class="border-2 border-dashed border-gray-300 rounded-xl p-6 w-fit mx-auto mb-6">
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=QRIS_DATA_DUMMY" alt="QRIS"
-                    class="w-48 h-48 mx-auto mb-4 rounded-lg">
-                <h4 class="font-bold text-xl text-gray-800">Total: Rp 225.000</h4>
-                <p class="text-xs text-gray-500">Penerima: Kios Tani Maju</p>
-            </div>
+        <div id="ringkasan-belanja" class="space-y-4 mb-8">
+            <!-- Akan diisi via JS -->
+        </div>
 
-            <div class="text-left mb-2">
-                <p class="text-xs text-gray-400">Simulasi Aksi:</p>
-            </div>
-            <div class="flex gap-3">
-                <button onclick="goToStep(2)"
-                    class="w-1/3 border border-gray-300 text-gray-600 hover:bg-gray-50 font-bold py-3 px-4 rounded-lg transition-colors text-sm">
-                    Kembali
-                </button>
-                <button onclick="goToStep(4)"
-                    class="w-2/3 bg-[#16a34a] hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition-colors text-sm">
-                    Saya Sudah Membayar
-                </button>
-            </div>
+        <div class="flex gap-3 pt-4 border-t border-gray-100">
+            <button onclick="goToStep(2)"
+                class="w-1/3 border border-gray-300 text-gray-600 hover:bg-gray-50 font-medium py-3 px-4 rounded-lg transition-colors text-sm">
+                Kembali
+            </button>
+            <button id="btn-final-pay" onclick="prosesPembayaranQRIS()"
+                class="w-2/3 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition-colors text-sm flex items-center justify-center gap-2">
+                <i data-lucide="credit-card" class="w-5 h-5"></i> Bayar via QRIS / Midtrans
+            </button>
         </div>
     </div>
 
@@ -209,36 +201,30 @@
             <div class="space-y-4 text-sm">
                 <div>
                     <p class="text-xs text-gray-500 mb-0.5">ID Transaksi</p>
-                    <p class="font-bold text-gray-800">TRX-99281-PTN</p>
+                    <p id="struk-id" class="font-bold text-gray-800">-</p>
                 </div>
                 <div>
                     <p class="text-xs text-gray-500 mb-0.5">Mitra Pengambilan</p>
-                    <p class="font-bold text-gray-800">Kios Tani Maju</p>
+                    <p id="struk-mitra" class="font-bold text-gray-800">-</p>
                 </div>
                 <div>
                     <p class="text-xs text-gray-500 mb-0.5">Tanggal</p>
-                    <p class="font-bold text-gray-800">24 April 2026, 14:30 WIB</p>
+                    <p id="struk-tanggal" class="font-bold text-gray-800">-</p>
                 </div>
 
-                <div class="border-t border-b border-gray-100 py-3 mt-4">
-                    <p class="text-xs font-bold text-gray-800 mb-2">Detail Pembelian:</p>
-                    <div class="flex justify-between items-center text-[13px] mb-1">
-                        <span class="text-gray-600">Urea (100 kg)</span>
-                        <span class="text-gray-800">Rp 225.000</span>
-                    </div>
+                <div id="struk-items-container" class="border-t border-b border-gray-100 py-3 mt-4">
                 </div>
 
                 <div class="flex justify-between items-center">
                     <span class="font-bold text-gray-800">Total</span>
-                    <span class="font-bold text-green-700">Rp 225.000</span>
+                    <span id="struk-total" class="font-bold text-green-700">-</span>
                 </div>
             </div>
 
             <div class="flex flex-col items-center justify-center border-l border-gray-100 pl-6">
                 <p class="text-xs font-bold text-gray-800 mb-3">Scan untuk Ambil Pupuk</p>
                 <div class="border border-gray-200 p-2 rounded-xl bg-white mb-3 shadow-sm">
-                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=TRX-99281-PTN" alt="QR Ambil"
-                        class="w-32 h-32 rounded-lg">
+                    <img id="struk-qr" src="" alt="QR Ambil" class="w-32 h-32 rounded-lg">
                 </div>
                 <span class="bg-yellow-100 text-yellow-800 text-[11px] font-bold px-3 py-1 rounded-md">Menunggu
                     Pengambilan</span>
@@ -453,7 +439,8 @@
 
             if (indexAda !== -1) {
                 if (keranjang[indexAda].jumlah + jumlahMinta > stokTersedia) {
-                    return alert(`Gagal! Total pupuk ${namaPupuk} di keranjang melebihi stok tersedia (${stokTersedia} Kg).`);
+                    return alert(
+                        `Gagal! Total pupuk ${namaPupuk} di keranjang melebihi stok tersedia (${stokTersedia} Kg).`);
                 }
                 keranjang[indexAda].jumlah += jumlahMinta;
                 keranjang[indexAda].subtotal = keranjang[indexAda].jumlah * harga;
@@ -587,6 +574,153 @@
                     ind.classList.remove('bg-green-600', 'text-white');
                     ind.classList.add('bg-gray-200', 'text-gray-500');
                 }
+            }
+
+            // Jika ke Step 3, render ringkasan
+            if (targetStep === 3) {
+                renderRingkasan();
+            }
+        }
+
+        function renderRingkasan() {
+            const container = document.getElementById('ringkasan-belanja');
+            let totalHarga = 0;
+            let html = `
+                <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
+                    <p class="text-xs text-gray-400 mb-3 uppercase tracking-wider font-bold">Daftar Pupuk</p>
+                    <div class="space-y-3">
+            `;
+
+            keranjang.forEach(item => {
+                totalHarga += item.subtotal;
+                html += `
+                    <div class="flex justify-between items-center text-sm">
+                        <span class="text-gray-600 font-medium">${item.nama} (${item.jumlah} Kg)</span>
+                        <span class="text-gray-900 font-bold">Rp ${item.subtotal.toLocaleString('id-ID')}</span>
+                    </div>
+                `;
+            });
+
+            html += `
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-gray-200 flex justify-between items-center">
+                        <span class="text-base font-bold text-gray-800">Total Akhir</span>
+                        <span class="text-xl font-black text-green-600">Rp ${totalHarga.toLocaleString('id-ID')}</span>
+                    </div>
+                </div>
+                <div class="bg-blue-50 border border-blue-100 rounded-lg p-3 flex items-start gap-3">
+                    <i data-lucide="info" class="w-5 h-5 text-blue-500 flex-shrink-0"></i>
+                    <p class="text-[11px] text-blue-700">Pembayaran aman dengan Midtrans. Anda bisa menggunakan QRIS (Gopay, ShopeePay, Dana, dll) atau Transfer Bank.</p>
+                </div>
+            `;
+
+            container.innerHTML = html;
+            lucide.createIcons();
+        }
+
+        async function prosesPembayaranQRIS() {
+            if (keranjang.length === 0) return alert("Keranjang kosong!");
+
+            const btn = document.getElementById('btn-final-pay');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="animate-spin" data-lucide="loader-2"></i> Memproses...';
+            lucide.createIcons();
+
+            const payload = {
+                id_mitra: selectedMitraId,
+                total_pembayaran: keranjang.reduce((sum, item) => sum + item.subtotal, 0),
+                keranjang: keranjang,
+                _token: '{{ csrf_token() }}'
+            };
+
+            try {
+                const response = await fetch('/api/checkout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (data.snap_token) {
+                    window.snap.pay(data.snap_token, {
+                        onSuccess: function(result) {
+                            Swal.fire('Berhasil', 'Pembayaran Anda telah diterima!', 'success');
+
+                            // ==========================================
+                            // INJEKSI DATA ASLI KE STRUK STEP 4
+                            // ==========================================
+
+                            // 1. Ambil ID Transaksi dari Backend (Pastikan Controller mengirim id_transaksi)
+                            const txId = data.id_transaksi;
+
+                            // 2. Format Tanggal Saat Ini
+                            const now = new Date();
+                            const options = {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            };
+                            const formattedDate = now.toLocaleDateString('id-ID', options) + ' WIB';
+
+                            // 3. Masukkan Data ke Struk
+                            document.getElementById('struk-id').innerText = txId;
+                            document.getElementById('struk-mitra').innerText = selectedMitraNama;
+                            document.getElementById('struk-tanggal').innerText = formattedDate;
+
+                            // 4. Render Detail Item
+                            let itemsHtml =
+                                '<p class="text-xs font-bold text-gray-800 mb-2">Detail Pembelian:</p>';
+                            keranjang.forEach(item => {
+                                itemsHtml += `
+                                <div class="flex justify-between items-center text-[13px] mb-1">
+                                    <span class="text-gray-600">${item.nama} (${item.jumlah} kg)</span>
+                                    <span class="text-gray-800">Rp ${item.subtotal.toLocaleString('id-ID')}</span>
+                                </div>`;
+                            });
+                            document.getElementById('struk-items-container').innerHTML = itemsHtml;
+
+                            // 5. Total dan QR Code Dinamis
+                            const total = keranjang.reduce((a, b) => a + b.subtotal, 0);
+                            document.getElementById('struk-total').innerText =
+                                `Rp ${total.toLocaleString('id-ID')}`;
+
+                            // Generate QR Code otomatis berdasarkan txId
+                            document.getElementById('struk-qr').src =
+                                `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${txId}`;
+
+                            // ==========================================
+
+                            // 6. Tampilkan Step 4 setelah data selesai dirakit
+                            goToStep(4);
+                        },
+                        onPending: function(result) {
+                            Swal.fire('Pending', 'Silakan selesaikan pembayaran Anda.', 'info');
+                        },
+                        onError: function(result) {
+                            Swal.fire('Error', 'Pembayaran gagal!', 'error');
+                        },
+                        onClose: function() {
+                            console.log('Customer closed the popup without finishing the payment');
+                        }
+                    });
+                } else {
+                    const errorMsg = data.error || 'Gagal mendapatkan token pembayaran';
+                    Swal.fire('Gagal', errorMsg, 'error');
+                }
+            } catch (error) {
+                console.error('Checkout error:', error);
+                Swal.fire('Error', 'Terjadi kesalahan sistem saat menghubungi server.', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+                lucide.createIcons();
             }
         }
     </script>
