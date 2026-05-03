@@ -8,6 +8,7 @@ use App\Models\Transaksi;
 use App\Models\Pupuk;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class MitraController extends Controller
 {
@@ -74,5 +75,59 @@ class MitraController extends Controller
         });
 
         return view('mitra.pupuk_tersedia', compact('pupukList'));
+    }
+
+    public function scanPage()
+    {
+        return view('mitra.scan');
+    }
+
+    public function scanDetail($id)
+    {
+        // Ambil id mitra yang sedang login
+        $id_mitra = Auth::user()->mitra->id_mitra;
+
+        // Cari transaksi berdasarkan ID QR Code dan pastikan itu milik Mitra ini
+        $transaksi = DB::table('tabel_transaksi')
+            ->join('tabel_petani', 'tabel_transaksi.id_petani', '=', 'tabel_petani.id_petani')
+            ->where('tabel_transaksi.id_transaksi', $id)
+            ->where('tabel_transaksi.id_mitra', $id_mitra)
+            ->select('tabel_transaksi.*', 'tabel_petani.nama_petani')
+            ->first();
+
+        if (!$transaksi) {
+            return response()->json(['status' => 'error', 'message' => 'Data transaksi tidak ditemukan atau bukan milik mitra ini!']);
+        }
+
+        // Ambil detail pupuk
+        $details = DB::table('tabel_detail_transaksi')
+            ->join('tabel_pupuk', 'tabel_detail_transaksi.id_pupuk', '=', 'tabel_pupuk.id_pupuk')
+            ->where('id_transaksi', $id)
+            ->get();
+
+        return response()->json([
+            'status' => 'success',
+            'transaksi' => $transaksi,
+            'details' => $details
+        ]);
+    }
+
+    public function konfirmasiPengambilan($id)
+    {
+        DB::table('tabel_transaksi')
+            ->where('id_transaksi', $id)
+            ->update(['status_pengambilan' => 'sudah']);
+
+        return response()->json(['status' => 'success', 'message' => 'Pupuk berhasil diserahkan kepada petani!']);
+    }
+
+    public function riwayat()
+    {
+        // Mengambil transaksi yang statusnya sudah diambil, diurutkan dari terbaru
+        $riwayat = Transaksi::with('petani')->where('status_pengambilan', 'sudah')
+                        ->orderBy('updated_at', 'desc')
+                        ->get();
+
+        return view('mitra.riwayat_transaksi', compact('riwayat'));
     }
 }

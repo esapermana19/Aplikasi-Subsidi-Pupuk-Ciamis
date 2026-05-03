@@ -101,18 +101,23 @@ Route::middleware(['auth'])->group(function () {
 
     // Khusus Mitra
     Route::middleware(['role:mitra'])->group(function () {
+        // Dashboard Mitra
         Route::get('/mitra/dashboard', [MitraController::class, 'index'])->name('mitra.dashboard');
+        // Kelola Stok dan Permintaan
+        Route::get('/mitra/pupuk_tersedia', [MitraController::class, 'pupuk_tersedia'])->name('mitra.pupuk_tersedia');
         Route::get('/mitra/permintaan', [MitraController::class, 'permintaan'])->name('mitra.permintaan');
-
         Route::get('/mitra/riwayat_permintaan', [PermintaanController::class, 'index'])->name('mitra.riwayat_permintaan');
         Route::get('/mitra/permintaan/{id}/detail', [PermintaanController::class, 'detail']);
         Route::post('/mitra/simpan-permintaan', [PermintaanController::class, 'store'])->name('mitra.store_permintaan');
         Route::post('/mitra/riwayat_permintaan/{id}/terima', [PermintaanController::class, 'terimaPermintaan'])->name('mitra.permintaan.terima');
-
-        Route::get('/mitra/pupuk_tersedia', [MitraController::class, 'pupuk_tersedia'])->name('mitra.pupuk_tersedia');
-        Route::get('/mitra/pencairan', [MitraController::class, 'pencairan'])->name('mitra.pencairan');
-        Route::get('/mitra/scan', [MitraController::class, 'scan'])->name('mitra.scan');
+        // Transaksi
+        Route::get('/mitra/scan', [MitraController::class, 'scanPage'])->name('mitra.scan');
+        Route::get('/mitra/scan/detail/{id}', [MitraController::class, 'scanDetail']);
+        Route::post('/mitra/scan/konfirmasi/{id}', [MitraController::class, 'konfirmasiPengambilan']);
         Route::get('/mitra/transaksi', [MitraController::class, 'transaksi'])->name('mitra.transaksi');
+        Route::get('/mitra/riwayat', [MitraController::class, 'riwayat'])->name('mitra.riwayat');
+
+        Route::get('/mitra/pencairan', [MitraController::class, 'pencairan'])->name('mitra.pencairan');
         Route::get('/mitra/tarik_saldo', [MitraController::class, 'tarik_saldo'])->name('mitra.tarik_saldo');
         Route::get('/mitra/laporan', [MitraController::class, 'laporan'])->name('mitra.laporan');
     });

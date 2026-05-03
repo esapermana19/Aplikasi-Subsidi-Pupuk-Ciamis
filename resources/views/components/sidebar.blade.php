@@ -116,12 +116,20 @@
                                 ],
                             ],
                         ],
-                        ['id' => 'mitra.scan', 'label' => 'Scan QR', 'icon' => 'qr-code', 'route' => 'mitra.scan'],
                         [
-                            'id' => 'mitra.transaksi',
+                            'id' => 'transaksi',
                             'label' => 'Transaksi',
                             'icon' => 'receipt',
-                            'route' => 'mitra.transaksi',
+                            'is_dropdown' => true,
+                            'sub_menu' => [
+                                ['id' => 'mitra.scan', 'label' => 'Scan QR', 'icon' => 'qr-code', 'route' => 'mitra.scan'],
+                                [
+                                    'id' => 'mitra.riwayat',
+                                    'label' => 'Riwayat Transaksi',
+                                    'icon' => 'receipt',
+                                    'route' => 'mitra.riwayat',
+                                ],
+                            ],
                         ],
                         [
                             'id' => 'mitra.pencairan',
