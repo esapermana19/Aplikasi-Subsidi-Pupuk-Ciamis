@@ -419,4 +419,49 @@ class AdminController extends Controller
             'activeMenu' => 'transaksi'
         ]);
     }
+
+    public function permintaan_penarikan()
+    {
+        $penarikans = \App\Models\Pencairan::with('mitra')
+            ->orderByRaw("FIELD(status, 'pending') DESC") // Sort pending first
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
+            
+        return view('admin.permintaan_penarikan', [
+            'penarikans' => $penarikans,
+            'activeMenu' => 'permintaan-penarikan'
+        ]);
+    }
+
+    public function update_penarikan(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|in:success,failed'
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $penarikan = \App\Models\Pencairan::findOrFail($id);
+            
+            // Hanya update jika statusnya masih pending
+            if ($penarikan->status !== 'pending') {
+                return back()->with('error', 'Status penarikan sudah diproses sebelumnya.');
+            }
+
+            $penarikan->status = $request->status;
+            $penarikan->save();
+
+            // Jika gagal (ditolak), kembalikan saldo ke mitra
+            if ($request->status === 'failed') {
+                $penarikan->mitra->increment('saldo_app', $penarikan->jml_transfer);
+            }
+
+            DB::commit();
+            $status_text = $request->status === 'success' ? 'disetujui (Berhasil)' : 'ditolak (Gagal)';
+            return back()->with('success', "Penarikan sebesar Rp " . number_format($penarikan->jml_transfer, 0, ',', '.') . " untuk mitra " . ($penarikan->mitra->nama_mitra ?? 'Unknown') . " telah $status_text.");
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+        }
+    }
 }

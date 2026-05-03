@@ -74,9 +74,8 @@ Route::middleware(['auth'])->group(function () {
         // Proses Simpan Approval (Setujui / Tolak)
         Route::post('/admin/permintaan/{id}/update', [AdminController::class, 'update_permintaan'])->name('admin.permintaan.update');
 
-        Route::get('/admin/approval-pencairan', function () {
-            return "Halaman Cair";
-        })->name('approval-pencairan');
+        Route::get('/admin/permintaan-penarikan', [AdminController::class, 'permintaan_penarikan'])->name('admin.permintaan_penarikan');
+        Route::post('/admin/permintaan-penarikan/{id}/update', [AdminController::class, 'update_penarikan'])->name('admin.penarikan.update');
         Route::get('/admin/rekonsiliasi', function () {
             return "Halaman Rekon";
         })->name('rekonsiliasi');
@@ -115,8 +114,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/mitra/transaksi', [MitraController::class, 'transaksi'])->name('mitra.transaksi');
         Route::get('/mitra/riwayat', [MitraController::class, 'riwayat'])->name('mitra.riwayat');
 
+        Route::get('/mitra/saldo', [MitraController::class, 'saldo'])->name('mitra.saldo');
         Route::get('/mitra/pencairan', [MitraController::class, 'pencairan'])->name('mitra.pencairan');
         Route::get('/mitra/tarik_saldo', [MitraController::class, 'tarik_saldo'])->name('mitra.tarik_saldo');
+        Route::post('/mitra/tarik_saldo', [MitraController::class, 'proses_tarik_saldo'])->name('mitra.proses_tarik_saldo');
         Route::get('/mitra/laporan', [MitraController::class, 'laporan'])->name('mitra.laporan');
     });
 });

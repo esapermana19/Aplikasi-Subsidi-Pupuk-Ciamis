@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 #[Fillable([
+    'id_penarikan',
     'id_mitra',
     'jml_transfer',
     'tgl_transfer',
@@ -14,8 +15,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 ])]
 class Pencairan extends Model
 {
-    protected $table = 'tabel_pencairan';
-    protected $primaryKey = 'id_pencairan';
+    protected $table = 'tabel_penarikan';
+    protected $primaryKey = 'id_penarikan';
+    public $incrementing = false;
+    protected $keyType = 'string';
 
     public function mitra()
     {

@@ -13,7 +13,7 @@
 </head>
 @props(['activeMenu', 'pendingCount'])
 
-<div :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'" 
+<div :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
     class="flex h-screen w-64 flex-col border-r bg-white fixed left-0 top-0 z-50 transition-transform duration-300 lg:translate-x-0">
     <div class="flex h-16 items-center gap-3 border-b px-6">
         <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-green-600">
@@ -64,8 +64,8 @@
                                     'label' => 'Kelola Pupuk',
                                     'icon' => 'leaf',
                                     'route' => 'admin.pupuk.index',
-                                ]
-                            ]
+                                ],
+                            ],
                         ],
                         [
                             'id' => 'verifikasi',
@@ -92,10 +92,10 @@
                             'route' => 'admin.rekonsiliasi',
                         ],
                         [
-                            'id' => 'approval-pencairan',
-                            'label' => 'Approval Pencairan',
+                            'id' => 'permintaan-penarikan',
+                            'label' => 'Permintaan Penarikan',
                             'icon' => 'dollar-sign',
-                            'route' => 'admin.approval-pencairan',
+                            'route' => 'admin.permintaan_penarikan',
                         ],
                         ['id' => 'laporan', 'label' => 'Laporan', 'icon' => 'file-text', 'route' => 'admin.laporan'],
                         ['id' => 'log', 'label' => 'Log Activity', 'icon' => 'activity', 'route' => 'admin.log'],
@@ -136,7 +136,12 @@
                             'icon' => 'receipt',
                             'is_dropdown' => true,
                             'sub_menu' => [
-                                ['id' => 'mitra.scan', 'label' => 'Scan QR', 'icon' => 'qr-code', 'route' => 'mitra.scan'],
+                                [
+                                    'id' => 'mitra.scan',
+                                    'label' => 'Scan QR',
+                                    'icon' => 'qr-code',
+                                    'route' => 'mitra.scan',
+                                ],
                                 [
                                     'id' => 'mitra.riwayat',
                                     'label' => 'Riwayat Transaksi',
@@ -146,16 +151,10 @@
                             ],
                         ],
                         [
-                            'id' => 'mitra.pencairan',
-                            'label' => 'Pencairan',
-                            'icon' => 'banknote',
-                            'route' => 'mitra.pencairan',
-                        ],
-                        [
-                            'id' => 'mitra.tarik_saldo',
-                            'label' => 'Tarik Saldo',
+                            'id' => 'mitra.saldo',
+                            'label' => 'Saldo Saya',
                             'icon' => 'wallet',
-                            'route' => 'mitra.tarik_saldo',
+                            'route' => 'mitra.saldo',
                         ],
                         [
                             'id' => 'mitra.laporan',
