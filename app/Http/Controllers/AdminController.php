@@ -374,4 +374,49 @@ class AdminController extends Controller
             return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
+    public function transaksi(Request $request)
+    {
+        $query = Transaksi::with(['petani', 'mitra.kecamatan', 'mitra.desa', 'rincian.pupuk']);
+
+        if ($request->filled('kecamatan')) {
+            $query->whereHas('mitra', function ($q) use ($request) {
+                $q->where('id_kecamatan', $request->kecamatan);
+            });
+        }
+
+        if ($request->filled('desa')) {
+            $query->whereHas('mitra', function ($q) use ($request) {
+                $q->where('id_desa', $request->desa);
+            });
+        }
+
+        if ($request->filled('mitra')) {
+            $query->where('id_mitra', $request->mitra);
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('id_transaksi', 'like', "%{$search}%")
+                  ->orWhereHas('petani', function ($q2) use ($search) {
+                      $q2->where('nama_petani', 'like', "%{$search}%")
+                         ->orWhere('nik', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $transaksis = $query->orderBy('tgl_transaksi', 'desc')->paginate(15)->withQueryString();
+        
+        $kecamatans = \App\Models\Kecamatan::orderBy('nama_kecamatan')->get();
+        $desas = \App\Models\Desa::orderBy('nama_desa')->get();
+        $mitras = \App\Models\Mitra::orderBy('nama_mitra')->get();
+
+        return view('admin.transaksi', [
+            'transaksis' => $transaksis,
+            'kecamatans' => $kecamatans,
+            'desas' => $desas,
+            'mitras' => $mitras,
+            'activeMenu' => 'transaksi'
+        ]);
+    }
 }

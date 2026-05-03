@@ -69,9 +69,12 @@ async function showDetail(id) {
         </div>
         
         <div class="space-y-3 border-b border-dashed pb-4 mb-4">
-            <div class="flex justify-between text-xs">
+            <div class="flex justify-between text-xs items-start">
                 <span class="text-gray-500">Mitra</span>
-                <span class="font-bold text-gray-800">${t.nama_kios}</span>
+                <div class="text-right">
+                    <span class="font-bold text-gray-800 block">${t.nama_kios}</span>
+                    <span class="text-[10px] text-gray-500 font-medium">No: ${t.nomor_mitra ?? '-'}</span>
+                </div>
             </div>
             <div class="flex justify-between text-xs">
                 <span class="text-gray-500">Tanggal</span>

@@ -42,35 +42,48 @@
                             'route' => 'admin.dashboard',
                         ],
                         [
+                            'id' => 'data-master',
+                            'label' => 'Data Master',
+                            'icon' => 'database',
+                            'is_dropdown' => true,
+                            'sub_menu' => [
+                                [
+                                    'id' => 'petani',
+                                    'label' => 'Kelola Akun Petani',
+                                    'icon' => 'users',
+                                    'route' => 'admin.list_petani',
+                                ],
+                                [
+                                    'id' => 'mitra',
+                                    'label' => 'Kelola Akun Mitra',
+                                    'icon' => 'building-2',
+                                    'route' => 'admin.list_mitra',
+                                ],
+                                [
+                                    'id' => 'pupuk',
+                                    'label' => 'Kelola Pupuk',
+                                    'icon' => 'leaf',
+                                    'route' => 'admin.pupuk.index',
+                                ]
+                            ]
+                        ],
+                        [
                             'id' => 'verifikasi',
                             'label' => 'Verifikasi Akun',
                             'icon' => 'user-check',
                             'route' => 'admin.verifikasi',
                         ],
                         [
-                            'id' => 'petani',
-                            'label' => 'Kelola Akun Petani',
-                            'icon' => 'users',
-                            'route' => 'admin.list_petani',
-                        ],
-                        [
-                            'id' => 'mitra',
-                            'label' => 'Kelola Akun Mitra',
-                            'icon' => 'building-2',
-                            'route' => 'admin.list_mitra',
-                        ],
-                        ['id' => 'pupuk', 'label' => 'Kelola Pupuk', 'icon' => 'leaf', 'route' => 'admin.pupuk.index'],
-                        [
                             'id' => 'approval-permintaan',
-                            'label' => 'Approval Permintaan',
+                            'label' => 'Permintaan Pupuk',
                             'icon' => 'file-check',
                             'route' => 'admin.approval_permintaan',
                         ],
                         [
-                            'id' => 'approval-pencairan',
-                            'label' => 'Approval Pencairan',
-                            'icon' => 'dollar-sign',
-                            'route' => 'admin.approval-pencairan',
+                            'id' => 'transaksi',
+                            'label' => 'Data Transaksi',
+                            'icon' => 'receipt',
+                            'route' => 'admin.transaksi',
                         ],
                         [
                             'id' => 'rekonsiliasi',
@@ -79,12 +92,13 @@
                             'route' => 'admin.rekonsiliasi',
                         ],
                         [
-                            'id' => 'transaksi',
-                            'label' => 'Data Transaksi',
-                            'icon' => 'receipt',
-                            'route' => 'admin.transaksi',
+                            'id' => 'approval-pencairan',
+                            'label' => 'Approval Pencairan',
+                            'icon' => 'dollar-sign',
+                            'route' => 'admin.approval-pencairan',
                         ],
                         ['id' => 'laporan', 'label' => 'Laporan', 'icon' => 'file-text', 'route' => 'admin.laporan'],
+                        ['id' => 'log', 'label' => 'Log Activity', 'icon' => 'activity', 'route' => 'admin.log'],
                     ];
                 }
                 // 2. MENU UNTUK MITRA

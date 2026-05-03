@@ -219,7 +219,7 @@ class TransaksiController extends Controller
         $transaksi = DB::table('tabel_transaksi')
             ->join('tabel_mitra', 'tabel_transaksi.id_mitra', '=', 'tabel_mitra.id_mitra')
             ->where('tabel_transaksi.id_petani', $id_petani)
-            ->select('tabel_transaksi.*', 'tabel_mitra.nama_mitra as nama_kios', 'tabel_transaksi.total as total_harga')
+            ->select('tabel_transaksi.*', 'tabel_mitra.nama_mitra as nama_kios', 'tabel_mitra.nomor_mitra', 'tabel_transaksi.total as total_harga')
             ->orderBy('tgl_transaksi', 'desc')
             ->get();
 
@@ -232,7 +232,7 @@ class TransaksiController extends Controller
         $transaksi = DB::table('tabel_transaksi')
             ->join('tabel_mitra', 'tabel_transaksi.id_mitra', '=', 'tabel_mitra.id_mitra')
             ->where('id_transaksi', $id)
-            ->select('tabel_transaksi.*', 'tabel_mitra.nama_mitra as nama_kios', 'tabel_transaksi.total as total_harga')
+            ->select('tabel_transaksi.*', 'tabel_mitra.nama_mitra as nama_kios', 'tabel_mitra.nomor_mitra', 'tabel_transaksi.total as total_harga')
             ->first();
 
         $details = DB::table('tabel_detail_transaksi')

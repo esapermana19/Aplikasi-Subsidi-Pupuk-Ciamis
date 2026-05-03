@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
     'id_user',
+    'nomor_mitra',
     'nama_mitra',
     'nama_pemilik',
     'nik',
@@ -22,6 +23,25 @@ class Mitra extends Model
 {
     protected $table = 'tabel_mitra';
     protected $primaryKey = 'id_mitra';
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            if (empty($model->nomor_mitra)) {
+                $id_desa = $model->id_desa ?? '0000';
+                
+                // Cari jumlah mitra yang ada di desa yang sama
+                $count = static::where('id_desa', $id_desa)->count();
+                               
+                $nextSequence = $count + 1;
+                
+                // Format: id_desa (4) + sequence (2) = 6 digit
+                $model->nomor_mitra = $id_desa . str_pad($nextSequence, 2, '0', STR_PAD_LEFT);
+            }
+        });
+    }
 
     protected function casts(): array
     {

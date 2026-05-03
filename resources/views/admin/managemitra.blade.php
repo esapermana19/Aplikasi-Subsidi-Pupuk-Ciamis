@@ -121,6 +121,9 @@
                                         <div>
                                             <div class="text-sm font-bold text-gray-900">
                                                 {{ $m->nama_mitra ?? 'Belum Diatur' }}</div>
+                                            <div class="text-[10px] font-black tracking-wider text-violet-600 bg-violet-50 px-2 py-0.5 rounded border border-violet-100 inline-block mt-0.5 mb-0.5">
+                                                No: {{ $m->nomor_mitra ?? '-' }}
+                                            </div>
                                             <div class="text-xs text-gray-500">Pemilik:
                                                 {{ $m->nama_pemilik ?? '-' }}</div>
                                         </div>
@@ -167,7 +170,8 @@
                                             '{{ $m->no_rek ?? '-' }}',
                                             '{{ $m->kecamatan->nama_kecamatan ?? '-' }}', 
                                             '{{ $m->desa->nama_desa ?? '-' }}',
-                                            '{{ $m->user->status_akun }}')"
+                                            '{{ $m->user->status_akun }}',
+                                            '{{ $m->nomor_mitra ?? '-' }}')"
                                             class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                                             title="Detail">
                                             <i data-lucide="eye" class="h-4 w-4"></i>
@@ -339,6 +343,9 @@
                         </div>
                         <div class="flex-1 min-w-0">
                             <h4 id="det_nama" class="text-lg font-bold text-gray-900 truncate"></h4>
+                            <div class="text-[10px] font-black tracking-widest text-violet-600 bg-violet-100 px-2 py-0.5 rounded border border-violet-200 inline-block my-1">
+                                No Mitra: <span id="det_nomor_mitra"></span>
+                            </div>
                             <div class="flex flex-wrap items-center gap-x-3 gap-y-1 mt-0.5">
                                 <span id="det_status_badge" class="px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider border"></span>
                                 <span class="text-gray-400 text-[10px] flex items-center gap-1 font-medium">
@@ -509,7 +516,7 @@
     }
 
     // 2. Fungsi Modal Detail (Baru)
-    function openDetailModal(nik, nama_mitra, email, alamat, nama_pemilik, no_rek, kecamatan, desa, status) {
+    function openDetailModal(nik, nama_mitra, email, alamat, nama_pemilik, no_rek, kecamatan, desa, status, nomor_mitra) {
         document.getElementById('det_nik').innerText = nik;
         document.getElementById('det_rek').innerText = no_rek;
         document.getElementById('det_nama').innerText = nama_mitra;
@@ -518,6 +525,7 @@
         document.getElementById('det_kecamatan').innerText = kecamatan;
         document.getElementById('det_desa').innerText = desa;
         document.getElementById('det_alamat').innerText = alamat;
+        document.getElementById('det_nomor_mitra').innerText = nomor_mitra;
 
         const badge = document.getElementById('det_status_badge');
         badge.innerText = status.toUpperCase();

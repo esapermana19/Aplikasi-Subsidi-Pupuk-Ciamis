@@ -80,9 +80,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/admin/rekonsiliasi', function () {
             return "Halaman Rekon";
         })->name('rekonsiliasi');
-        Route::get('/admin/transaksi', function () {
-            return "Halaman Transaksi";
-        })->name('transaksi');
+        Route::get('/admin/transaksi', [AdminController::class, 'transaksi'])->name('admin.transaksi');
         Route::get('/admin/laporan', function () {
             return "Halaman Laporan";
         })->name('laporan');

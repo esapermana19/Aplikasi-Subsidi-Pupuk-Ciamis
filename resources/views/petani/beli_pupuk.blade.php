@@ -65,11 +65,14 @@
                 <div class="mitra-card border-2 border-gray-300 bg-white rounded-lg p-4 cursor-pointer transition-all hover:shadow-md"
                     data-id="{{ $mitra->id_mitra }}" data-kecamatan="{{ $mitra->id_kecamatan }}"
                     data-desa="{{ $mitra->id_desa }}"
-                    onclick="selectMitra({{ $mitra->id_mitra }}, '{{ addslashes($mitra->nama_mitra) }}', this)">
+                    onclick="selectMitra({{ $mitra->id_mitra }}, '{{ addslashes($mitra->nama_mitra) }}', '{{ $mitra->nomor_mitra ?? '-' }}', this)">
                     <div class="flex flex-col h-full">
                         <div class="flex items-start gap-2 mb-3">
                             <i data-lucide="store" class="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5"></i>
-                            <h4 class="font-bold text-gray-800 text-sm line-clamp-2">{{ $mitra->nama_mitra }}</h4>
+                            <div>
+                                <h4 class="font-bold text-gray-800 text-sm line-clamp-2">{{ $mitra->nama_mitra }}</h4>
+                                <span class="text-[10px] bg-green-50 text-green-700 px-1.5 py-0.5 rounded font-bold border border-green-100">No: {{ $mitra->nomor_mitra ?? '-' }}</span>
+                            </div>
                         </div>
                         <p class="text-[11px] text-gray-500 flex items-start gap-1 mb-2 flex-grow">
                             <i data-lucide="map-pin" class="w-3 h-3 flex-shrink-0 mt-0.5"></i>
@@ -249,6 +252,7 @@
 
         let selectedMitraId = null;
         let selectedMitraNama = null;
+        let selectedMitraNomor = null;
 
         const kecamatanFilter = document.getElementById('kecamatan-filter');
         const desaFilter = document.getElementById('desa-filter');
@@ -333,7 +337,7 @@
         }
 
         // Select Mitra - only highlight, don't redirect
-        function selectMitra(mitraId, mitraNama, element) {
+        function selectMitra(mitraId, mitraNama, mitraNomor, element) {
             // Remove active state from all cards
             document.querySelectorAll('.mitra-card').forEach(card => {
                 card.classList.remove('border-green-500', 'bg-green-50/30', 'ring-2', 'ring-green-500');
@@ -347,6 +351,7 @@
             // Store selected mitra info
             selectedMitraId = mitraId;
             selectedMitraNama = mitraNama;
+            selectedMitraNomor = mitraNomor;
 
             // Enable button
             btnLanjutMitra.disabled = false;
@@ -671,7 +676,7 @@
 
                             // 3. Masukkan Data ke Struk
                             document.getElementById('struk-id').innerText = txId;
-                            document.getElementById('struk-mitra').innerText = selectedMitraNama;
+                            document.getElementById('struk-mitra').innerHTML = `${selectedMitraNama} <br><span class="text-[10px] text-gray-500 font-medium">No: ${selectedMitraNomor}</span>`;
                             document.getElementById('struk-tanggal').innerText = formattedDate;
 
                             // 4. Render Detail Item
