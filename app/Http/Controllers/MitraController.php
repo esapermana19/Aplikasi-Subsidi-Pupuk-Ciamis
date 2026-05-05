@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Mitra;
+use App\Models\Penarikan;
 use App\Models\Permintaan;
 use App\Models\Transaksi;
 use App\Models\Pupuk;
-use App\Models\Pencairan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -39,7 +39,7 @@ class MitraController extends Controller
 
         // Ambil aktivitas terkini (Transaksi, Permintaan, Pencairan)
         $id_mitra = $user->mitra->id_mitra;
-        
+
         $transaksi = Transaksi::with(['petani', 'pupuk'])
             ->where('id_mitra', $id_mitra)
             ->latest()
@@ -64,7 +64,7 @@ class MitraController extends Controller
             ->take(5)
             ->get()
             ->map(function ($item) {
-                $statusColor = match($item->status_permintaan) {
+                $statusColor = match ($item->status_permintaan) {
                     'disetujui' => 'text-blue-600',
                     'diterima' => 'text-green-600',
                     'ditolak' => 'text-red-600',
@@ -83,13 +83,13 @@ class MitraController extends Controller
                 ];
             });
 
-        $pencairan = Pencairan::where('id_mitra', $id_mitra)
+        $penarikan = Penarikan::where('id_mitra', $id_mitra)
             ->latest()
             ->take(5)
             ->get()
             ->map(function ($item) {
                 return [
-                    'type' => 'pencairan',
+                    'type' => 'penarikan',
                     'title' => 'Penarikan Saldo',
                     'subtitle' => 'Status: ' . ucfirst($item->status),
                     'amount' => '-Rp ' . number_format($item->jml_transfer ?? 0, 0, ',', '.'),
@@ -103,7 +103,7 @@ class MitraController extends Controller
 
         $recentActivities = collect($transaksi)
             ->merge($permintaan)
-            ->merge($pencairan)
+            ->merge($penarikan)
             ->sortByDesc('date')
             ->take(5)
             ->values();
@@ -116,7 +116,7 @@ class MitraController extends Controller
             ->get()
             ->pluck('total', 'date')
             ->toArray();
-        
+
         $chartLabels = [];
         $chartValues = [];
         for ($i = 6; $i >= 0; $i--) {
@@ -196,13 +196,13 @@ class MitraController extends Controller
     public function konfirmasiPengambilan($id)
     {
         $transaksi = DB::table('tabel_transaksi')->where('id_transaksi', $id)->first();
-        
+
         if (!$transaksi) {
             return response()->json(['status' => 'error', 'message' => 'Transaksi tidak ditemukan!']);
         }
-        
+
         if ($transaksi->status_pengambilan === 'sudah') {
-             return response()->json(['status' => 'error', 'message' => 'Pupuk sudah diambil sebelumnya!']);
+            return response()->json(['status' => 'error', 'message' => 'Pupuk sudah diambil sebelumnya!']);
         }
 
         DB::table('tabel_transaksi')
@@ -221,40 +221,51 @@ class MitraController extends Controller
     {
         // Mengambil transaksi yang statusnya sudah diambil, diurutkan dari terbaru
         $riwayat = Transaksi::with('petani')->where('status_pengambilan', 'sudah')
-                        ->orderBy('updated_at', 'desc')
-                        ->get();
+            ->orderBy('updated_at', 'desc')
+            ->get();
 
         return view('mitra.riwayat_transaksi', compact('riwayat'));
+    }
+
+    public function cetak_transaksi($id)
+    {
+        $id_mitra = Auth::user()->mitra->id_mitra;
+        $transaksi = Transaksi::with(['petani', 'rincian.pupuk'])
+            ->where('id_transaksi', $id)
+            ->where('id_mitra', $id_mitra)
+            ->firstOrFail();
+
+        return view('mitra.cetak_transaksi', compact('transaksi'));
     }
 
     public function saldo()
     {
         $user = Auth::user();
         $mitra = $user->mitra;
-        
+
         if (!$mitra) {
             abort(403, 'Akses ditolak. Data Mitra tidak ditemukan.');
         }
 
         $saldo = $mitra->saldo_app;
-        
+
         $riwayat_transaksi = Transaksi::with(['petani'])
             ->where('id_mitra', $mitra->id_mitra)
             ->where('status_pengambilan', 'sudah')
             ->orderBy('updated_at', 'desc')
             ->get();
-        $riwayat_pencairan = Pencairan::where('id_mitra', $mitra->id_mitra)
+        $riwayat_penarikan = Penarikan::where('id_mitra', $mitra->id_mitra)
             ->orderBy('updated_at', 'desc')
             ->get();
-            
-        return view('mitra.saldo', compact('saldo', 'riwayat_transaksi', 'riwayat_pencairan'));
+
+        return view('mitra.saldo', compact('saldo', 'riwayat_transaksi', 'riwayat_penarikan'));
     }
 
     public function proses_tarik_saldo(Request $request)
     {
         $user = Auth::user();
         $mitra = $user->mitra;
-        
+
         $request->validate([
             'jml_transfer' => 'required|numeric|min:10000',
         ], [
@@ -268,7 +279,7 @@ class MitraController extends Controller
         }
 
         // Cek apakah hari ini sudah melakukan penarikan
-        $hasWithdrawnToday = Pencairan::where('id_mitra', $mitra->id_mitra)
+        $hasWithdrawnToday = Penarikan::where('id_mitra', $mitra->id_mitra)
             ->whereDate('created_at', now()->toDateString())
             ->exists();
 
@@ -283,8 +294,8 @@ class MitraController extends Controller
         $id_penarikan = $nomor_mitra . $dateStr;
 
         // Pastikan unik
-        if (Pencairan::where('id_penarikan', $id_penarikan)->exists()) {
-             return back()->with('error', 'ID Penarikan sudah terdaftar hari ini.');
+        if (Penarikan::where('id_penarikan', $id_penarikan)->exists()) {
+            return back()->with('error', 'ID Penarikan sudah terdaftar hari ini.');
         }
 
         DB::beginTransaction();
@@ -293,7 +304,7 @@ class MitraController extends Controller
             $mitra->decrement('saldo_app', $jml_transfer);
 
             // Insert tabel_penarikan
-            Pencairan::create([
+            Penarikan::create([
                 'id_penarikan' => $id_penarikan,
                 'id_mitra' => $mitra->id_mitra,
                 'jml_transfer' => $jml_transfer,
@@ -307,5 +318,95 @@ class MitraController extends Controller
             DB::rollBack();
             return back()->with('error', 'Terjadi kesalahan saat memproses penarikan: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Halaman Laporan Mitra dengan Grafik
+     */
+    public function laporan(Request $request)
+    {
+        $user = Auth::user();
+        $id_mitra = $user->mitra->id_mitra;
+        
+        // Filter Periode (Bulan-Tahun)
+        $periode = $request->input('periode', now()->format('Y-m'));
+        [$tahun, $bulan] = explode('-', $periode);
+
+        // 1. Ringkasan Statistik Periode Ini
+        $transaksiPeriode = Transaksi::where('id_mitra', $id_mitra)
+            ->whereYear('created_at', $tahun)
+            ->whereMonth('created_at', $bulan)
+            ->where('status_pembayaran', 'success');
+
+        $totalNominal = $transaksiPeriode->sum('total');
+        
+        $totalVolume = DB::table('tabel_detail_transaksi')
+            ->join('tabel_transaksi', 'tabel_detail_transaksi.id_transaksi', '=', 'tabel_transaksi.id_transaksi')
+            ->where('tabel_transaksi.id_mitra', $id_mitra)
+            ->whereYear('tabel_transaksi.created_at', $tahun)
+            ->whereMonth('tabel_transaksi.created_at', $bulan)
+            ->where('tabel_transaksi.status_pembayaran', 'success')
+            ->sum('tabel_detail_transaksi.jml_beli');
+
+        $totalTransaksi = $transaksiPeriode->count();
+        $petaniUnik = $transaksiPeriode->distinct('id_petani')->count('id_petani');
+
+        // 2. Data Grafik Penjualan Harian (Line Chart)
+        $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $bulan, $tahun);
+        $chartLabels = [];
+        $chartData = [];
+
+        $salesDaily = Transaksi::where('id_mitra', $id_mitra)
+            ->whereYear('created_at', $tahun)
+            ->whereMonth('created_at', $bulan)
+            ->where('status_pembayaran', 'success')
+            ->selectRaw('DATE(created_at) as date, SUM(total) as total')
+            ->groupBy('date')
+            ->pluck('total', 'date');
+
+        for ($d = 1; $d <= $daysInMonth; $d++) {
+            $date = sprintf('%s-%s-%02d', $tahun, $bulan, $d);
+            $chartLabels[] = $d;
+            $chartData[] = (int)($salesDaily[$date] ?? 0);
+        }
+
+        // 3. Distribusi Pupuk Terjual (Pie/Donut Chart)
+        $pupukDist = DB::table('tabel_detail_transaksi')
+            ->join('tabel_transaksi', 'tabel_detail_transaksi.id_transaksi', '=', 'tabel_transaksi.id_transaksi')
+            ->join('tabel_pupuk', 'tabel_detail_transaksi.id_pupuk', '=', 'tabel_pupuk.id_pupuk')
+            ->where('tabel_transaksi.id_mitra', $id_mitra)
+            ->whereYear('tabel_transaksi.created_at', $tahun)
+            ->whereMonth('tabel_transaksi.created_at', $bulan)
+            ->where('tabel_transaksi.status_pembayaran', 'success')
+            ->select('tabel_pupuk.nama_pupuk', DB::raw('SUM(tabel_detail_transaksi.jml_beli) as total'))
+            ->groupBy('tabel_pupuk.nama_pupuk')
+            ->get();
+
+        $pieLabels = $pupukDist->pluck('nama_pupuk')->toArray();
+        $pieSeries = $pupukDist->pluck('total')->map(fn($val) => (int)$val)->toArray();
+
+        // 4. Riwayat Transaksi Terakhir di Periode Ini
+        $recentTransactions = Transaksi::with(['petani'])
+            ->where('id_mitra', $id_mitra)
+            ->whereYear('created_at', $tahun)
+            ->whereMonth('created_at', $bulan)
+            ->where('status_pembayaran', 'success')
+            ->latest()
+            ->take(10)
+            ->get();
+
+        return view('mitra.laporan', [
+            'totalNominal' => $totalNominal,
+            'totalVolume' => $totalVolume,
+            'totalTransaksi' => $totalTransaksi,
+            'petaniUnik' => $petaniUnik,
+            'chartLabels' => $chartLabels,
+            'chartData' => $chartData,
+            'pieLabels' => $pieLabels,
+            'pieSeries' => $pieSeries,
+            'recentTransactions' => $recentTransactions,
+            'periode' => $periode,
+            'activeMenu' => 'mitra.laporan'
+        ]);
     }
 }

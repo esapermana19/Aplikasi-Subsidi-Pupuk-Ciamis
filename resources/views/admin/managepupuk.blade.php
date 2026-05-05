@@ -8,11 +8,18 @@
                 <h1 class="text-2xl font-bold text-gray-900">Hallo. {{ Auth::user()->admin->nama_admin ?? Auth::user()->name }},</h1>
                 <p class="text-sm text-gray-500 mt-1">Kelola stok dan data pupuk subsidi pusat di sini.</p>
             </div>
-            <button onclick="openAddModal()"
-                class="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-violet-600 text-white font-bold rounded-xl hover:bg-violet-700 transition-all shadow-lg shadow-violet-100">
-                <i data-lucide="plus" class="w-5 h-5"></i>
-                <span>Tambah Pupuk</span>
-            </button>
+            <div class="flex flex-wrap gap-3">
+                <a href="{{ route('admin.pupuk.export', request()->query()) }}" 
+                    class="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 hover:shadow-emerald-100 transition-all shadow-lg active:scale-95">
+                    <i data-lucide="file-spreadsheet" class="w-5 h-5"></i>
+                    <span>Ekspor Excel</span>
+                </a>
+                <button onclick="openAddModal()"
+                    class="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-violet-600 text-white font-bold rounded-xl hover:bg-violet-700 transition-all shadow-lg shadow-violet-100">
+                    <i data-lucide="plus" class="w-5 h-5"></i>
+                    <span>Tambah Pupuk</span>
+                </button>
+            </div>
         </div>
 
         <!-- Statistik Ringkas -->

@@ -2,12 +2,18 @@
 
 @section('content')
     <div class="space-y-6">
-    <div class="space-y-6">
         {{-- Header --}}
         <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
             <div>
                 <h1 class="text-2xl font-bold text-gray-900">Hallo. {{ Auth::user()->admin->nama_admin ?? Auth::user()->name }},</h1>
                 <p class="text-sm text-gray-500 mt-1">Daftar seluruh petani yang terdaftar di sistem ASUP Ciamis</p>
+            </div>
+            <div class="flex flex-wrap gap-3">
+                <a href="{{ route('admin.petani.export', request()->query()) }}" 
+                    class="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-bold shadow-sm hover:bg-emerald-700 hover:shadow-emerald-100 transition-all active:scale-95">
+                    <i data-lucide="file-spreadsheet" class="h-4 w-4"></i>
+                    Ekspor Excel
+                </a>
             </div>
         </div>
 
@@ -202,7 +208,7 @@
                                                 '{{ addslashes($p->alamat_petani ?? '') }}',
                                                 '{{ $p->jenis_kelamin ?? '' }}'
                                             )"
-                                            class="p-2 text-violet-600 hover:bg-violet-50 rounded-lg transition-colors flex items-center justify-center"
+                                            class="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors flex items-center justify-center"
                                             title="Edit Data">
                                             <i data-lucide="edit-3" class="h-4 w-4"></i>
                                         </button>
@@ -217,89 +223,174 @@
                     </tbody>
                 </table>
             </div>
+            <div class="p-4 border-t border-gray-100">
+                {{ $list_petani->links() }}
+            </div>
         </div>
     </div>
 
-    {{-- MODAL EDIT (Hanya Satu Saja) --}}
-    <div id="editModal" class="fixed inset-0 z-[9999] hidden overflow-y-auto">
+    {{-- MODAL EDIT --}}
+    <div id="editModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
         <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-            <div class="fixed inset-0 transition-opacity" aria-hidden="true" onclick="closeEditModal()">
-                <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
-            </div>
-            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            <div
-                class="inline-block align-bottom bg-white rounded-2xl text-left shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full p-6">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-bold text-gray-900">Edit Data Petani</h3>
-                    <button type="button" onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600">
-                        <i data-lucide="x" class="h-5 w-5"></i>
-                    </button>
-                </div>
-
+            <div class="fixed inset-0 transition-opacity bg-gray-900/60 backdrop-blur-sm" onclick="closeEditModal()"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+            
+            <div class="inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-2xl shadow-2xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-gray-100">
                 <form id="editForm" method="POST">
                     @csrf @method('PATCH')
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">NIK</label>
-                            <input type="text" name="nik" id="edit_nik" required
-                                class="w-full px-4 py-2 border rounded-md">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
-                            <input type="text" name="nama_petani" id="edit_name" required
-                                class="w-full px-4 py-2 border rounded-md">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                            <input type="email" name="email" id="edit_email" required
-                                class="w-full px-4 py-2 border rounded-md">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Kelamin</label>
-                            <select name="jenis_kelamin" id="edit_jk" required
-                                class="w-full px-4 py-2 border rounded-md">
-                                <option value="L">L</option>
-                                <option value="P">P</option>
-                            </select>
-                        </div>
-                        <div class="col-span-2 sm:col-span-1">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Kecamatan</label>
-                            {{-- Tambahkan event onchange untuk memicu pengambilan data desa --}}
-                            <select name="id_kecamatan" id="edit_kecamatan" onchange="loadDesaEdit(this.value)" required
-                                class="w-full rounded-md border border-gray-200 px-4 py-2 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-violet-500 transition-all">
-                                <option value="">Pilih Kecamatan</option>
-                                {{-- Looping data kecamatan dari Controller --}}
-                                @foreach ($kecamatans as $kec)
-                                    <option value="{{ $kec->id_kecamatan }}">{{ $kec->nama_kecamatan }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <div class="col-span-2 sm:col-span-1">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Desa</label>
-                            <select name="id_desa" id="edit_desa" required
-                                class="w-full rounded-md border border-gray-200 px-4 py-2 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-violet-500 transition-all">
-                                <option value="">Pilih Desa</option>
-                                {{-- Opsi desa akan diisi otomatis oleh JavaScript di bawah --}}
-                            </select>
-                        </div>
-                        <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Alamat</label>
-                            <textarea name="alamat" id="edit_alamat" rows="2" class="w-full px-4 py-2 border rounded-md"></textarea>
-                        </div>
-                        <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Password Baru (Kosongkan jika tidak
-                                ganti)</label>
-                            <input type="password" name="password" class="w-full px-4 py-2 border rounded-md">
+                    
+                    {{-- Modal Header --}}
+                    <div class="relative px-6 py-5 bg-gradient-to-br from-green-600 to-green-700 text-white overflow-hidden">
+                        <div class="absolute top-0 right-0 -mt-2 -mr-2 h-16 w-16 bg-white/10 rounded-full blur-xl"></div>
+                        <div class="relative z-10 flex justify-between items-center">
+                            <div>
+                                <h3 class="text-xl font-bold">Edit Data Petani</h3>
+                                <p class="text-green-100 text-[10px] mt-1 font-medium tracking-wide">Perbarui informasi profil dan akun petani</p>
+                            </div>
+                            <button type="button" onclick="closeEditModal()" class="p-2 hover:bg-white/20 rounded-xl transition-all">
+                                <i data-lucide="x" class="h-5 w-5"></i>
+                            </button>
                         </div>
                     </div>
 
-                    <div class="mt-8 flex justify-end gap-3">
+                    <div class="p-6 space-y-5 bg-white">
+                        <div class="grid grid-cols-2 gap-5">
+                            {{-- NIK --}}
+                            <div class="col-span-2 sm:col-span-1">
+                                <label class="block text-[10px] font-black text-gray-400 uppercase mb-1.5 ml-1 tracking-widest">NIK Petani</label>
+                                <div class="relative group">
+                                    <div class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
+                                        <i data-lucide="credit-card" class="h-4 w-4 text-gray-400 group-focus-within:text-green-500 transition-colors"></i>
+                                    </div>
+                                    <input type="text" name="nik" id="edit_nik" required
+                                        class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-green-500/10 focus:border-green-500 transition-all text-sm font-bold text-gray-700"
+                                        placeholder="Masukkan NIK">
+                                </div>
+                            </div>
+
+                            {{-- Nama Lengkap --}}
+                            <div class="col-span-2 sm:col-span-1">
+                                <label class="block text-[10px] font-black text-gray-400 uppercase mb-1.5 ml-1 tracking-widest">Nama Lengkap</label>
+                                <div class="relative group">
+                                    <div class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
+                                        <i data-lucide="user" class="h-4 w-4 text-gray-400 group-focus-within:text-green-500 transition-colors"></i>
+                                    </div>
+                                    <input type="text" name="nama_petani" id="edit_name" required
+                                        class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-green-500/10 focus:border-green-500 transition-all text-sm font-bold text-gray-700"
+                                        placeholder="Nama Lengkap">
+                                </div>
+                            </div>
+
+                            {{-- Email --}}
+                            <div class="col-span-2 sm:col-span-1">
+                                <label class="block text-[10px] font-black text-gray-400 uppercase mb-1.5 ml-1 tracking-widest">Email Petani</label>
+                                <div class="relative group">
+                                    <div class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
+                                        <i data-lucide="mail" class="h-4 w-4 text-gray-400 group-focus-within:text-green-500 transition-colors"></i>
+                                    </div>
+                                    <input type="email" name="email" id="edit_email" required
+                                        class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-green-500/10 focus:border-green-500 transition-all text-sm font-bold text-gray-700"
+                                        placeholder="email@contoh.com">
+                                </div>
+                            </div>
+
+                            {{-- Jenis Kelamin --}}
+                            <div class="col-span-2 sm:col-span-1">
+                                <label class="block text-[10px] font-black text-gray-400 uppercase mb-1.5 ml-1 tracking-widest">Jenis Kelamin</label>
+                                <div class="relative group">
+                                    <div class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
+                                        <i data-lucide="user-plus" class="h-4 w-4 text-gray-400 group-focus-within:text-green-500 transition-colors"></i>
+                                    </div>
+                                    <select name="jenis_kelamin" id="edit_jk" required
+                                        class="w-full pl-10 pr-10 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-green-500/10 focus:border-green-500 transition-all text-sm font-bold text-gray-700 appearance-none">
+                                        <option value="L">Laki-laki</option>
+                                        <option value="P">Perempuan</option>
+                                    </select>
+                                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                        <i data-lucide="chevron-down" class="h-4 w-4 text-gray-400"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Kecamatan --}}
+                            <div class="col-span-2 sm:col-span-1">
+                                <label class="block text-[10px] font-black text-gray-400 uppercase mb-1.5 ml-1 tracking-widest">Kecamatan</label>
+                                <div class="relative group">
+                                    <div class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
+                                        <i data-lucide="map" class="h-4 w-4 text-gray-400 group-focus-within:text-green-500 transition-colors"></i>
+                                    </div>
+                                    <select name="id_kecamatan" id="edit_kecamatan" onchange="loadDesaEdit(this.value)"
+                                        required
+                                        class="w-full pl-10 pr-10 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-green-500/10 focus:border-green-500 transition-all text-sm font-bold text-gray-700 appearance-none">
+                                        <option value="">Pilih Kecamatan</option>
+                                        @foreach ($kecamatans as $kec)
+                                            <option value="{{ $kec->id_kecamatan }}">{{ $kec->nama_kecamatan }}</option>
+                                        @endforeach
+                                    </select>
+                                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                        <i data-lucide="chevron-down" class="h-4 w-4 text-gray-400"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Desa --}}
+                            <div class="col-span-2 sm:col-span-1">
+                                <label class="block text-[10px] font-black text-gray-400 uppercase mb-1.5 ml-1 tracking-widest">Desa</label>
+                                <div class="relative group">
+                                    <div class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
+                                        <i data-lucide="map-pin" class="h-4 w-4 text-gray-400 group-focus-within:text-green-500 transition-colors"></i>
+                                    </div>
+                                    <select name="id_desa" id="edit_desa" required
+                                        class="w-full pl-10 pr-10 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-green-500/10 focus:border-green-500 transition-all text-sm font-bold text-gray-700 appearance-none">
+                                        <option value="">Pilih Desa</option>
+                                    </select>
+                                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                        <i data-lucide="chevron-down" class="h-4 w-4 text-gray-400"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {{-- Password --}}
+                            <div class="col-span-2">
+                                <label class="block text-[10px] font-black text-gray-400 uppercase mb-1.5 ml-1 tracking-widest">Password Baru (Opsional)</label>
+                                <div class="relative group">
+                                    <div class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
+                                        <i data-lucide="lock" class="h-4 w-4 text-gray-400 group-focus-within:text-green-500 transition-colors"></i>
+                                    </div>
+                                    <input type="password" name="password" id="edit_password"
+                                        class="w-full pl-10 pr-10 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-green-500/10 focus:border-green-500 transition-all text-sm font-bold text-gray-700"
+                                        placeholder="Kosongkan jika tidak ingin mengubah password">
+                                    <button type="button" onclick="togglePassword('edit_password', 'toggle_icon_edit')" class="absolute inset-y-0 right-0 flex items-center pr-3">
+                                        <i id="toggle_icon_edit" data-lucide="eye" class="h-4 w-4 text-gray-400 hover:text-green-500 transition-colors"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            {{-- Alamat --}}
+                            <div class="col-span-2">
+                                <label class="block text-[10px] font-black text-gray-400 uppercase mb-1.5 ml-1 tracking-widest">Alamat Lengkap</label>
+                                <div class="relative group">
+                                    <div class="absolute top-3 left-3.5 pointer-events-none">
+                                        <i data-lucide="navigation" class="h-4 w-4 text-gray-400 group-focus-within:text-green-500 transition-colors"></i>
+                                    </div>
+                                    <textarea name="alamat" id="edit_alamat" rows="2"
+                                        class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-green-500/10 focus:border-green-500 transition-all text-sm font-bold text-gray-700"
+                                        placeholder="Masukkan alamat lengkap petani..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Modal Footer --}}
+                    <div class="px-6 py-5 bg-gray-50/80 border-t border-gray-100 flex flex-col sm:flex-row justify-end gap-3">
                         <button type="button" onclick="closeEditModal()"
-                            class="px-5 py-2.5 text-sm font-semibold text-gray-700 bg-gray-100 rounded-2xl hover:bg-gray-200 transition-colors">Batal</button>
+                            class="px-6 py-2.5 text-sm font-bold text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-gray-200 transition-all active:scale-95">
+                            Batal
+                        </button>
                         <button type="submit"
-                            class="px-5 py-2.5 text-sm font-semibold text-white bg-violet-600 rounded-2xl hover:bg-violet-700 shadow-lg shadow-violet-200 transition-all">Simpan
-                            Perubahan</button>
+                            class="px-8 py-2.5 text-sm font-bold text-white bg-gradient-to-r from-green-600 to-green-700 rounded-xl hover:from-green-700 hover:to-green-800 transition-all shadow-lg shadow-green-200 active:scale-95">
+                            Simpan Perubahan
+                        </button>
                     </div>
                 </form>
             </div>
@@ -439,12 +530,14 @@
         document.getElementById('edit_kecamatan').value = id_kecamatan;
         document.getElementById('edit_alamat').value = alamat;
         document.getElementById('edit_jk').value = jenis_kelamin;
+        document.getElementById('edit_password').value = ''; // Reset password field
 
         // Panggil fetch desa
         loadDesaEdit(id_kecamatan, id_desa);
 
         modal.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
+        if (window.lucide) lucide.createIcons();
     }
 
     function loadDesaEdit(idKecamatan, selectedDesaId = null) {
@@ -532,6 +625,20 @@
             lucide.createIcons();
         }
     });
+
+    function togglePassword(inputId, iconId) {
+        const passwordInput = document.getElementById(inputId);
+        const icon = document.getElementById(iconId);
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            icon.setAttribute('data-lucide', 'eye-off');
+        } else {
+            passwordInput.type = 'password';
+            icon.setAttribute('data-lucide', 'eye');
+        }
+        if (window.lucide) lucide.createIcons();
+    }
 
     // 5. Fungsi Modal Detail
     function openDetailModal(nik, nama, email, kecamatan, desa, alamat, jk, noKk, status, tgl) {

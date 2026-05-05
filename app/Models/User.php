@@ -62,4 +62,19 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Admin::class, 'verified_by', 'id_admin');
     }
+
+    /**
+     * Accessor untuk mendapatkan nama berdasarkan role
+     */
+    public function getNameAttribute()
+    {
+        if (strtolower($this->role) === 'admin' || strtolower($this->role) === 'superadmin') {
+            return $this->admin->nama_admin ?? 'Admin';
+        } elseif (strtolower($this->role) === 'petani') {
+            return $this->petani->nama_petani ?? 'Petani';
+        } elseif (strtolower($this->role) === 'mitra') {
+            return $this->mitra->nama_mitra ?? 'Mitra';
+        }
+        return 'User';
+    }
 }

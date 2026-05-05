@@ -7,16 +7,16 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 #[Fillable([
-    'id_pencairan',
+    'id_penarikan',
     'id_mitra',
     'jml_transfer',
     'tgl_transfer',
     'status'
 ])]
-class Pencairan extends Model
+class Penarikan extends Model
 {
-    protected $table = 'tabel_pencairan';
-    protected $primaryKey = 'id_pencairan';
+    protected $table = 'tabel_penarikan';
+    protected $primaryKey = 'id_penarikan';
     public $incrementing = false;
     protected $keyType = 'string';
 

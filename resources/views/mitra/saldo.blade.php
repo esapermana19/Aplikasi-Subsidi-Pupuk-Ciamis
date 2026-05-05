@@ -132,7 +132,7 @@
         <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
             <div>
                 <h3 class="text-lg font-bold text-gray-900">Riwayat Penarikan Saldo</h3>
-                <p class="text-sm text-gray-500">Daftar riwayat penarikan saldo (pencairan) yang pernah dilakukan.</p>
+                <p class="text-sm text-gray-500">Daftar riwayat penarikan saldo (penarikan) yang pernah dilakukan.</p>
             </div>
         </div>
         
@@ -146,7 +146,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($riwayat_pencairan as $p)
+                    @forelse($riwayat_penarikan as $p)
                         <tr class="bg-white border-b hover:bg-gray-50/50 transition-colors">
                             <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
                                 {{ \Carbon\Carbon::parse($p->updated_at)->format('d M Y, H:i') }}

@@ -229,20 +229,74 @@ class TransaksiController extends Controller
     // API untuk ambil detail transaksi (untuk isi Modal)
     public function detail($id)
     {
+        try {
+            Log::info('Meminta detail transaksi ID: ' . $id);
+
+            $transaksi = DB::table('tabel_transaksi')
+                ->join('tabel_mitra', 'tabel_transaksi.id_mitra', '=', 'tabel_mitra.id_mitra')
+                ->leftJoin('tabel_petani', 'tabel_transaksi.id_petani', '=', 'tabel_petani.id_petani')
+                ->where('tabel_transaksi.id_transaksi', $id)
+                ->select(
+                    'tabel_transaksi.*', 
+                    'tabel_mitra.nama_mitra as nama_kios', 
+                    'tabel_mitra.nomor_mitra', 
+                    'tabel_petani.nama_petani',
+                    'tabel_transaksi.total as total_harga'
+                )
+                ->first();
+
+            if (!$transaksi) {
+                Log::warning('Transaksi tidak ditemukan untuk ID: ' . $id);
+                return response()->json(['error' => 'Transaksi tidak ditemukan'], 404);
+            }
+
+            $details = DB::table('tabel_detail_transaksi')
+                ->join('tabel_pupuk', 'tabel_detail_transaksi.id_pupuk', '=', 'tabel_pupuk.id_pupuk')
+                ->where('tabel_detail_transaksi.id_transaksi', $id)
+                ->get();
+
+            Log::info('Detail transaksi berhasil dimuat untuk ID: ' . $id);
+
+            return response()->json([
+                'transaksi' => $transaksi,
+                'details' => $details
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error saat memuat detail transaksi: ' . $e->getMessage());
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function cetak_petani($id)
+    {
         $transaksi = DB::table('tabel_transaksi')
             ->join('tabel_mitra', 'tabel_transaksi.id_mitra', '=', 'tabel_mitra.id_mitra')
-            ->where('id_transaksi', $id)
-            ->select('tabel_transaksi.*', 'tabel_mitra.nama_mitra as nama_kios', 'tabel_mitra.nomor_mitra', 'tabel_transaksi.total as total_harga')
+            ->leftJoin('tabel_petani', 'tabel_transaksi.id_petani', '=', 'tabel_petani.id_petani')
+            ->where('tabel_transaksi.id_transaksi', $id)
+            ->select(
+                'tabel_transaksi.*', 
+                'tabel_mitra.nama_mitra', 
+                'tabel_mitra.nomor_mitra', 
+                'tabel_mitra.alamat_mitra', 
+                'tabel_petani.nama_petani',
+                'tabel_petani.nik'
+            )
             ->first();
 
-        $details = DB::table('tabel_detail_transaksi')
+        if (!$transaksi) {
+            abort(404);
+        }
+
+        // Pastikan transaksi ini milik petani yang sedang login
+        if ($transaksi->id_petani != Auth::user()->petani->id_petani) {
+            abort(403);
+        }
+
+        $rincian = DB::table('tabel_detail_transaksi')
             ->join('tabel_pupuk', 'tabel_detail_transaksi.id_pupuk', '=', 'tabel_pupuk.id_pupuk')
-            ->where('id_transaksi', $id)
+            ->where('tabel_detail_transaksi.id_transaksi', $id)
             ->get();
 
-        return response()->json([
-            'transaksi' => $transaksi,
-            'details' => $details
-        ]);
+        return view('petani.cetak_transaksi', compact('transaksi', 'rincian'));
     }
 }

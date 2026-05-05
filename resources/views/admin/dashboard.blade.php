@@ -1,150 +1,294 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="space-y-6">
-    <div class="space-y-6">
-        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+<div class="space-y-6 pb-8">
+    {{-- Header --}}
+    <div>
+        <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
+    </div>
+
+    {{-- Summary Cards --}}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {{-- Card 1: Total Petani --}}
+        <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-start justify-between">
             <div>
-                <h1 class="text-2xl font-bold text-gray-900">Hallo. {{ Auth::user()->admin->nama_admin ?? Auth::user()->name }},</h1>
-                <p class="text-sm text-gray-500 mt-1">Selamat datang kembali! Berikut ringkasan sistem hari ini.</p>
-            </div>
-            <div class="hidden md:block text-right">
-                <p class="text-xs font-bold text-violet-600 bg-violet-50 px-3 py-1 rounded-full border border-violet-100">
-                    {{ now()->translatedFormat('l, d F Y') }}
-                </p>
+                <div class="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center mb-3">
+                    <i data-lucide="users" class="h-4 w-4 text-indigo-500"></i>
+                </div>
+                <p class="text-[11px] font-medium text-gray-400 uppercase">Total Petani</p>
+                <h3 class="text-2xl font-bold text-gray-900 mt-1">{{ number_format($total_petani) }}</h3>
             </div>
         </div>
 
-        {{-- Stats Grid --}}
-        <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-            {{-- Total Petani --}}
-            <div class="bg-white border border-gray-100 rounded-xl p-5 shadow-sm">
-                <div class="flex items-start justify-between">
-                    <div>
-                        <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Total Petani</p>
-                        <p class="text-2xl font-bold text-gray-900 mt-1">{{ number_format($stats['total_petani']) }}</p>
-                        <p class="text-[10px] text-green-600 font-bold mt-1 bg-green-50 px-2 py-0.5 rounded-full inline-block">+{{ $stats['total_petani'] }} Terdaftar</p>
-                    </div>
-                    <div class="bg-green-50 p-2.5 rounded-lg">
-                        <i data-lucide="users" class="h-5 w-5 text-green-600"></i>
-                    </div>
+        {{-- Card 2: Total Mitra --}}
+        <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-start justify-between">
+            <div>
+                <div class="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center mb-3">
+                    <i data-lucide="store" class="h-4 w-4 text-purple-500"></i>
                 </div>
-            </div>
-
-            {{-- Mitra Aktif --}}
-            <div class="bg-white border border-gray-100 rounded-xl p-5 shadow-sm">
-                <div class="flex items-start justify-between">
-                    <div>
-                        <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Mitra Aktif</p>
-                        <p class="text-2xl font-bold text-gray-900 mt-1">{{ $stats['mitra_aktif'] }}</p>
-                        <p class="text-[10px] text-violet-600 font-bold mt-1 bg-violet-50 px-2 py-0.5 rounded-full inline-block">Kios Terverifikasi</p>
-                    </div>
-                    <div class="bg-violet-50 p-2.5 rounded-lg">
-                        <i data-lucide="building-2" class="h-5 w-5 text-violet-600"></i>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Verifikasi Akun --}}
-            <div class="bg-white border border-gray-100 rounded-xl p-5 shadow-sm sm:col-span-2 lg:col-span-1">
-                <div class="flex items-start justify-between">
-                    <div>
-                        <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Verifikasi Akun</p>
-                        <p class="text-2xl font-bold text-gray-900 mt-1">{{ $stats['pending_verifikasi'] }}</p>
-                        <p class="text-[10px] text-amber-600 font-bold mt-1 bg-amber-50 px-2 py-0.5 rounded-full inline-block">Butuh Approval</p>
-                    </div>
-                    <div class="bg-amber-50 p-2.5 rounded-lg">
-                        <i data-lucide="user-check" class="h-5 w-5 text-amber-600"></i>
-                    </div>
-                </div>
+                <p class="text-[11px] font-medium text-gray-400 uppercase">Total Mitra</p>
+                <h3 class="text-2xl font-bold text-gray-900 mt-1">{{ number_format($total_mitra) }}</h3>
             </div>
         </div>
 
-        {{-- Riwayat Aktivitas Terbaru --}}
-        <div class="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
-            <div class="p-5 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
+        {{-- Card 3: Transaksi Berhasil --}}
+        <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-start justify-between">
+            <div>
+                <div class="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center mb-3">
+                    <i data-lucide="shopping-cart" class="h-4 w-4 text-emerald-500"></i>
+                </div>
+                <p class="text-[11px] font-medium text-gray-400 uppercase">Transaksi Berhasil</p>
+                <h3 class="text-2xl font-bold text-gray-900 mt-1">{{ number_format($transaksi_berhasil) }}</h3>
+            </div>
+        </div>
+
+        {{-- Card 4: Pupuk Tersalur --}}
+        <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-start justify-between">
+            <div>
+                <div class="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center mb-3">
+                    <i data-lucide="package" class="h-4 w-4 text-orange-500"></i>
+                </div>
+                <p class="text-[11px] font-medium text-gray-400 uppercase">Pupuk Tersalur</p>
+                <h3 class="text-2xl font-bold text-gray-900 mt-1">{{ number_format($pupuk_tersalur, 1) }} <span class="text-sm text-gray-500 font-medium">Ton</span></h3>
+            </div>
+        </div>
+    </div>
+
+    {{-- Chart & Activity Row --}}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {{-- Trend Chart --}}
+        <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm lg:col-span-2">
+            <div class="flex items-center justify-between mb-4">
                 <div>
-                    <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider">Aktivitas Terbaru</h3>
-                    <p class="text-[10px] text-gray-500 mt-0.5">Pendaftaran dan pembaruan data terakhir</p>
+                    <h3 class="text-sm font-bold text-gray-800 uppercase">Trend Penyaluran</h3>
+                    <p class="text-[11px] text-gray-400 mt-0.5">Data 7 hari terakhir</p>
                 </div>
-                <i data-lucide="bell" class="h-4 w-4 text-gray-400"></i>
+                <select class="bg-gray-50 border border-gray-100 text-xs font-bold rounded-lg px-3 py-1.5 focus:ring-indigo-500">
+                    <option>Minggu Ini</option>
+                </select>
             </div>
-            <div class="p-2 sm:p-5">
-                <div class="space-y-2">
-                    @forelse($recentActivities as $activity)
-                        @php
-                            $isPetani = $activity->role == 'Petani';
-                            $profile = $isPetani ? $activity->petani : $activity->mitra;
-                            $displayName = $isPetani
-                                ? $profile->nama_petani ?? 'User'
-                                : $profile->nama_mitra ?? 'Mitra';
-                        @endphp
+            <div id="trendAreaChart" class="w-full h-72"></div>
+        </div>
 
-                        <div class="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 rounded-xl hover:bg-gray-50 transition-all border border-gray-50 hover:border-gray-200 group">
-                            <div class="flex items-center gap-3 sm:gap-4 flex-1 mb-3 sm:mb-0">
-                                <div class="h-10 w-10 sm:h-12 sm:w-12 rounded-full {{ $isPetani ? 'bg-green-100 border-green-200 text-green-600' : 'bg-violet-100 border-violet-200 text-violet-600' }} border flex items-center justify-center shadow-sm shrink-0 transition-transform group-hover:scale-105">
-                                    <i data-lucide="{{ $isPetani ? 'user' : 'store' }}" class="h-5 w-5 sm:h-6 sm:w-6"></i>
+        {{-- Aktivitas Terbaru --}}
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden lg:col-span-1 flex flex-col">
+            <div class="px-6 py-5 border-b border-gray-50 flex items-center justify-between">
+                <h3 class="text-sm font-bold text-gray-800 uppercase">Aktivitas Terbaru</h3>
+                <a href="{{ route('admin.transaksi') }}" class="text-xs font-bold text-indigo-600 hover:text-indigo-700">Lihat Semua</a>
+            </div>
+            <div class="p-6 flex-1 overflow-y-auto max-h-[300px]">
+                <div class="space-y-6">
+                    @forelse($recentTransactions as $trx)
+                        <div class="flex items-start justify-between relative">
+                            {{-- Connector Line --}}
+                            @if(!$loop->last)
+                            <div class="absolute top-6 bottom-[-24px] left-3.5 w-[2px] bg-gray-100"></div>
+                            @endif
+
+                            <div class="flex items-start gap-4 z-10 relative bg-white">
+                                <div class="w-7 h-7 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
+                                    <i data-lucide="check" class="h-3.5 w-3.5 text-emerald-500"></i>
                                 </div>
-
-                                <div class="min-w-0">
-                                    <p class="text-sm sm:text-base font-bold text-gray-900 truncate">{{ $displayName }}</p>
-                                    <p class="text-[11px] sm:text-sm text-gray-500 flex items-center gap-1.5 mt-0.5">
-                                        <span class="{{ $isPetani ? 'text-green-600' : 'text-violet-600' }} font-bold bg-opacity-10 px-1.5 rounded">
-                                            {{ ucfirst($activity->role) }}
-                                        </span>
-                                        <span class="text-gray-300">•</span>
-                                        <span class="flex items-center gap-1">
-                                            <i data-lucide="clock" class="h-3 w-3"></i>
-                                            {{ $activity->created_at->diffForHumans() }}
-                                        </span>
-                                    </p>
+                                <div>
+                                    <h4 class="text-xs font-bold text-gray-900">{{ $trx->petani->nama_petani ?? 'Anonim' }}</h4>
+                                    <p class="text-[10px] text-gray-500 mt-0.5">Membeli di {{ $trx->mitra->nama_mitra ?? 'Unknown' }}</p>
+                                    <p class="text-[9px] text-gray-400 mt-1">{{ $trx->created_at->diffForHumans() }}</p>
                                 </div>
                             </div>
-
-                            <div class="flex items-center gap-4">
-                                {{-- Badge Status --}}
-                                @if ($activity->status_akun == 'pending')
-                                    <div
-                                        class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold bg-amber-50 text-amber-700 rounded-full border border-amber-200">
-                                        <span class="relative flex h-2 w-2">
-                                            <span
-                                                class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                                            <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
-                                        </span>
-                                        Menunggu Verifikasi
-                                    </div>
-                                @elseif($activity->status_akun == 'aktif')
-                                    <div class="text-right">
-                                        <div
-                                            class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold bg-emerald-50 text-emerald-700 rounded-full border border-emerald-200">
-                                            <i data-lucide="check-circle-2" class="h-3.5 w-3.5"></i>
-                                            Terverifikasi
-                                        </div>
-                                        @if ($activity->verifikatorAdmin)
-                                            {{-- Gunakan nama relasi baru di model User --}}
-                                            <p
-                                                class="text-[10px] text-gray-500 font-medium mt-1.5 flex items-center gap-1 justify-end">
-                                                <i data-lucide="user-cog" class="h-3 w-3"></i>
-                                                Oleh: {{ $activity->verifikatorAdmin->nama_admin }}
-                                            </p>
-                                        @endif
-                                    </div>
-                                @elseif($activity->status_akun == 'ditolak')
-                                    <div
-                                        class="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold bg-red-50 text-red-700 rounded-full border border-red-200">
-                                        <i data-lucide="x-circle" class="h-3.5 w-3.5"></i>
-                                        Ditolak
-                                    </div>
-                                @endif
+                            <div class="text-xs font-bold text-gray-900 mt-1">
+                                Rp {{ number_format($trx->total, 0, ',', '.') }}
                             </div>
                         </div>
                     @empty
-                        <div class="text-center py-10 text-gray-400 italic text-sm">
-                            Belum ada aktivitas terbaru.
+                        <div class="text-center py-4">
+                            <p class="text-xs text-gray-400 font-medium">Belum ada aktivitas transaksi.</p>
                         </div>
                     @endforelse
                 </div>
             </div>
         </div>
     </div>
+
+    {{-- Bottom Row --}}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {{-- Akun Pending Verifikasi --}}
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden lg:col-span-2 flex flex-col">
+            <div class="px-6 py-5 border-b border-gray-50 flex justify-between items-center">
+                <h3 class="text-sm font-bold text-gray-800 uppercase">Menunggu Verifikasi Akun</h3>
+                <a href="{{ route('admin.verifikasi') }}" class="text-xs font-bold text-indigo-600 hover:text-indigo-700">Lihat Semua</a>
+            </div>
+            <div class="overflow-x-auto flex-1">
+                <table class="min-w-full divide-y divide-gray-100">
+                    <thead class="bg-gray-50/50">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">Nama Lengkap / Kios</th>
+                            <th class="px-6 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">Tipe Akun</th>
+                            <th class="px-6 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">Username</th>
+                            <th class="px-6 py-4 text-center text-[10px] font-bold text-gray-400 uppercase tracking-wider">Waktu Daftar</th>
+                            <th class="px-6 py-4 text-center text-[10px] font-bold text-gray-400 uppercase tracking-wider">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 bg-white">
+                        @forelse($akunPending as $akun)
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4 whitespace-nowrap text-xs font-bold text-gray-900">
+                                    {{ $akun->role == 'Petani' ? ($akun->petani->nama_petani ?? '-') : ($akun->mitra->nama_mitra ?? '-') }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-600">
+                                    <span class="px-2 py-1 rounded-md text-[10px] font-bold {{ $akun->role == 'Petani' ? 'bg-indigo-50 text-indigo-600' : 'bg-purple-50 text-purple-600' }}">
+                                        {{ $akun->role }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500">{{ $akun->username }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500 text-center">{{ $akun->created_at->diffForHumans() }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center">
+                                    <a href="{{ route('admin.verifikasi') }}" class="text-[10px] font-bold text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition-colors px-2.5 py-1.5 rounded-md">Tinjau</a>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" class="px-6 py-8 text-center">
+                                    <div class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50 mb-3">
+                                        <i data-lucide="check" class="h-5 w-5 text-emerald-500"></i>
+                                    </div>
+                                    <p class="text-xs text-gray-500 font-medium">Semua pendaftaran akun telah diverifikasi.</p>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        {{-- Distribusi Jenis Pupuk --}}
+        <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm lg:col-span-1">
+            <h3 class="text-sm font-bold text-gray-800 uppercase mb-4">Distribusi Jenis Pupuk</h3>
+            <div class="flex items-center justify-center h-64">
+                <div id="donutChart" class="w-full"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Trend Penyaluran (Area Chart)
+        const trendDates = {!! $trendDates !!};
+        const trendData = {!! $trendData !!};
+
+        const areaOptions = {
+            series: [{
+                name: 'Penyaluran (Ton)',
+                data: trendData
+            }],
+            chart: {
+                type: 'area',
+                height: 280,
+                toolbar: { show: false },
+                fontFamily: 'Inter, sans-serif'
+            },
+            colors: ['#6366f1'], // Indigo color exactly like screenshot
+            fill: {
+                type: 'gradient',
+                gradient: {
+                    shadeIntensity: 1,
+                    opacityFrom: 0.4,
+                    opacityTo: 0.05,
+                    stops: [0, 90, 100]
+                }
+            },
+            dataLabels: { enabled: false },
+            stroke: {
+                curve: 'smooth',
+                width: 3
+            },
+            markers: {
+                size: 4,
+                colors: ['#fff'],
+                strokeColors: '#6366f1',
+                strokeWidth: 2,
+                hover: { size: 6 }
+            },
+            xaxis: {
+                categories: trendDates,
+                axisBorder: { show: false },
+                axisTicks: { show: false },
+                labels: {
+                    style: { colors: '#9ca3af', fontSize: '11px', fontWeight: 600 }
+                }
+            },
+            yaxis: {
+                labels: {
+                    style: { colors: '#9ca3af', fontSize: '11px', fontWeight: 600 },
+                    formatter: function (val) {
+                        return val.toFixed(1);
+                    }
+                }
+            },
+            grid: {
+                borderColor: '#f3f4f6',
+                strokeDashArray: 4,
+                yaxis: { lines: { show: true } },
+                xaxis: { lines: { show: true } }
+            },
+            tooltip: {
+                y: {
+                    formatter: function (val) {
+                        return val + " Ton"
+                    }
+                }
+            }
+        };
+
+        const areaChart = new ApexCharts(document.querySelector("#trendAreaChart"), areaOptions);
+        areaChart.render();
+
+        // Distribusi Jenis Pupuk (Donut Chart)
+        const pieLabels = {!! $pieLabels !!};
+        const pieSeries = {!! $pieSeries !!};
+
+        const donutOptions = {
+            series: pieSeries.length > 0 && pieSeries.reduce((a,b) => a+b, 0) > 0 ? pieSeries : [1], // fallback shape if empty
+            labels: pieLabels.length > 0 ? pieLabels : ['Data Kosong'],
+            chart: {
+                type: 'donut',
+                height: 280,
+                fontFamily: 'Inter, sans-serif'
+            },
+            colors: ['#4f46e5', '#818cf8', '#a5b4fc', '#c7d2fe', '#e0e7ff'], // Indigo/Blue variants
+            plotOptions: {
+                pie: {
+                    donut: {
+                        size: '75%',
+                        background: 'transparent'
+                    }
+                }
+            },
+            dataLabels: {
+                enabled: false
+            },
+            stroke: {
+                show: false
+            },
+            legend: {
+                position: 'bottom',
+                horizontalAlign: 'center',
+                fontSize: '11px',
+                markers: { radius: 2 }
+            },
+            tooltip: {
+                enabled: pieSeries.length > 0 && pieSeries.reduce((a,b) => a+b, 0) > 0,
+                y: {
+                    formatter: function(value) {
+                        return value + " Kg";
+                    }
+                }
+            }
+        };
+
+        const donutChart = new ApexCharts(document.querySelector("#donutChart"), donutOptions);
+        donutChart.render();
+    });
+</script>
 @endsection

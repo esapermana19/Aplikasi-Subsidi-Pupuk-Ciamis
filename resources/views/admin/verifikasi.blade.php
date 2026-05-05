@@ -172,6 +172,9 @@
                 </tbody>
             </table>
         </div>
+        <div class="mt-4">
+            {{ $users->links() }}
+        </div>
     </div>
     {{-- Modal Detail Verifikasi --}}
     <div id="detailModal" class="fixed inset-0 z-50 hidden overflow-y-auto">

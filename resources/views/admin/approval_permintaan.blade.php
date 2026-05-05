@@ -71,6 +71,9 @@
                 </tbody>
             </table>
         </div>
+        <div class="p-4 border-t border-gray-100">
+            {{ $permintaans->links() }}
+        </div>
     </div>
 
     <div id="modalApproval" class="fixed inset-0 z-50 hidden bg-black bg-opacity-50 flex items-center justify-center">

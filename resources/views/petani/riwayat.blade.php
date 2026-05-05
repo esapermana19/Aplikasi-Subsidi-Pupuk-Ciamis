@@ -27,87 +27,57 @@
     @endforeach
 </div>
 
-<div id="modalFaktur" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-2xl overflow-hidden max-w-lg w-full shadow-2xl">
-        <div class="bg-green-600 p-4 text-white flex justify-between items-center">
-            <h3 class="font-bold">Faktur Pembelian</h3>
-            <button onclick="closeModal()" class="hover:bg-white/20 rounded-full p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
+{{-- Modal Print Preview --}}
+<div id="printPreviewModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity p-4">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[95vh] relative">
+        <div class="px-5 py-4 border-b border-gray-200 flex justify-between items-center bg-white">
+            <h3 class="text-sm font-bold text-gray-800 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-600"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></svg> Preview Faktur
+            </h3>
+            <button onclick="closePrintPreview()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
         </div>
         
-        <div id="isi-faktur" class="p-6">
-            </div>
-
-        <div class="p-4 bg-gray-50 flex gap-2">
-            <button class="flex-1 py-2 border border-gray-300 rounded-lg text-sm font-medium hover:bg-white transition-colors">Cetak PDF</button>
-            <button onclick="closeModal()" class="flex-1 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors">Tutup</button>
+        <div class="p-0 overflow-y-auto flex-1 flex justify-center bg-gray-50 border-b border-gray-100">
+            <iframe id="printFrame" class="w-full h-[600px] bg-white border-0" src=""></iframe>
+        </div>
+        
+        <div class="px-5 py-4 border-t border-gray-200 flex justify-end gap-3 bg-white">
+            <button onclick="closePrintPreview()" class="px-4 py-2 text-sm font-bold text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 rounded-lg transition-colors">Batal</button>
+            <button onclick="executePrint()" class="px-4 py-2 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg flex items-center gap-2 transition-colors shadow-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg> Cetak PDF
+            </button>
         </div>
     </div>
 </div>
 
 <script>
-async function showDetail(id) {
-    const res = await fetch(`/api/transaksi/detail/${id}`);
-    const data = await res.json();
-    
-    const t = data.transaksi;
-    const items = data.details;
+    function showDetail(id) {
+        openPrintPreview(`/petani/transaksi/${id}/cetak`);
+    }
 
-    let itemsHtml = '';
-    items.forEach(item => {
-        itemsHtml += `
-            <div class="flex justify-between text-sm mb-1">
-                <span class="text-gray-600">${item.nama_pupuk} (${item.jml_beli} kg)</span>
-                <span class="font-medium">Rp ${parseInt(item.subtotal).toLocaleString('id-ID')}</span>
-            </div>
-        `;
-    });
-
-    document.getElementById('isi-faktur').innerHTML = `
-        <div class="text-center mb-6">
-            <p class="text-xs text-gray-400 mb-1">ID TRANSAKSI</p>
-            <p class="font-black text-gray-800 text-lg">${t.id_transaksi}</p>
-        </div>
+    function openPrintPreview(url) {
+        const modal = document.getElementById('printPreviewModal');
+        const frame = document.getElementById('printFrame');
         
-        <div class="space-y-3 border-b border-dashed pb-4 mb-4">
-            <div class="flex justify-between text-xs items-start">
-                <span class="text-gray-500">Mitra</span>
-                <div class="text-right">
-                    <span class="font-bold text-gray-800 block">${t.nama_kios}</span>
-                    <span class="text-[10px] text-gray-500 font-medium">No: ${t.nomor_mitra ?? '-'}</span>
-                </div>
-            </div>
-            <div class="flex justify-between text-xs">
-                <span class="text-gray-500">Tanggal</span>
-                <span class="font-bold text-gray-800">${t.tgl_transaksi}</span>
-            </div>
-        </div>
+        modal.classList.remove('hidden');
+        frame.src = url;
+    }
 
-        <div class="mb-4">
-            <p class="text-[10px] font-bold text-gray-400 uppercase mb-2">Item Pembelian</p>
-            ${itemsHtml}
-            <div class="flex justify-between border-t mt-2 pt-2 font-bold text-green-700">
-                <span>Total</span>
-                <span>Rp ${parseInt(t.total_harga).toLocaleString('id-ID')}</span>
-            </div>
-        </div>
+    function closePrintPreview() {
+        const modal = document.getElementById('printPreviewModal');
+        const frame = document.getElementById('printFrame');
+        
+        modal.classList.add('hidden');
+        frame.src = '';
+    }
 
-        <div class="flex flex-col items-center pt-4 border-t border-gray-100 text-center">
-            <p class="text-[10px] font-bold text-gray-500 mb-2">SCAN UNTUK PENGAMBILAN</p>
-            <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${t.id_transaksi}" class="w-24 h-24 mb-2">
-            <span class="px-3 py-1 rounded-md text-[10px] font-bold ${t.status_pengambilan == 'sudah' ? 'bg-blue-100 text-blue-700' : 'bg-yellow-100 text-yellow-700'}">
-                ${t.status_pengambilan == 'sudah' ? 'SUDAH DIAMBIL' : 'MENUNGGU PENGAMBILAN'}
-            </span>
-        </div>
-    `;
-
-    document.getElementById('modalFaktur').classList.remove('hidden');
-    document.getElementById('modalFaktur').classList.add('flex');
-    lucide.createIcons();
-}
-
-function closeModal() {
-    document.getElementById('modalFaktur').classList.add('hidden');
-    document.getElementById('modalFaktur').classList.remove('flex');
-}
+    function executePrint() {
+        const frame = document.getElementById('printFrame');
+        if(frame.contentWindow) {
+            frame.contentWindow.print();
+        }
+    }
 </script>
 @endsection

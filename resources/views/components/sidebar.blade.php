@@ -86,19 +86,25 @@
                             'route' => 'admin.transaksi',
                         ],
                         [
-                            'id' => 'rekonsiliasi',
-                            'label' => 'Rekonsiliasi Data',
-                            'icon' => 'database',
-                            'route' => 'admin.rekonsiliasi',
-                        ],
-                        [
                             'id' => 'permintaan-penarikan',
                             'label' => 'Permintaan Penarikan',
                             'icon' => 'dollar-sign',
                             'route' => 'admin.permintaan_penarikan',
                         ],
+                        [
+                            'id' => 'rekonsiliasi',
+                            'label' => 'Rekonsiliasi Data',
+                            'icon' => 'database',
+                            'route' => 'admin.rekonsiliasi',
+                        ],
                         ['id' => 'laporan', 'label' => 'Laporan', 'icon' => 'file-text', 'route' => 'admin.laporan'],
-                        ['id' => 'log', 'label' => 'Log Activity', 'icon' => 'activity', 'route' => 'admin.log'],
+                        ['id' => 'log-activity', 'label' => 'Log Aktivitas', 'icon' => 'history', 'route' => 'admin.log_activity'],
+                        [
+                            'id' => 'regulasi',
+                            'label' => 'Regulasi Musim',
+                            'icon' => 'settings',
+                            'route' => 'admin.regulasi',
+                        ],
                     ];
                 }
                 // 2. MENU UNTUK MITRA
@@ -112,7 +118,7 @@
                         ],
                         [
                             'id' => 'manajemen_pupuk',
-                            'label' => 'Manajemen Pupuk',
+                            'label' => 'Kelola Ketersediaan',
                             'icon' => 'package',
                             'is_dropdown' => true,
                             'sub_menu' => [
@@ -266,6 +272,28 @@
                                 </span>
                             </span>
                         @endif
+
+                        @if (($item['id'] ?? '') === 'permintaan-penarikan' && ($pendingPenarikanCount ?? 0) > 0)
+                            <span class="relative flex h-5 w-5">
+                                <span
+                                    class="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                                <span
+                                    class="relative inline-flex rounded-full h-5 w-5 bg-orange-500 text-[10px] text-white items-center justify-center font-bold">
+                                    {{ $pendingPenarikanCount }}
+                                </span>
+                            </span>
+                        @endif
+
+                        @if (($item['id'] ?? '') === 'rekonsiliasi' && ($mismatchRekonsiliasiCount ?? 0) > 0)
+                            <span class="relative flex h-5 w-5">
+                                <span
+                                    class="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                                <span
+                                    class="relative inline-flex rounded-full h-5 w-5 bg-orange-500 text-[10px] text-white items-center justify-center font-bold">
+                                    {{ $mismatchRekonsiliasiCount }}
+                                </span>
+                            </span>
+                        @endif
                     </a>
                 @endif
             @endforeach
@@ -275,16 +303,20 @@
     <hr class="border-t border-gray-200">
 
     <div class="p-4">
-        <div class="flex items-center gap-3 rounded-xl bg-gray-50 p-3 mb-3 border border-gray-100">
-            <div class="flex h-9 w-9 items-center justify-center rounded-full bg-green-600 text-white font-bold">
+        <a href="{{ route('profile.index') }}" 
+            class="flex items-center gap-3 rounded-xl p-3 mb-3 border transition-all duration-200 group {{ ($activeMenu ?? '') === 'profile' ? 'bg-green-50 border-green-200 shadow-sm' : 'bg-gray-50 border-gray-100 hover:bg-white hover:border-green-300 hover:shadow-md hover:-translate-y-0.5' }}">
+            <div class="flex h-9 w-9 items-center justify-center rounded-full transition-colors group-hover:scale-110 duration-200 {{ ($activeMenu ?? '') === 'profile' ? 'bg-green-600' : 'bg-green-600' }} text-white font-bold">
                 <i data-lucide="user" class="h-5 w-5 text-gray-100"></i>
                 {{ substr(auth()->user()->name, 0, 1) }}
             </div>
             <div class="flex-1 min-w-0">
-                <p class="text-sm font-semibold text-gray-900 truncate">{{ auth()->user()->name }}</p>
+                <p class="text-sm font-semibold text-gray-900 truncate group-hover:text-green-700 transition-colors">{{ auth()->user()->name }}</p>
                 <p class="text-xs text-gray-500 truncate">{{ auth()->user()->email }}</p>
             </div>
-        </div>
+            <div class="text-gray-300 group-hover:text-green-500 transition-colors">
+                <i data-lucide="chevron-right" class="h-4 w-4"></i>
+            </div>
+        </a>
 
         <form action="{{ route('logout') }}" method="POST">
             @csrf

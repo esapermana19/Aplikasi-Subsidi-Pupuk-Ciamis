@@ -6,6 +6,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MitraController;
 use App\Http\Controllers\PermintaanController;
 use App\Http\Controllers\PetaniController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PupukController;
 use App\Http\Controllers\TransaksiController;
 use App\Models\Transaksi;
@@ -43,6 +44,12 @@ Route::middleware(['auth'])->group(function () {
         request()->session()->regenerateToken();
         return redirect('/');
     })->name('logout');
+    
+    // Rute Profil (Umum untuk semua role)
+    Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
+    Route::post('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
+    Route::post('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
+
     Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
     Route::middleware(['role:admin,superadmin'])->group(function () {
         Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
@@ -50,16 +57,19 @@ Route::middleware(['auth'])->group(function () {
         Route::patch('/admin/status/update/{id}', [AdminController::class, 'update_status'])->name('admin.update_status');
         // Manajemen Pupuk
         Route::get('/admin/pupuk', [PupukController::class, 'index'])->name('admin.pupuk.index');
+        Route::get('/admin/pupuk/export', [PupukController::class, 'export'])->name('admin.pupuk.export');
         Route::post('/admin/pupuk/store', [PupukController::class, 'store'])->name('admin.pupuk.store');
         Route::patch('/admin/pupuk/update/{id}', [PupukController::class, 'update'])->name('admin.pupuk.update');
         Route::delete('/admin/pupuk/delete/{id}', [PupukController::class, 'destroy'])->name('admin.pupuk.destroy');
         Route::get('/admin/petani', [AdminController::class, 'list_petani'])->name('admin.list_petani');
+        Route::get('/admin/petani/export', [AdminController::class, 'export_petani'])->name('admin.petani.export');
         Route::post('/admin/pupuk/{id}/tambah-stok', [PupukController::class, 'tambahStok'])->name('admin.pupuk.tambah_stok');
         // Manajemen Petani
         Route::patch('/admin/petani/update/{id}', [AdminController::class, 'update_petani'])->name('admin.petani.update');
         Route::patch('/admin/update_status_petani/{id}', [AdminController::class, 'update_status_petani'])->name('admin.petani.update_status');
         // Manajemen Mitra
         Route::get('/admin/mitra', [AdminController::class, 'list_mitra'])->name('admin.list_mitra');
+        Route::get('/admin/mitra/export', [AdminController::class, 'export_mitra'])->name('admin.mitra.export');
         Route::patch('/admin/mitra/update/{id}', [AdminController::class, 'update_mitra'])->name('admin.mitra.update');
         Route::patch('/admin/user/update-status/{id}', [AdminController::class, 'update_status'])->name('admin.update_status');
         Route::patch('/admin/update_status_mitra/{id}', [AdminController::class, 'update_status_mitra'])->name('admin.mitra.update_status');
@@ -75,14 +85,16 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/admin/permintaan/{id}/update', [AdminController::class, 'update_permintaan'])->name('admin.permintaan.update');
 
         Route::get('/admin/permintaan-penarikan', [AdminController::class, 'permintaan_penarikan'])->name('admin.permintaan_penarikan');
+        Route::get('/admin/permintaan-penarikan/export', [AdminController::class, 'export_penarikan'])->name('admin.penarikan.export');
         Route::post('/admin/permintaan-penarikan/{id}/update', [AdminController::class, 'update_penarikan'])->name('admin.penarikan.update');
-        Route::get('/admin/rekonsiliasi', function () {
-            return "Halaman Rekon";
-        })->name('rekonsiliasi');
+        Route::get('/admin/permintaan-penarikan/{id}/cetak', [AdminController::class, 'cetak_penarikan'])->name('admin.penarikan.cetak');
+        Route::get('/admin/rekonsiliasi', [AdminController::class, 'rekonsiliasi'])->name('admin.rekonsiliasi');
+        Route::post('/admin/rekonsiliasi/{id}', [AdminController::class, 'store_rekonsiliasi'])->name('admin.rekonsiliasi.store');
         Route::get('/admin/transaksi', [AdminController::class, 'transaksi'])->name('admin.transaksi');
-        Route::get('/admin/laporan', function () {
-            return "Halaman Laporan";
-        })->name('laporan');
+        Route::get('/admin/transaksi/export', [AdminController::class, 'export_transaksi'])->name('admin.transaksi.export');
+        Route::get('/admin/transaksi/{id}/cetak', [AdminController::class, 'cetak_transaksi'])->name('admin.cetak_transaksi');
+        Route::get('/admin/laporan', [AdminController::class, 'laporan'])->name('admin.laporan');
+        Route::get('/admin/log-activity', [AdminController::class, 'log_activity'])->name('admin.log_activity');
     });
     // Khusus Petani
     Route::middleware(['role:petani'])->group(function () {
@@ -90,6 +102,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/petani/beli-pupuk', [PetaniController::class, 'beliPupuk'])->name('petani.beli_pupuk');
         Route::get('/petani/riwayat-transaksi', [TransaksiController::class, 'riwayat'])->name('petani.riwayat_transaksi');
         Route::get('/petani/transaksi/{id}', [PetaniController::class, 'detailTransaksi'])->name('petani.detail_transaksi');
+        Route::get('/petani/transaksi/{id}/cetak', [TransaksiController::class, 'cetak_petani'])->name('petani.cetak_transaksi');
         // routes/web.php
         Route::get('/api/mitra/{id_mitra}/pupuk', [TransaksiController::class, 'getPupukByMitra']);
         Route::post('/api/checkout', [TransaksiController::class, 'prosesCheckout']);
@@ -113,6 +126,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/mitra/scan/konfirmasi/{id}', [MitraController::class, 'konfirmasiPengambilan']);
         Route::get('/mitra/transaksi', [MitraController::class, 'transaksi'])->name('mitra.transaksi');
         Route::get('/mitra/riwayat', [MitraController::class, 'riwayat'])->name('mitra.riwayat');
+        Route::get('/mitra/riwayat/{id}/cetak', [MitraController::class, 'cetak_transaksi'])->name('mitra.riwayat.cetak');
 
         Route::get('/mitra/saldo', [MitraController::class, 'saldo'])->name('mitra.saldo');
         Route::get('/mitra/pencairan', [MitraController::class, 'pencairan'])->name('mitra.pencairan');

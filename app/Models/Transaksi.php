@@ -47,6 +47,11 @@ class Transaksi extends Model
         );
     }
 
+    public function rekonsiliasi()
+    {
+        return $this->hasOne(Rekonsiliasi::class, 'id_transaksi');
+    }
+
     public function getJumlahAttribute()
     {
         return $this->rincian->sum('jml_beli');
