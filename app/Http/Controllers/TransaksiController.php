@@ -16,22 +16,38 @@ class TransaksiController extends Controller
         // Ambil semua jenis pupuk
         $pupuks = \App\Models\Pupuk::all();
 
-        $dataPupuk = $pupuks->map(function ($pupuk) use ($id_mitra) {
+        // Ambil Musim Aktif
+        $musimAktif = \App\Models\Musim::where('is_active', true)->first();
+        $id_petani = Auth::user()->petani->id_petani;
+
+        $dataPupuk = $pupuks->map(function ($pupuk) use ($id_mitra, $musimAktif, $id_petani) {
             // Hitung Sisa Stok Mitra dari tabel_detail_stok
             $stok_mitra = DB::table('tabel_detail_stok')
                 ->where('id_mitra', $id_mitra)
                 ->where('id_pupuk', $pupuk->id_pupuk)
                 ->sum('jml_perubahan');
 
-            // Dummy jatah petani (Silakan sesuaikan dengan logika kuota jatah petani nantinya)
-            $sisa_jatah_petani = ($pupuk->nama_pupuk == 'Urea') ? 150 : 75;
+            // Logika Jatah Petani berdasarkan Musim Aktif
+            $sisa_jatah_petani = 0;
+            if ($musimAktif) {
+                // Hitung total pupuk yang sudah dibeli petani di musim ini (status sukses)
+                $sudah_dibeli = DB::table('tabel_detail_transaksi')
+                    ->join('tabel_transaksi', 'tabel_detail_transaksi.id_transaksi', '=', 'tabel_transaksi.id_transaksi')
+                    ->where('tabel_transaksi.id_petani', $id_petani)
+                    ->where('tabel_transaksi.id_musim', $musimAktif->id_musim)
+                    ->where('tabel_transaksi.status_pembayaran', 'success')
+                    ->sum('tabel_detail_transaksi.jml_beli');
+                
+                $sisa_jatah_petani = max(0, $musimAktif->limit_per_petani - $sudah_dibeli);
+            }
 
             return [
                 'id_pupuk'          => $pupuk->id_pupuk,
                 'nama_pupuk'        => $pupuk->nama_pupuk,
                 'harga_subsidi'     => $pupuk->harga_subsidi,
                 'stok_mitra'        => (int)max(0, $stok_mitra),
-                'sisa_jatah_petani' => $sisa_jatah_petani
+                'sisa_jatah_petani' => (float)$sisa_jatah_petani,
+                'musim_aktif'       => $musimAktif ? $musimAktif->nama_musim : 'Tidak Ada Musim Aktif'
             ];
         });
 
@@ -47,6 +63,46 @@ class TransaksiController extends Controller
     {
         try {
             DB::beginTransaction();
+
+            // Cek Musim Aktif
+            $musimAktif = \App\Models\Musim::where('is_active', true)->first();
+            if (!$musimAktif) {
+                throw new \Exception('Maaf, saat ini tidak ada periode musim tanam yang aktif.');
+            }
+
+            // Validasi Periode Tanggal
+            $today = now()->toDateString();
+            if ($today < $musimAktif->tgl_mulai || $today > $musimAktif->tgl_selesai) {
+                throw new \Exception('Maaf, transaksi dikunci karena sudah di luar periode musim ' . $musimAktif->nama_musim);
+            }
+
+            // Validasi Limit Per Petani
+            $id_petani = Auth::user()->petani->id_petani;
+            $sudah_dibeli = DB::table('tabel_detail_transaksi')
+                ->join('tabel_transaksi', 'tabel_detail_transaksi.id_transaksi', '=', 'tabel_transaksi.id_transaksi')
+                ->where('tabel_transaksi.id_petani', $id_petani)
+                ->where('tabel_transaksi.id_musim', $musimAktif->id_musim)
+                ->where('tabel_transaksi.status_pembayaran', 'success')
+                ->sum('tabel_detail_transaksi.jml_beli');
+            
+            $total_beli_baru = collect($request->keranjang)->sum('jumlah');
+
+            // Validasi Kuota Global Musim
+            $total_terpakai_global = DB::table('tabel_detail_transaksi')
+                ->join('tabel_transaksi', 'tabel_detail_transaksi.id_transaksi', '=', 'tabel_transaksi.id_transaksi')
+                ->where('tabel_transaksi.id_musim', $musimAktif->id_musim)
+                ->whereIn('tabel_transaksi.status_pembayaran', ['success', 'pending']) // Pending juga dihitung agar tidak rebutan
+                ->sum('tabel_detail_transaksi.jml_beli');
+
+            if (($total_terpakai_global + $total_beli_baru) > $musimAktif->kuota_global) {
+                $sisa_global = max(0, $musimAktif->kuota_global - $total_terpakai_global);
+                throw new \Exception("Maaf, kuota subsidi global untuk musim ini hampir habis. Sisa kuota tersedia: {$sisa_global} Kg.");
+            }
+
+            if (($sudah_dibeli + $total_beli_baru) > $musimAktif->limit_per_petani) {
+                $sisa = $musimAktif->limit_per_petani - $sudah_dibeli;
+                throw new \Exception("Maaf, total pembelian Anda melebihi limit musim ini. Sisa jatah Anda: {$sisa} Kg.");
+            }
 
             // 1. Simpan Transaksi ke Database (Status: Pending)
             $total_harga = $request->total_pembayaran;
@@ -70,8 +126,9 @@ class TransaksiController extends Controller
 
             DB::table('tabel_transaksi')->insert([
                 'id_transaksi' => $id_transaksi,
-                'id_petani' => Auth::user()->petani->id_petani,
+                'id_petani' => $id_petani,
                 'id_mitra' => $request->id_mitra,
+                'id_musim' => $musimAktif->id_musim,
                 'tgl_transaksi' => now(),
                 'total' => $total_harga,
                 'status_pembayaran' => 'pending',

@@ -86,11 +86,11 @@
                     </div>
                 </div>
 
-                <!-- Menu Button Masuk -->
+                <!-- Menu Button Daftar -->
                 <div class="fade-in-right">
-                    <a href="/login" class="group inline-flex items-center justify-center gap-2 px-5 py-2 text-xs font-semibold text-white bg-green-600 rounded-full hover:bg-green-700 transition-all duration-300 shadow-md shadow-green-600/30 hover:shadow-lg hover:-translate-y-0.5">
+                    <a href="/register" class="group inline-flex items-center justify-center gap-2 px-5 py-2 text-xs font-semibold text-white bg-green-600 rounded-full hover:bg-green-700 transition-all duration-300 shadow-md shadow-green-600/30 hover:shadow-lg hover:-translate-y-0.5">
                         <i data-lucide="log-in" class="w-3.5 h-3.5 transition-transform group-hover:translate-x-1"></i>
-                        Masuk
+                        Daftar
                     </a>
                 </div>
             </div>

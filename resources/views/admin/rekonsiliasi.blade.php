@@ -53,6 +53,12 @@
             <button type="submit" class="px-5 py-2.5 bg-emerald-500 text-white text-sm font-bold rounded-lg hover:bg-emerald-600 flex items-center gap-2">
                 <i data-lucide="filter" class="h-4 w-4"></i> Filter
             </button>
+
+            @if(request('kecamatan') || request('desa') || request('search') || request('status'))
+                <a href="{{ route('admin.rekonsiliasi') }}" class="px-5 py-2.5 bg-gray-100 text-gray-600 text-sm font-bold rounded-lg hover:bg-gray-200 flex items-center gap-2 border border-gray-200 transition-colors">
+                    <i data-lucide="rotate-ccw" class="h-4 w-4"></i> Reset
+                </a>
+            @endif
         </form>
     </div>
 
@@ -173,7 +179,7 @@
             </table>
         </div>
         <div class="p-4 border-t border-gray-100">
-            {{ $mitras->links() }}
+            {{ $rekonsiliasiList->links() }}
         </div>
     </div>
 </div>

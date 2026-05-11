@@ -10,6 +10,7 @@ use App\Models\Petani;
 use App\Models\Mitra;
 use App\Models\Penarikan;
 use App\Models\LogActivity;
+use App\Notifications\AccountVerified;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -147,7 +148,7 @@ class AdminController extends Controller
 
     public function log_activity(Request $request)
     {
-        $query = LogActivity::with('user');
+        $query = LogActivity::with(['user.admin', 'user.superadmin']);
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -164,7 +165,7 @@ class AdminController extends Controller
             $query->whereDate('created_at', $request->tanggal);
         }
 
-        $logs = $query->latest()->paginate(15)->withQueryString();
+        $logs = $query->latest()->paginate(10)->withQueryString();
 
         return view('admin.log_activity', [
             'logs' => $logs,
@@ -194,10 +195,11 @@ class AdminController extends Controller
         ]);
         
         $this->logActivity(
-            'Menerima Verifikasi Akun',
+            "Menerima Verifikasi Akun {$user->role} ({$user->email})",
             'Verifikasi Akun',
             ['username' => $user->username, 'role' => $user->role, 'status' => 'Diterima']
         );
+        // $user->notify(new AccountVerified());
 
         return back()->with('success', 'Akun berhasil diverifikasi!');
     }
@@ -211,7 +213,7 @@ class AdminController extends Controller
         ]);
         
         $this->logActivity(
-            'Menolak Verifikasi Akun',
+            "Menolak Verifikasi Akun {$user->role} ({$user->email})",
             'Verifikasi Akun',
             ['username' => $user->username, 'role' => $user->role, 'status' => 'Ditolak']
         );
@@ -416,11 +418,23 @@ class AdminController extends Controller
         $request->validate([
             'nama_petani' => 'required|string|max:50',
             'email' => 'required|email|unique:tabel_users,email,' . $id . ',id_user',
+            'no_hp' => 'required|string|max:15|unique:tabel_users,no_hp,' . $id . ',id_user',
+            'nik' => 'required|string|max:16|unique:tabel_petani,nik,' . ($user->petani->id_petani ?? 0) . ',id_petani',
+        ], [
+            'email.unique' => 'Email ini sudah terdaftar di sistem. Gunakan email lain.',
+            'no_hp.unique' => 'Nomor HP/WhatsApp ini sudah terdaftar. Gunakan nomor lain.',
+            'nik.unique' => 'NIK ini sudah terdaftar di sistem. Pastikan NIK yang dimasukkan benar.',
+            'email.required' => 'Email wajib diisi.',
+            'no_hp.required' => 'Nomor HP wajib diisi.',
+            'nik.required' => 'NIK wajib diisi.',
         ]);
 
         DB::transaction(function () use ($request, $user) {
-            // Update User (Email & Password)
-            $userData = ['email' => $request->email];
+            // Update User (Email, Password, No HP)
+            $userData = [
+                'email' => $request->email,
+                'no_hp' => $request->no_hp,
+            ];
             if ($request->filled('password')) {
                 $userData['password'] = Hash::make($request->password);
             }
@@ -437,7 +451,7 @@ class AdminController extends Controller
             ]);
             
             $this->logActivity(
-                'Mengubah Data Petani',
+                "Mengubah Data Petani: {$request->nama_petani} ({$user->email})",
                 'Manajemen Petani',
                 ['username' => $user->username, 'nama_petani' => $request->nama_petani, 'nik' => $request->nik]
             );
@@ -454,11 +468,23 @@ class AdminController extends Controller
         $request->validate([
             'nama_mitra' => 'required|string|max:50',
             'email' => 'required|email|unique:tabel_users,email,' . $id . ',id_user',
+            'no_hp' => 'required|string|max:15|unique:tabel_users,no_hp,' . $id . ',id_user',
+            'nik' => 'required|string|max:16|unique:tabel_mitra,nik,' . ($user->mitra->id_mitra ?? 0) . ',id_mitra',
+        ], [
+            'email.unique' => 'Email ini sudah terdaftar di sistem. Gunakan email lain.',
+            'no_hp.unique' => 'Nomor HP/WhatsApp ini sudah terdaftar. Gunakan nomor lain.',
+            'nik.unique' => 'NIK pemilik ini sudah terdaftar di sistem.',
+            'email.required' => 'Email wajib diisi.',
+            'no_hp.required' => 'Nomor HP wajib diisi.',
+            'nik.required' => 'NIK wajib diisi.',
         ]);
 
         DB::transaction(function () use ($request, $user) {
             // Update data Akun
-            $userData = ['email' => $request->email];
+            $userData = [
+                'email' => $request->email,
+                'no_hp' => $request->no_hp,
+            ];
             if ($request->filled('password')) {
                 $userData['password'] = Hash::make($request->password);
             }
@@ -477,13 +503,57 @@ class AdminController extends Controller
             ]);
             
             $this->logActivity(
-                'Mengubah Data Mitra',
+                "Mengubah Data Mitra: {$request->nama_mitra} ({$user->email})",
                 'Manajemen Mitra',
                 ['username' => $user->username, 'nama_mitra' => $request->nama_mitra, 'nama_pemilik' => $request->nama_pemilik]
             );
         });
 
         return back()->with('success', 'Data Mitra berhasil diperbarui!');
+    }
+
+    public function update_saldo(Request $request, $id)
+    {
+        $request->validate([
+            'nominal' => 'required|numeric|min:1',
+            'aksi' => 'required|in:tambah,kurang'
+        ]);
+
+        try {
+            $mitra = Mitra::findOrFail($id);
+            $old_saldo = $mitra->saldo_app;
+            $nominal = $request->nominal;
+            
+            if ($request->aksi === 'tambah') {
+                $new_saldo = $old_saldo + $nominal;
+            } else {
+                if ($old_saldo < $nominal) {
+                    return back()->with('error', 'Gagal: Saldo saat ini tidak mencukupi untuk dikurangi sebesar nominal tersebut.');
+                }
+                $new_saldo = $old_saldo - $nominal;
+            }
+
+            $mitra->update([
+                'saldo_app' => $new_saldo
+            ]);
+
+            $this->logActivity(
+                "Penyesuaian Saldo Mitra {$mitra->nama_mitra} ({$request->aksi} Rp " . number_format($nominal, 0, ',', '.') . ")",
+                'Manajemen Mitra',
+                [
+                    'nama_mitra' => $mitra->nama_mitra,
+                    'aksi' => $request->aksi,
+                    'nominal' => $nominal,
+                    'saldo_lama' => $old_saldo,
+                    'saldo_baru' => $new_saldo
+                ]
+            );
+
+            $pesan = $request->aksi === 'tambah' ? 'ditambahkan' : 'dikurangi';
+            return back()->with('success', "Saldo mitra {$mitra->nama_mitra} berhasil {$pesan} sebesar Rp " . number_format($nominal, 0, ',', '.') . "!");
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal memperbarui saldo: ' . $e->getMessage());
+        }
     }
 
     // Update Status Akun (Aktif/Nonaktif) untuk Petani dan Mitra
@@ -503,7 +573,7 @@ class AdminController extends Controller
             ]);
             
             $this->logActivity(
-                'Mengubah Status Akun',
+                "Mengubah Status Akun {$user->role} {$user->email} menjadi " . ucfirst($request->status),
                 'Manajemen Akun',
                 ['username' => $user->username, 'status_baru' => $request->status]
             );
@@ -597,7 +667,7 @@ class AdminController extends Controller
             DB::commit();
             
             $this->logActivity(
-                'Mengubah Status Permintaan Pupuk',
+                ucfirst($action) . " Permintaan Pupuk ID: {$id}",
                 'Permintaan Pupuk',
                 ['id_permintaan' => $id, 'status' => $action]
             );
@@ -912,41 +982,39 @@ class AdminController extends Controller
             });
         }
 
-        $mitras = $mitrasQuery->paginate(10)->withQueryString();
-
+        // 1. Ambil SEMUA mitra yang lolos filter wilayah & search
+        $allMitrasFiltered = $mitrasQuery->get();
+        
         $dataSesuai = 0;
         $dataSelisih = 0;
+        $rekonsiliasiListFull = [];
 
-        $rekonsiliasiList = [];
-
-        foreach ($mitras as $mitra) {
-            // Hitung total transaksi sukses untuk mitra ini (All time)
-            $totalMasuk = Transaksi::where('id_mitra', $mitra->id_mitra)
+        foreach ($allMitrasFiltered as $m) {
+            $totalMasuk = Transaksi::where('id_mitra', $m->id_mitra)
                 ->where('status_pembayaran', 'success')
                 ->sum('total');
             
-            // Hitung total penarikan sukses untuk mitra ini (All time)
-            $totalPenarikan = \App\Models\Penarikan::where('id_mitra', $mitra->id_mitra)
+            $totalPenarikan = \App\Models\Penarikan::where('id_mitra', $m->id_mitra)
                 ->where('status', 'success')
                 ->sum('jml_transfer');
 
-            $saldoHitungan = $totalMasuk - $totalPenarikan;
-            $saldoApp = $mitra->saldo_app;
+            $saldoHitungan = (int) ($totalMasuk - $totalPenarikan);
+            $saldoApp = (int) $m->saldo_app;
+            $isMatch = ($saldoHitungan === $saldoApp);
             
-            $isMatch = ($saldoHitungan == $saldoApp);
-
+            // Hitung statistik keseluruhan (sebelum filter status match/mismatch)
             if ($isMatch) {
                 $dataSesuai++;
             } else {
                 $dataSelisih++;
             }
 
-            // Apply filter status match/mismatch if requested
+            // 2. Filter Status (Match / Mismatch) di PHP sebelum paginasi
             if ($status == 'match' && !$isMatch) continue;
             if ($status == 'mismatch' && $isMatch) continue;
 
-            $rekonsiliasiList[] = [
-                'mitra' => $mitra,
+            $rekonsiliasiListFull[] = [
+                'mitra' => $m,
                 'total_masuk' => $totalMasuk,
                 'total_penarikan' => $totalPenarikan,
                 'saldo_hitungan' => $saldoHitungan,
@@ -955,11 +1023,24 @@ class AdminController extends Controller
             ];
         }
 
+        // 3. Paginasi Manual
+        $perPage = 10;
+        $currentPage = request()->get('page', 1);
+        $currentItems = array_slice($rekonsiliasiListFull, ($currentPage - 1) * $perPage, $perPage);
+        
+        $rekonsiliasiPaged = new \Illuminate\Pagination\LengthAwarePaginator(
+            $currentItems, 
+            count($rekonsiliasiListFull), 
+            $perPage, 
+            $currentPage, 
+            ['path' => request()->url(), 'query' => request()->query()]
+        );
+
         $kecamatans = \App\Models\Kecamatan::orderBy('nama_kecamatan')->get();
         $desas = \App\Models\Desa::orderBy('nama_desa')->get();
 
         return view('admin.rekonsiliasi', [
-            'rekonsiliasiList' => $rekonsiliasiList,
+            'rekonsiliasiList' => $rekonsiliasiPaged,
             'totalTransaksiCount' => $totalTransaksiCount,
             'totalNominal' => $totalNominal,
             'dataSesuai' => $dataSesuai,
@@ -967,7 +1048,6 @@ class AdminController extends Controller
             'kecamatans' => $kecamatans,
             'desas' => $desas,
             'bulanTahun' => $bulanTahun,
-            'mitras' => $mitras,
             'activeMenu' => 'rekonsiliasi'
         ]);
     }

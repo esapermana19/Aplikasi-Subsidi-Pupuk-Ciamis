@@ -46,7 +46,7 @@
                                         <th scope="col" class="px-6 py-4 font-semibold">Waktu</th>
                                         <th scope="col" class="px-6 py-4 font-semibold">Administrator</th>
                                         <th scope="col" class="px-6 py-4 font-semibold">Fitur</th>
-                                        <th scope="col" class="px-6 py-4 font-semibold">Aktivitas</th>
+                                        <th scope="col" class="px-6 py-4 font-semibold max-w-sm">Aktivitas</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-100">
@@ -58,12 +58,28 @@
                                             </td>
                                             <td class="px-6 py-4">
                                                 <div class="flex items-center gap-3">
+                                                    @php
+                                                        $name = 'Sistem';
+                                                        $nip = '-';
+                                                        $initial = 'S';
+                                                        
+                                                        if ($log->user) {
+                                                            if ($log->user->role === 'superadmin') {
+                                                                $name = $log->user->superadmin->nama_superadmin ?? $log->user->username;
+                                                                $nip = $log->user->superadmin->nip ?? '-';
+                                                            } else {
+                                                                $name = $log->user->admin->nama_admin ?? $log->user->username;
+                                                                $nip = $log->user->admin->nip ?? '-';
+                                                            }
+                                                            $initial = substr($name, 0, 1);
+                                                        }
+                                                    @endphp
                                                     <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs font-bold shrink-0">
-                                                        {{ strtoupper(substr($log->user->admin->nama_admin ?? $log->user->username ?? 'S', 0, 1)) }}
+                                                        {{ strtoupper($initial) }}
                                                     </div>
                                                     <div>
-                                                        <span class="font-bold text-gray-900 block">{{ $log->user->admin->nama_admin ?? $log->user->username ?? 'Sistem' }}</span>
-                                                        <span class="text-[10px] text-gray-500 font-medium uppercase tracking-wider block mt-0.5">NIP: {{ $log->user->admin->nip ?? '-' }}</span>
+                                                        <span class="font-bold text-gray-900 block">{{ $name }}</span>
+                                                        <span class="text-[10px] text-gray-500 font-medium uppercase tracking-wider block mt-0.5">NIP: {{ $nip }}</span>
                                                     </div>
                                                 </div>
                                             </td>
@@ -72,8 +88,10 @@
                                                     {{ $log->fitur }}
                                                 </span>
                                             </td>
-                                            <td class="px-6 py-4">
-                                                <p class="text-sm text-gray-900 font-medium">{{ $log->aktivitas }}</p>
+                                            <td class="px-6 py-4 max-w-sm">
+                                                <p class="text-sm text-gray-900 font-medium line-clamp-2" title="{{ $log->aktivitas }}">
+                                                    {{ $log->aktivitas }}
+                                                </p>
                                             </td>
                                         </tr>
                                     @empty

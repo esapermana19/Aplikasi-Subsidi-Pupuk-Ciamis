@@ -37,6 +37,40 @@
     <script>
         // Inisialisasi Lucide Icons
         lucide.createIcons();
+
+        // SweetAlert2 Notifications
+        @if(session('success'))
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: "{{ session('success') }}",
+                showConfirmButton: false,
+                timer: 3000,
+                borderRadius: '1.5rem'
+            });
+        @endif
+
+        @if(session('error'))
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal!',
+                text: "{{ session('error') }}",
+                showConfirmButton: true,
+                borderRadius: '1.5rem'
+            });
+        @endif
+
+        @if($errors->any())
+            Swal.fire({
+                icon: 'error',
+                title: 'Terjadi Kesalahan!',
+                text: "{{ $errors->first() }}",
+                showConfirmButton: true,
+                borderRadius: '1.5rem'
+            });
+        @endif
     </script>
+
+    @stack('scripts')
 </body>
 </html>

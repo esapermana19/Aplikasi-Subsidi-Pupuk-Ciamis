@@ -214,7 +214,16 @@ class MitraController extends Controller
             ->where('id_mitra', $transaksi->id_mitra)
             ->increment('saldo_app', $transaksi->total);
 
-        return response()->json(['status' => 'success', 'message' => 'Pupuk berhasil diserahkan kepada petani!']);
+        // Ambil data terbaru untuk faktur
+        $updatedTransaksi = Transaksi::with(['petani', 'rincian.pupuk'])
+            ->where('id_transaksi', $id)
+            ->first();
+
+        return response()->json([
+            'status' => 'success', 
+            'message' => 'Pupuk berhasil diserahkan kepada petani!',
+            'transaksi' => $updatedTransaksi
+        ]);
     }
 
     public function riwayat()

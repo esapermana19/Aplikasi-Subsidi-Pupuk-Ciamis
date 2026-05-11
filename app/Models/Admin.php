@@ -11,7 +11,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'id_user',
     'nip',
     'nama_admin',
-    'email',
     'last_login'
 ])]
 class Admin extends Model

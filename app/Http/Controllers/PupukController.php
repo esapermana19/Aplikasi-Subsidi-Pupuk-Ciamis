@@ -85,7 +85,7 @@ class PupukController extends Controller
 
         \App\Models\LogActivity::create([
             'id_user' => \Illuminate\Support\Facades\Auth::id(),
-            'aktivitas' => 'Menambahkan Pupuk Baru',
+            'aktivitas' => "Menambahkan Pupuk Baru: {$validated['nama_pupuk']} ({$validated['kode_pupuk']})",
             'fitur' => 'Manajemen Pupuk',
             'detail_perubahan' => json_encode(['nama_pupuk' => $validated['nama_pupuk'], 'kode' => $validated['kode_pupuk']]),
             'ip_address' => request()->ip(),
@@ -120,7 +120,7 @@ class PupukController extends Controller
 
         \App\Models\LogActivity::create([
             'id_user' => \Illuminate\Support\Facades\Auth::id(),
-            'aktivitas' => 'Mengubah Data Pupuk',
+            'aktivitas' => "Mengubah Data Pupuk: {$validated['nama_pupuk']} ({$validated['kode_pupuk']})",
             'fitur' => 'Manajemen Pupuk',
             'detail_perubahan' => json_encode(['nama_pupuk' => $validated['nama_pupuk'], 'kode' => $validated['kode_pupuk']]),
             'ip_address' => request()->ip(),
@@ -136,7 +136,7 @@ class PupukController extends Controller
 
         \App\Models\LogActivity::create([
             'id_user' => \Illuminate\Support\Facades\Auth::id(),
-            'aktivitas' => 'Menghapus Pupuk',
+            'aktivitas' => "Menghapus Pupuk: {$pupuk->nama_pupuk} ({$pupuk->kode_pupuk})",
             'fitur' => 'Manajemen Pupuk',
             'detail_perubahan' => json_encode(['nama_pupuk' => $pupuk->nama_pupuk, 'kode' => $pupuk->kode_pupuk]),
             'ip_address' => request()->ip(),
@@ -161,7 +161,7 @@ class PupukController extends Controller
 
         \App\Models\LogActivity::create([
             'id_user' => \Illuminate\Support\Facades\Auth::id(),
-            'aktivitas' => 'Menambah Stok Pusat Pupuk',
+            'aktivitas' => "Menambah Stok Pusat Pupuk {$pupuk->nama_pupuk} sebesar {$request->tambahan_stok} Kg",
             'fitur' => 'Manajemen Pupuk',
             'detail_perubahan' => json_encode(['nama_pupuk' => $pupuk->nama_pupuk, 'tambahan' => $request->tambahan_stok]),
             'ip_address' => request()->ip(),

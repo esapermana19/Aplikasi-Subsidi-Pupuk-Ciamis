@@ -110,6 +110,8 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">NIK &
                                 Rekening</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Saldo</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Status</th>
                             <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Aksi</th>
@@ -151,6 +153,16 @@
                                     <div class="text-xs text-gray-500">Rek: {{ $m->no_rek ?? '-' }}</div>
                                 </td>
                                 <td class="px-6 py-4">
+                                    <div class="text-sm font-bold text-gray-900">
+                                        Rp {{ number_format($m->saldo_app, 0, ',', '.') }}
+                                    </div>
+                                    <button type="button" 
+                                        onclick="openSaldoModal('{{ $m->id_mitra }}', '{{ addslashes($m->nama_mitra) }}', '{{ $m->saldo_app }}')"
+                                        class="text-[10px] text-violet-600 font-bold hover:underline">
+                                        Edit Saldo
+                                    </button>
+                                </td>
+                                <td class="px-6 py-4">
                                     @php
                                         $statusClass =
                                             [
@@ -171,6 +183,7 @@
                                             '{{ $m->nik ?? '-' }}',
                                             '{{ addslashes($m->nama_mitra ?? '-') }}',
                                             '{{ $m->user->email ?? '-' }}',
+                                            '{{ $m->user->no_hp ?? '-' }}',
                                             '{{ addslashes($m->alamat_mitra ?? '-') }}',
                                             '{{ addslashes($m->nama_pemilik ?? '-') }}',
                                             '{{ $m->no_rek ?? '-' }}',
@@ -192,16 +205,16 @@
                                             <input type="hidden" name="status" id="input-status-{{ $m->id_user }}">
                                         </form>
 
-                                        @if ($m->status_akun === 'aktif')
+                                        @if ($m->user->status_akun === 'aktif')
                                             <button type="button"
-                                                onclick="confirmStatus('{{ $m->id_user }}', 'nonaktif', '{{ addslashes($m->mitra->nama_mitra ?? 'Mitra') }}')"
+                                                onclick="confirmStatus('{{ $m->id_user }}', 'nonaktif', '{{ addslashes($m->nama_mitra ?? 'Mitra') }}')"
                                                 class="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
                                                 title="Nonaktifkan Akun">
                                                 <i data-lucide="user-x" class="h-4 w-4"></i>
                                             </button>
                                         @else
                                             <button type="button"
-                                                onclick="confirmStatus('{{ $m->id_user }}', 'aktif', '{{ addslashes($m->mitra->nama_mitra ?? 'Mitra') }}')"
+                                                onclick="confirmStatus('{{ $m->id_user }}', 'aktif', '{{ addslashes($m->nama_mitra ?? 'Mitra') }}')"
                                                 class="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
                                                 title="Aktifkan Akun">
                                                 <i data-lucide="user-check" class="h-4 w-4"></i>
@@ -215,15 +228,24 @@
                                             '{{ $m->nik ?? '' }}',
                                             '{{ addslashes($m->nama_mitra ?? '') }}',
                                             '{{ $m->user->email ?? '-' }}',
+                                            '{{ $m->user->no_hp ?? '' }}',
                                             '{{ addslashes($m->alamat_mitra ?? '') }}',
                                             '{{ addslashes($m->nama_pemilik ?? '') }}',
                                             '{{ $m->no_rek ?? '' }}',
-                                            '{{ $m->id_kecamatan ?? '' }}', {{-- PERBAIKAN 3: Kirim ID Kecamatan --}}
+                                            '{{ $m->id_kecamatan ?? '' }}',
                                             '{{ $m->id_desa ?? '' }}')"
                                             {{-- PERBAIKAN 3: Kirim ID Desa --}}
                                             class="p-2 text-violet-600 hover:bg-violet-50 rounded-lg transition-colors"
                                             title="Edit">
                                             <i data-lucide="edit-3" class="h-4 w-4"></i>
+                                        </button>
+
+                                        {{-- Tombol Edit Saldo --}}
+                                        <button type="button"
+                                            onclick="openSaldoModal('{{ $m->id_mitra }}', '{{ addslashes($m->nama_mitra) }}', '{{ $m->saldo_app }}')"
+                                            class="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
+                                            title="Edit Saldo">
+                                            <i data-lucide="wallet" class="h-4 w-4"></i>
                                         </button>
                                     </div>
                                 </td>
@@ -293,6 +315,19 @@
                                     <input type="email" name="email" id="edit_email"
                                         class="w-full pl-10 pr-4 py-2.5 bg-gray-100 border border-gray-200 rounded-xl text-gray-400 text-sm font-bold cursor-not-allowed"
                                         readonly>
+                                </div>
+                            </div>
+
+                            {{-- No HP --}}
+                            <div class="col-span-2 sm:col-span-1">
+                                <label class="block text-[10px] font-black text-gray-400 uppercase mb-1.5 ml-1 tracking-widest">No. Telepon / WA</label>
+                                <div class="relative group">
+                                    <div class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
+                                        <i data-lucide="phone" class="h-4 w-4 text-gray-400 group-focus-within:text-violet-500 transition-colors"></i>
+                                    </div>
+                                    <input type="text" name="no_hp" id="edit_no_hp" required
+                                        class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-violet-500/10 focus:border-violet-500 transition-all text-sm font-bold text-gray-700"
+                                        placeholder="0812...">
                                 </div>
                             </div>
 
@@ -410,7 +445,7 @@
                             class="px-6 py-2.5 text-sm font-bold text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all active:scale-95">
                             Batal
                         </button>
-                        <button type="submit"
+                        <button type="button" onclick="confirmEdit()"
                             class="px-8 py-2.5 text-sm font-bold text-white bg-gradient-to-r from-violet-600 to-violet-700 rounded-xl hover:from-violet-700 hover:to-violet-800 transition-all shadow-lg shadow-violet-200 active:scale-95">
                             Simpan Perubahan
                         </button>
@@ -419,7 +454,88 @@
             </div>
         </div>
     </div>
-    {{-- Modal Detail --}}
+    {{-- MODAL EDIT SALDO --}}
+    <div id="saldoModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 transition-opacity bg-gray-900/60 backdrop-blur-sm" onclick="closeSaldoModal()"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+            
+            <div class="inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-2xl shadow-2xl sm:my-8 sm:align-middle sm:max-w-md sm:w-full border border-gray-100">
+                <form id="saldoForm" method="POST">
+                    @csrf @method('PATCH')
+                    
+                    <div class="relative px-6 py-5 bg-gradient-to-br from-violet-600 to-violet-700 text-white overflow-hidden">
+                        <div class="absolute top-0 right-0 -mt-2 -mr-2 h-16 w-16 bg-white/10 rounded-full blur-xl"></div>
+                        <div class="relative z-10 flex justify-between items-center">
+                            <div>
+                                <h3 class="text-xl font-bold">Penyesuaian Saldo</h3>
+                                <p id="saldo_mitra_name" class="text-violet-100 text-xs mt-1 font-medium"></p>
+                            </div>
+                            <button type="button" onclick="closeSaldoModal()" class="p-2 hover:bg-white/20 rounded-xl transition-all">
+                                <i data-lucide="x" class="h-5 w-5"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="p-6 space-y-6 bg-white">
+                        {{-- Info Saldo Saat Ini --}}
+                        <div class="bg-violet-50 rounded-xl p-4 border border-violet-100 flex items-center justify-between">
+                            <div class="text-xs font-bold text-violet-700 uppercase tracking-wider">Saldo Saat Ini</div>
+                            <div class="text-lg font-black text-violet-900" id="current_saldo_display">Rp 0</div>
+                        </div>
+
+                        {{-- Opsi Aksi --}}
+                        <div class="space-y-3">
+                            <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Pilih Aksi</label>
+                            <div class="grid grid-cols-2 gap-3">
+                                <label class="relative flex items-center justify-center p-3 border-2 rounded-xl cursor-pointer transition-all hover:bg-gray-50 group border-gray-100">
+                                    <input type="radio" name="aksi" value="tambah" class="peer hidden" checked>
+                                    <div class="flex items-center gap-2 peer-checked:text-violet-600 text-gray-400 font-bold transition-all">
+                                        <i data-lucide="plus-circle" class="h-5 w-5"></i>
+                                        <span>Tambah</span>
+                                    </div>
+                                    <div class="absolute inset-0 border-2 border-transparent peer-checked:border-violet-600 rounded-xl pointer-events-none"></div>
+                                </label>
+                                <label class="relative flex items-center justify-center p-3 border-2 rounded-xl cursor-pointer transition-all hover:bg-gray-50 group border-gray-100">
+                                    <input type="radio" name="aksi" value="kurang" class="peer hidden">
+                                    <div class="flex items-center gap-2 peer-checked:text-red-600 text-gray-400 font-bold transition-all">
+                                        <i data-lucide="minus-circle" class="h-5 w-5"></i>
+                                        <span>Kurang</span>
+                                    </div>
+                                    <div class="absolute inset-0 border-2 border-transparent peer-checked:border-red-600 rounded-xl pointer-events-none"></div>
+                                </label>
+                            </div>
+                        </div>
+
+                        {{-- Input Nominal --}}
+                        <div>
+                            <label class="block text-[10px] font-black text-gray-400 uppercase mb-1.5 ml-1 tracking-widest">Nominal Penyesuaian (Rp)</label>
+                            <div class="relative group">
+                                <div class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
+                                    <span class="text-gray-400 font-bold text-sm">Rp</span>
+                                </div>
+                                <input type="number" name="nominal" id="edit_nominal"
+                                    class="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-violet-500/10 focus:border-violet-500 transition-all text-lg font-bold text-gray-700"
+                                    placeholder="Masukkan nominal..." min="1" step="1" required>
+                            </div>
+                            <p class="text-[10px] text-gray-400 mt-2 px-1 italic">Nominal ini akan ditambahkan atau dikurangi dari saldo saat ini.</p>
+                        </div>
+                    </div>
+
+                    <div class="px-6 py-5 bg-gray-50/80 border-t border-gray-100 flex justify-end gap-3">
+                        <button type="button" onclick="closeSaldoModal()"
+                            class="px-6 py-2.5 text-sm font-bold text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all">
+                            Batal
+                        </button>
+                        <button type="submit"
+                            class="px-8 py-2.5 text-sm font-bold text-white bg-violet-600 rounded-xl hover:bg-violet-700 transition-all shadow-lg shadow-violet-100">
+                            Simpan Perubahan
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
     <div id="detailModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
         <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
             <div class="fixed inset-0 transition-opacity bg-gray-900/60 backdrop-blur-sm" onclick="closeDetailModal()"></div>
@@ -491,12 +607,18 @@
                             </h5>
 
                             <div class="space-y-2.5">
-                                <div>
-                                    <label class="text-[9px] font-bold text-gray-400 uppercase flex items-center gap-1 mb-0.5">
-                                        <i data-lucide="mail" class="h-2.5 w-2.5"></i> Email
-                                    </label>
-                                    <p id="det_email" class="text-xs font-bold text-gray-800 bg-white px-2 py-1.5 rounded-lg border border-gray-200 shadow-sm truncate"></p>
-                                </div>
+                                 <div>
+                                     <label class="text-[9px] font-bold text-gray-400 uppercase flex items-center gap-1 mb-0.5">
+                                         <i data-lucide="mail" class="h-2.5 w-2.5"></i> Email
+                                     </label>
+                                     <p id="det_email" class="text-xs font-bold text-gray-800 bg-white px-2 py-1.5 rounded-lg border border-gray-200 shadow-sm truncate"></p>
+                                 </div>
+                                 <div>
+                                     <label class="text-[9px] font-bold text-gray-400 uppercase flex items-center gap-1 mb-0.5">
+                                         <i data-lucide="phone" class="h-2.5 w-2.5"></i> No. Telepon / WA
+                                     </label>
+                                     <p id="det_no_hp" class="text-xs font-bold text-gray-800 bg-white px-2 py-1.5 rounded-lg border border-gray-200 shadow-sm truncate"></p>
+                                 </div>
                                 <div class="grid grid-cols-2 gap-2">
                                     <div>
                                         <label class="text-[9px] font-bold text-gray-400 uppercase flex items-center gap-1 mb-0.5">
@@ -536,11 +658,29 @@
     </div>
 @endsection
 <script>
+    let initialMitraData = {};
+
     // 1. Fungsi Modal Edit (Sudah diperbaiki)
     // Parameter disesuaikan dengan urutan tombol edit Mitra
-    function openEditModal(id_user, nik, nama_mitra, email, alamat, nama_pemilik, no_rek, id_kecamatan, id_desa) {
+    function openEditModal(id_user, nik, nama_mitra, email, no_hp, alamat, nama_pemilik, no_rek, id_kecamatan, id_desa) {
         const modal = document.getElementById('editModal');
         const form = document.getElementById('editForm');
+
+        // Simpan data awal untuk deteksi perubahan
+        initialMitraData = {
+            nik: nik,
+            nama: nama_mitra,
+            email: email,
+            no_hp: no_hp,
+            alamat: alamat,
+            pemilik: nama_pemilik,
+            rek: no_rek,
+            kecamatan: id_kecamatan,
+            desa: id_desa
+        };
+
+        // Reset password field
+        document.getElementById('edit_password').value = '';
 
         // Sesuaikan URL action-nya (ganti dengan route update mitra Anda)
         form.action = `/admin/mitra/update/${id_user}`;
@@ -548,6 +688,7 @@
         document.getElementById('edit_nik').value = nik;
         document.getElementById('edit_name').value = nama_mitra;
         document.getElementById('edit_email').value = email;
+        document.getElementById('edit_no_hp').value = no_hp;
         document.getElementById('edit_pemilik').value = nama_pemilik;
         document.getElementById('edit_rek').value = no_rek;
         document.getElementById('edit_alamat').value = alamat;
@@ -623,13 +764,64 @@
         document.body.style.overflow = 'auto';
     }
 
+    function confirmEdit() {
+        const currentData = {
+            nik: document.getElementById('edit_nik').value,
+            nama: document.getElementById('edit_name').value,
+            email: document.getElementById('edit_email').value,
+            no_hp: document.getElementById('edit_no_hp').value,
+            alamat: document.getElementById('edit_alamat').value,
+            pemilik: document.getElementById('edit_pemilik').value,
+            rek: document.getElementById('edit_rek').value,
+            kecamatan: document.getElementById('edit_kecamatan').value,
+            desa: document.getElementById('edit_desa').value
+        };
+
+        const hasPassword = document.getElementById('edit_password').value !== '';
+        
+        const hasChanged = 
+            initialMitraData.nik != currentData.nik ||
+            initialMitraData.nama != currentData.nama ||
+            initialMitraData.email != currentData.email ||
+            initialMitraData.no_hp != currentData.no_hp ||
+            initialMitraData.alamat != currentData.alamat ||
+            initialMitraData.pemilik != currentData.pemilik ||
+            initialMitraData.rek != currentData.rek ||
+            initialMitraData.kecamatan != currentData.kecamatan ||
+            initialMitraData.desa != currentData.desa ||
+            hasPassword;
+
+        const title = hasChanged ? 'Konfirmasi Perubahan' : 'Tidak Ada Perubahan';
+        const message = hasChanged 
+            ? "Apakah Anda yakin data yang diubah sudah benar?" 
+            : "Belum ada perubahan data, yakin mau disimpan?";
+        const icon = hasChanged ? 'question' : 'warning';
+
+        Swal.fire({
+            title: title,
+            text: message,
+            icon: icon,
+            showCancelButton: true,
+            confirmButtonColor: '#7c3aed',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Ya, Simpan!',
+            cancelButtonText: 'Batal',
+            borderRadius: '1.5rem',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('editForm').submit();
+            }
+        });
+    }
+
     // 2. Fungsi Modal Detail (Baru)
-    function openDetailModal(nik, nama_mitra, email, alamat, nama_pemilik, no_rek, kecamatan, desa, status, nomor_mitra) {
+    function openDetailModal(nik, nama_mitra, email, no_hp, alamat, nama_pemilik, no_rek, kecamatan, desa, status, nomor_mitra) {
         document.getElementById('det_nik').innerText = nik;
         document.getElementById('det_rek').innerText = no_rek;
         document.getElementById('det_nama').innerText = nama_mitra;
         document.getElementById('det_pemilik').innerText = nama_pemilik;
         document.getElementById('det_email').innerText = email;
+        document.getElementById('det_no_hp').innerText = no_hp;
         document.getElementById('det_kecamatan').innerText = kecamatan;
         document.getElementById('det_desa').innerText = desa;
         document.getElementById('det_alamat').innerText = alamat;
@@ -725,5 +917,24 @@
                 document.getElementById('form-status-' + userId).submit();
             }
         });
+    }
+
+    function openSaldoModal(id_mitra, nama_mitra, saldo) {
+        const modal = document.getElementById('saldoModal');
+        const form = document.getElementById('saldoForm');
+        
+        form.action = `/admin/mitra/update-saldo/${id_mitra}`;
+        document.getElementById('saldo_mitra_name').innerText = nama_mitra;
+        document.getElementById('current_saldo_display').innerText = 'Rp ' + new Intl.NumberFormat('id-ID').format(saldo);
+        document.getElementById('edit_nominal').value = '';
+
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        if (window.lucide) lucide.createIcons();
+    }
+
+    function closeSaldoModal() {
+        document.getElementById('saldoModal').classList.add('hidden');
+        document.body.style.overflow = 'auto';
     }
 </script>

@@ -15,8 +15,9 @@ return new class extends Migration
             $table->id('id_user'); // Ubah dari id() jadi id('id_user')
             $table->string('email')->unique();
             $table->string('password');
-            $table->enum('role', ['Petani', 'Mitra', 'Admin']);
+            $table->enum('role', ['Petani', 'Mitra', 'Admin', 'Superadmin']);
             $table->enum('status_akun', ['aktif', 'nonaktif', 'pending', 'ditolak'])->default('pending');
+            $table->string('no_hp', 15)->unique()->nullable();
             $table->unsignedBigInteger('verified_by')->nullable();
             $table->rememberToken();
             $table->timestamps();

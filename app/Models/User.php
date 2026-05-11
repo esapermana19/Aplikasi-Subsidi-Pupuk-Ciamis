@@ -20,6 +20,7 @@ use Illuminate\Notifications\Notifiable;
     'password',
     'role',
     'status_akun',
+    'no_hp',
     'verified_by',
 ])]
 
@@ -40,6 +41,10 @@ class User extends Authenticatable
     public function admin(): HasOne
     {
         return $this->hasOne(Admin::class, 'id_user');
+    }
+    public function superadmin(): HasOne
+    {
+        return $this->hasOne(Superadmin::class, 'id_user');
     }
     public function petani(): HasOne
     {
@@ -68,7 +73,9 @@ class User extends Authenticatable
      */
     public function getNameAttribute()
     {
-        if (strtolower($this->role) === 'admin' || strtolower($this->role) === 'superadmin') {
+        if (strtolower($this->role) === 'superadmin') {
+            return $this->superadmin->nama_superadmin ?? 'Super Admin';
+        } elseif (strtolower($this->role) === 'admin') {
             return $this->admin->nama_admin ?? 'Admin';
         } elseif (strtolower($this->role) === 'petani') {
             return $this->petani->nama_petani ?? 'Petani';

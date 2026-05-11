@@ -158,7 +158,7 @@
                                             @csrf
                                             @method('PATCH')
                                             <input type="hidden" name="status" id="input-status-{{ $p->id_user }}"
-                                                value="{{ $p->status_akun == 'aktif' ? 'nonaktif' : 'aktif' }}">
+                                                value="{{ $p->user->status_akun == 'aktif' ? 'nonaktif' : 'aktif' }}">
                                         </form>
 
                                         {{-- 2. TOMBOL DETAIL --}}
@@ -167,6 +167,7 @@
                                                 '{{ $p->nik }}',
                                                 '{{ $p->nama_petani }}',
                                                 '{{ $p->user->email ?? '-' }}',
+                                                '{{ $p->user->no_hp ?? '-' }}',
                                                 '{{ $p->kecamatan->nama_kecamatan ?? '-' }}',
                                                 '{{ $p->desa->nama_desa ?? '-' }}',
                                                 '{{ $p->alamat_petani }}',
@@ -180,7 +181,7 @@
                                         </button>
 
                                         {{-- 3. TOMBOL AKTIVASI/NONAKTIF (Logika Kondisional) --}}
-                                        @if ($p->status_akun === 'aktif')
+                                        @if ($p->user->status_akun === 'aktif')
                                             <button type="button"
                                                 onclick="confirmStatus('{{ $p->id_user }}', 'nonaktif', '{{ addslashes($p->nama_petani ?? 'Petani') }}')"
                                                 class="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors flex items-center justify-center"
@@ -203,6 +204,7 @@
                                                 '{{ $p->nik ?? '' }}',
                                                 '{{ addslashes($p->nama_petani ?? '') }}',
                                                 '{{ $p->user->email ?? '' }}',
+                                                '{{ $p->user->no_hp ?? '' }}',
                                                 '{{ $p->id_kecamatan ?? '' }}',
                                                 '{{ $p->id_desa ?? '' }}',
                                                 '{{ addslashes($p->alamat_petani ?? '') }}',
@@ -281,18 +283,31 @@
                                 </div>
                             </div>
 
-                            {{-- Email --}}
-                            <div class="col-span-2 sm:col-span-1">
-                                <label class="block text-[10px] font-black text-gray-400 uppercase mb-1.5 ml-1 tracking-widest">Email Petani</label>
-                                <div class="relative group">
-                                    <div class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
-                                        <i data-lucide="mail" class="h-4 w-4 text-gray-400 group-focus-within:text-green-500 transition-colors"></i>
-                                    </div>
-                                    <input type="email" name="email" id="edit_email" required
-                                        class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-green-500/10 focus:border-green-500 transition-all text-sm font-bold text-gray-700"
-                                        placeholder="email@contoh.com">
-                                </div>
-                            </div>
+                             {{-- Email --}}
+                             <div class="col-span-2 sm:col-span-1">
+                                 <label class="block text-[10px] font-black text-gray-400 uppercase mb-1.5 ml-1 tracking-widest">Email Petani</label>
+                                 <div class="relative group">
+                                     <div class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
+                                         <i data-lucide="mail" class="h-4 w-4 text-gray-400 group-focus-within:text-green-500 transition-colors"></i>
+                                     </div>
+                                     <input type="email" name="email" id="edit_email" required
+                                         class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-green-500/10 focus:border-green-500 transition-all text-sm font-bold text-gray-700"
+                                         placeholder="email@contoh.com">
+                                 </div>
+                             </div>
+ 
+                             {{-- No HP --}}
+                             <div class="col-span-2 sm:col-span-1">
+                                 <label class="block text-[10px] font-black text-gray-400 uppercase mb-1.5 ml-1 tracking-widest">No. Telepon / WA</label>
+                                 <div class="relative group">
+                                     <div class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none">
+                                         <i data-lucide="phone" class="h-4 w-4 text-gray-400 group-focus-within:text-green-500 transition-colors"></i>
+                                     </div>
+                                     <input type="text" name="no_hp" id="edit_no_hp" required
+                                         class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-green-500/10 focus:border-green-500 transition-all text-sm font-bold text-gray-700"
+                                         placeholder="0812...">
+                                 </div>
+                             </div>
 
                             {{-- Jenis Kelamin --}}
                             <div class="col-span-2 sm:col-span-1">
@@ -387,7 +402,7 @@
                             class="px-6 py-2.5 text-sm font-bold text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-gray-200 transition-all active:scale-95">
                             Batal
                         </button>
-                        <button type="submit"
+                        <button type="button" onclick="confirmEdit()"
                             class="px-8 py-2.5 text-sm font-bold text-white bg-gradient-to-r from-green-600 to-green-700 rounded-xl hover:from-green-700 hover:to-green-800 transition-all shadow-lg shadow-green-200 active:scale-95">
                             Simpan Perubahan
                         </button>
@@ -471,12 +486,18 @@
                             </h5>
 
                             <div class="space-y-2.5">
-                                <div>
-                                    <label class="text-[9px] font-bold text-gray-400 uppercase flex items-center gap-1 mb-0.5">
-                                        <i data-lucide="mail" class="h-2.5 w-2.5"></i> Email
-                                    </label>
-                                    <p id="det_email" class="text-xs font-bold text-gray-800 bg-white px-2 py-1.5 rounded-lg border border-gray-200 shadow-sm truncate"></p>
-                                </div>
+                                 <div>
+                                     <label class="text-[9px] font-bold text-gray-400 uppercase flex items-center gap-1 mb-0.5">
+                                         <i data-lucide="mail" class="h-2.5 w-2.5"></i> Email
+                                     </label>
+                                     <p id="det_email" class="text-xs font-bold text-gray-800 bg-white px-2 py-1.5 rounded-lg border border-gray-200 shadow-sm truncate"></p>
+                                 </div>
+                                 <div>
+                                     <label class="text-[9px] font-bold text-gray-400 uppercase flex items-center gap-1 mb-0.5">
+                                         <i data-lucide="phone" class="h-2.5 w-2.5"></i> No. Telepon / WA
+                                     </label>
+                                     <p id="det_no_hp" class="text-xs font-bold text-gray-800 bg-white px-2 py-1.5 rounded-lg border border-gray-200 shadow-sm truncate"></p>
+                                 </div>
                                 <div class="grid grid-cols-2 gap-2">
                                     <div>
                                         <label class="text-[9px] font-bold text-gray-400 uppercase flex items-center gap-1 mb-0.5">
@@ -516,17 +537,36 @@
     </div>
 @endsection
 <script>
+    let initialPetaniData = {};
+
     // 1. Fungsi Buka Modal Edit
     // PERBAIKAN: Ubah nama parameter menjadi id_kecamatan dan id_desa
-    function openEditModal(id_user, nik, nama_petani, email, id_kecamatan, id_desa, alamat, jenis_kelamin) {
+    function openEditModal(id_user, nik, nama_petani, email, no_hp, id_kecamatan, id_desa, alamat, jenis_kelamin) {
         const modal = document.getElementById('editModal');
         const form = document.getElementById('editForm');
 
+        // Simpan data awal untuk deteksi perubahan
+        initialPetaniData = {
+            nik: nik,
+            nama: nama_petani,
+            email: email,
+            no_hp: no_hp,
+            kecamatan: id_kecamatan,
+            desa: id_desa,
+            alamat: alamat,
+            jk: jenis_kelamin
+        };
+
+        // Reset password field
+        document.getElementById('edit_password').value = '';
+
+        // Set Values
         form.action = `/admin/petani/update/${id_user}`;
 
         document.getElementById('edit_nik').value = nik;
         document.getElementById('edit_name').value = nama_petani;
         document.getElementById('edit_email').value = email;
+        document.getElementById('edit_no_hp').value = no_hp;
         document.getElementById('edit_kecamatan').value = id_kecamatan;
         document.getElementById('edit_alamat').value = alamat;
         document.getElementById('edit_jk').value = jenis_kelamin;
@@ -640,11 +680,60 @@
         if (window.lucide) lucide.createIcons();
     }
 
+    function confirmEdit() {
+        const currentData = {
+            nik: document.getElementById('edit_nik').value,
+            nama: document.getElementById('edit_name').value,
+            email: document.getElementById('edit_email').value,
+            no_hp: document.getElementById('edit_no_hp').value,
+            kecamatan: document.getElementById('edit_kecamatan').value,
+            desa: document.getElementById('edit_desa').value,
+            alamat: document.getElementById('edit_alamat').value,
+            jk: document.getElementById('edit_jk').value
+        };
+
+        const hasPassword = document.getElementById('edit_password').value !== '';
+        
+        const hasChanged = 
+            initialPetaniData.nik != currentData.nik ||
+            initialPetaniData.nama != currentData.nama ||
+            initialPetaniData.email != currentData.email ||
+            initialPetaniData.no_hp != currentData.no_hp ||
+            initialPetaniData.kecamatan != currentData.kecamatan ||
+            initialPetaniData.desa != currentData.desa ||
+            initialPetaniData.alamat != currentData.alamat ||
+            initialPetaniData.jk != currentData.jk ||
+            hasPassword;
+
+        const title = hasChanged ? 'Konfirmasi Perubahan' : 'Tidak Ada Perubahan';
+        const message = hasChanged 
+            ? "Apakah Anda yakin data yang diubah sudah benar?" 
+            : "Belum ada perubahan data, yakin mau disimpan?";
+        const icon = hasChanged ? 'question' : 'warning';
+
+        Swal.fire({
+            title: title,
+            text: message,
+            icon: icon,
+            showCancelButton: true,
+            confirmButtonColor: '#10b981',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Ya, Simpan!',
+            cancelButtonText: 'Batal',
+            borderRadius: '1.5rem',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('editForm').submit();
+            }
+        });
+    }
+
     // 5. Fungsi Modal Detail
-    function openDetailModal(nik, nama, email, kecamatan, desa, alamat, jk, noKk, status, tgl) {
+    function openDetailModal(nik, nama, email, no_hp, kecamatan, desa, alamat, jk, noKk, status, tgl) {
         document.getElementById('det_nik').innerText = nik;
         document.getElementById('det_nama').innerText = nama;
         document.getElementById('det_email').innerText = email;
+        document.getElementById('det_no_hp').innerText = no_hp;
         document.getElementById('det_kecamatan').innerText = kecamatan;
         document.getElementById('det_desa').innerText = desa;
         document.getElementById('det_alamat').innerText = alamat;

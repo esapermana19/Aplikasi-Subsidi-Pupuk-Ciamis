@@ -4,7 +4,8 @@
 <div class="space-y-6 pb-8">
     {{-- Header --}}
     <div>
-        <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
+        <h1 class="text-2xl font-bold text-gray-900">Hallo, {{ Auth::user()->admin->nama_admin ?? Auth::user()->name }}!</h1>
+        <p class="text-sm text-gray-500 mt-1">Selamat datang kembali di panel kendali ASUP Ciamis.</p>
     </div>
 
     {{-- Summary Cards --}}

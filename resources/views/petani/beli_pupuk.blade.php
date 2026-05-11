@@ -58,9 +58,9 @@
             </div>
         </div>
 
-        <p class="text-xs text-gray-500 mb-3">Mitra Tersedia di Wilayah Ini:</p>
+        <p id="mitras-label" class="text-xs text-gray-500 mb-3 hidden">Mitra Tersedia di Wilayah Ini:</p>
 
-        <div id="mitras-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+        <div id="mitras-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6 hidden">
             @forelse($mitras as $mitra)
                 <div class="mitra-card border-2 border-gray-300 bg-white rounded-lg p-4 cursor-pointer transition-all hover:shadow-md"
                     data-id="{{ $mitra->id_mitra }}" data-kecamatan="{{ $mitra->id_kecamatan }}"
@@ -293,6 +293,24 @@
         function filterMitras() {
             const selectedKecamatan = kecamatanFilter.value;
             const selectedDesa = desaFilter.value;
+            const mitrasLabel = document.getElementById('mitras-label');
+
+            if (!selectedKecamatan) {
+                mitrasContainer.style.display = 'none';
+                if (mitrasLabel) mitrasLabel.classList.add('hidden');
+                noMitrasMessage.classList.add('hidden');
+
+                // Show/hide reset button based on filter state
+                const btnResetFilter = document.getElementById('btn-reset-filter');
+                if (selectedDesa) {
+                    btnResetFilter.classList.remove('hidden');
+                } else {
+                    btnResetFilter.classList.add('hidden');
+                }
+                return;
+            }
+
+            if (mitrasLabel) mitrasLabel.classList.remove('hidden');
             let visibleMitras = 0;
 
             document.querySelectorAll('.mitra-card').forEach(card => {
@@ -547,12 +565,11 @@
             btnLanjutMitra.classList.remove('bg-[#16a34a]', 'text-white', 'hover:bg-green-700', 'cursor-pointer');
             btnLanjutMitra.classList.add('bg-gray-300', 'text-gray-500', 'cursor-not-allowed');
 
-            // Show all mitras
-            mitrasCards.forEach(card => {
-                card.style.display = 'block';
-            });
+            // Hide mitras
+            const mitrasLabel = document.getElementById('mitras-label');
+            mitrasContainer.style.display = 'none';
+            if (mitrasLabel) mitrasLabel.classList.add('hidden');
             noMitrasMessage.classList.add('hidden');
-            mitrasContainer.style.display = 'grid';
 
             // Hide reset button
             const btnResetFilter = document.getElementById('btn-reset-filter');

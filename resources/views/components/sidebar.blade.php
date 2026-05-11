@@ -1,16 +1,3 @@
-<head>
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-
-    <style>
-        [x-cloak] {
-            display: none !important;
-        }
-    </style>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <script>
-        lucide.createIcons();
-    </script>
-</head>
 @props(['activeMenu', 'pendingCount'])
 
 <div :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
@@ -33,7 +20,7 @@
                 $menuItems = [];
 
                 // 1. MENU UNTUK ADMIN & SUPERADMIN
-                if ($userRole === 'admin' || $userRole === 'superadmin') {
+                if ($userRole === 'admin') {
                     $menuItems = [
                         [
                             'id' => 'dashboard',
@@ -98,6 +85,17 @@
                             'route' => 'admin.rekonsiliasi',
                         ],
                         ['id' => 'laporan', 'label' => 'Laporan', 'icon' => 'file-text', 'route' => 'admin.laporan'],
+                        ['id' => 'log-activity', 'label' => 'Log Aktivitas', 'icon' => 'history', 'route' => 'admin.log_activity'],
+                    ];
+                }
+                elseif ($userRole === 'superadmin') {
+                    $menuItems = [
+                        [
+                            'id' => 'superadmin.manage_admin',
+                            'label' => 'Kelola Admin',
+                            'icon' => 'users',
+                            'route' => 'superadmin.manage_admin',
+                        ],
                         ['id' => 'log-activity', 'label' => 'Log Aktivitas', 'icon' => 'history', 'route' => 'admin.log_activity'],
                         [
                             'id' => 'regulasi',
@@ -318,13 +316,33 @@
             </div>
         </a>
 
-        <form action="{{ route('logout') }}" method="POST">
+        <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
             @csrf
-            <button type="submit"
-                class="flex w-full items-center gap-2 px-3 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-red-600 hover:border-red-100 transition-all cursor-pointer">
-                <i data-lucide="log-out" class="h-4 w-4"></i>
-                Keluar
-            </button>
         </form>
+        <button type="button" onclick="confirmLogout()"
+            class="flex w-full items-center gap-2 px-3 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-red-600 hover:border-red-100 transition-all cursor-pointer">
+            <i data-lucide="log-out" class="h-4 w-4"></i>
+            Keluar
+        </button>
     </div>
+
+    <script>
+        function confirmLogout() {
+            Swal.fire({
+                title: 'Konfirmasi Keluar',
+                text: "Apakah Anda yakin ingin keluar dari aplikasi?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#16a34a',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Ya, Keluar!',
+                cancelButtonText: 'Batal',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('logout-form').submit();
+                }
+            })
+        }
+    </script>
 </div>

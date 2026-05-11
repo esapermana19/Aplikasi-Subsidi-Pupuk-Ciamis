@@ -51,7 +51,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
 
     Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
-    Route::middleware(['role:admin,superadmin'])->group(function () {
+    Route::middleware(['role:superadmin,admin'])->group(function () {
+        Route::get('/admin/log-activity', [AdminController::class, 'log_activity'])->name('admin.log_activity');
+    });
+    Route::middleware(['role:admin'])->group(function () {
         Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
         // Gunakan URL ini agar konsisten untuk Petani dan Mitra
         Route::patch('/admin/status/update/{id}', [AdminController::class, 'update_status'])->name('admin.update_status');
@@ -71,6 +74,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/admin/mitra', [AdminController::class, 'list_mitra'])->name('admin.list_mitra');
         Route::get('/admin/mitra/export', [AdminController::class, 'export_mitra'])->name('admin.mitra.export');
         Route::patch('/admin/mitra/update/{id}', [AdminController::class, 'update_mitra'])->name('admin.mitra.update');
+        Route::patch('/admin/mitra/update-saldo/{id}', [AdminController::class, 'update_saldo'])->name('admin.mitra.update_saldo');
         Route::patch('/admin/user/update-status/{id}', [AdminController::class, 'update_status'])->name('admin.update_status');
         Route::patch('/admin/update_status_mitra/{id}', [AdminController::class, 'update_status_mitra'])->name('admin.mitra.update_status');
         // Verifikasi Akun
@@ -94,8 +98,22 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/admin/transaksi/export', [AdminController::class, 'export_transaksi'])->name('admin.transaksi.export');
         Route::get('/admin/transaksi/{id}/cetak', [AdminController::class, 'cetak_transaksi'])->name('admin.cetak_transaksi');
         Route::get('/admin/laporan', [AdminController::class, 'laporan'])->name('admin.laporan');
-        Route::get('/admin/log-activity', [AdminController::class, 'log_activity'])->name('admin.log_activity');
     });
+
+    // Khusus Superadmin
+    Route::middleware(['role:superadmin'])->group(function () {
+        Route::get('/superadmin/manage-admin', [\App\Http\Controllers\SuperadminController::class, 'index'])->name('superadmin.manage_admin');
+        Route::post('/superadmin/admin/store', [\App\Http\Controllers\SuperadminController::class, 'store'])->name('superadmin.admin.store');
+        Route::patch('/superadmin/admin/update/{id}', [\App\Http\Controllers\SuperadminController::class, 'update'])->name('superadmin.admin.update');
+        Route::delete('/superadmin/admin/delete/{id}', [\App\Http\Controllers\SuperadminController::class, 'destroy'])->name('superadmin.admin.destroy');
+        Route::patch('/superadmin/admin/status/{id}', [\App\Http\Controllers\SuperadminController::class, 'update_status'])->name('superadmin.admin.update_status');
+        Route::get('/superadmin/regulasi', [\App\Http\Controllers\MusimController::class, 'index'])->name('admin.regulasi');
+        Route::post('/superadmin/regulasi/store', [\App\Http\Controllers\MusimController::class, 'store'])->name('admin.musim.store');
+        Route::patch('/superadmin/regulasi/update/{id}', [\App\Http\Controllers\MusimController::class, 'update'])->name('admin.musim.update');
+        Route::patch('/superadmin/regulasi/toggle/{id}', [\App\Http\Controllers\MusimController::class, 'toggle_status'])->name('admin.musim.toggle');
+        Route::delete('/superadmin/regulasi/delete/{id}', [\App\Http\Controllers\MusimController::class, 'destroy'])->name('admin.musim.destroy');
+    });
+
     // Khusus Petani
     Route::middleware(['role:petani'])->group(function () {
         Route::get('/petani/dashboard', [PetaniController::class, 'index'])->name('petani.dashboard');

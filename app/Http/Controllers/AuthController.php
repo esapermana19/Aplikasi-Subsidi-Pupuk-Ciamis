@@ -27,6 +27,7 @@ class AuthController extends Controller
             'alamat'       => 'required|string|max:100',
             'id_kecamatan' => 'required|exists:tabel_kecamatan,id_kecamatan',
             'id_desa'      => 'required|exists:tabel_desa,id_desa',
+            'no_hp'        => 'required|string|min:10|max:15|unique:tabel_users,no_hp',
         ];
 
         // Validasi tambahan berdasarkan role
@@ -87,6 +88,12 @@ class AuthController extends Controller
             // Tambahan Role Petani
             'jenis_kelamin.required' => 'Jenis kelamin wajib dipilih.',
             'jenis_kelamin.in'      => 'Pilihan jenis kelamin tidak valid.',
+
+            // No HP
+            'no_hp.required'        => 'Nomor WhatsApp/HP wajib diisi.',
+            'no_hp.min'             => 'Nomor HP minimal 10 digit.',
+            'no_hp.max'             => 'Nomor HP maksimal 15 digit.',
+            'no_hp.unique'          => 'Nomor HP ini sudah terdaftar.',
         ];
 
         // Eksekusi validasi beserta pesan kustomnya
@@ -107,6 +114,7 @@ class AuthController extends Controller
                 'password'    => Hash::make($request->password), // Gunakan Hash untuk keamanan
                 'role'        => $request->role,
                 'status_akun' => 'pending',
+                'no_hp'       => $request->no_hp,
             ]);
 
             // 2. Simpan ke tabel profil masing-masing
@@ -142,10 +150,14 @@ class AuthController extends Controller
     // Proses Login
     public function login(Request $request)
     {
-        // Login sekarang menggunakan email karena nik ada di tabel profil terpisah
+        // Validasi input dengan pesan Bahasa Indonesia
         $credentials = $request->validate([
             'email' => 'required|email',
             'password' => 'required',
+        ], [
+            'email.required' => 'Alamat email wajib diisi.',
+            'email.email' => 'Format email tidak valid (contoh: nama@email.com).',
+            'password.required' => 'Password wajib diisi.',
         ]);
 
         if (Auth::attempt($credentials)) {
@@ -170,8 +182,10 @@ class AuthController extends Controller
             $request->session()->regenerate();
 
             // 3. Logika Pengalihan Berdasarkan Role
-            if ($user->role === 'admin' || $user->role === 'superadmin') {
+            if ($user->role === 'admin') {
                 return redirect()->route('admin.dashboard');
+                }elseif ($user->role === 'superadmin') {
+                    return redirect()->route('superadmin.manage_admin');
             } elseif ($user->role === 'petani') {
                 return redirect()->route('petani.dashboard');
             } elseif ($user->role === 'mitra') {
@@ -182,6 +196,7 @@ class AuthController extends Controller
             return redirect('/');
         }
 
+        // Jika login gagal (email atau password salah)
         throw ValidationException::withMessages([
             'email' => 'Email atau password yang Anda masukkan salah.',
         ]);
