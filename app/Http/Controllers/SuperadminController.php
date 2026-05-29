@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Auth;
 
 class SuperadminController extends Controller
 {
+    use \App\Traits\FonnteTrait;
     private function logActivity($aktivitas, $fitur, $detailPerubahan = null)
     {
         LogActivity::create([
@@ -50,7 +51,10 @@ class SuperadminController extends Controller
 
         $admins = $query->latest()->paginate(10);
 
-        return view('superadmin.manageadmin', compact('admins'));
+        return view('superadmin.manageadmin', [
+            'admins' => $admins,
+            'activeMenu' => 'superadmin.manage_admin'
+        ]);
     }
 
     public function store(Request $request)
@@ -166,6 +170,12 @@ class SuperadminController extends Controller
             'Manajemen Admin',
             ['email' => $user->email, 'status_lama' => $oldStatus, 'status_baru' => $request->status]
         );
+
+        if ($user->no_hp) {
+            $statusStr = strtoupper($request->status);
+            $message = "Halo {$user->name},\n\nStatus akun Anda ({$user->email}) saat ini telah diubah menjadi: *{$statusStr}* oleh Superadmin.\n\nTerima kasih,\nSuperadmin ASUP Ciamis";
+            $this->sendWhatsAppMessage($user->no_hp, $message);
+        }
 
         return redirect()->back()->with('success', 'Status akun berhasil diperbarui');
     }

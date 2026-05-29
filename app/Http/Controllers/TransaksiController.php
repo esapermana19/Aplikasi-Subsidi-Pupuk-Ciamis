@@ -280,7 +280,10 @@ class TransaksiController extends Controller
             ->orderBy('tgl_transaksi', 'desc')
             ->get();
 
-        return view('petani.riwayat', compact('transaksi'));
+        return view('petani.riwayat', [
+            'transaksi' => $transaksi,
+            'activeMenu' => 'petani.riwayat_transaksi'
+        ]);
     }
 
     // API untuk ambil detail transaksi (untuk isi Modal)

@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Hash;
 class AdminController extends Controller
 {
     use \App\Traits\ExcelExportTrait;
+    use \App\Traits\FonnteTrait;
 
     public function index()
     {
@@ -148,15 +149,20 @@ class AdminController extends Controller
 
     public function log_activity(Request $request)
     {
-        $query = LogActivity::with(['user.admin', 'user.superadmin']);
+        $query = LogActivity::with(['user.admin']);
 
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('aktivitas', 'like', "%{$search}%")
                   ->orWhere('fitur', 'like', "%{$search}%")
+                  ->orWhere('detail_perubahan', 'like', "%{$search}%")
                   ->orWhereHas('user', function($qu) use ($search) {
-                      $qu->where('username', 'like', "%{$search}%");
+                      $qu->where('email', 'like', "%{$search}%")
+                         ->orWhere('nama', 'like', "%{$search}%")
+                         ->orWhereHas('admin', function($qa) use ($search) {
+                             $qa->where('nama_admin', 'like', "%{$search}%");
+                         });
                   });
             });
         }
@@ -201,6 +207,11 @@ class AdminController extends Controller
         );
         // $user->notify(new AccountVerified());
 
+        if ($user->no_hp) {
+            $message = "Halo {$user->name},\n\nAkun Anda ({$user->email}) telah berhasil DIVERIFIKASI oleh admin. Sekarang Anda dapat login dan menggunakan layanan aplikasi ASUP Ciamis.\n\nTerima kasih,\nAdmin ASUP Ciamis";
+            $this->sendWhatsAppMessage($user->no_hp, $message);
+        }
+
         return back()->with('success', 'Akun berhasil diverifikasi!');
     }
 
@@ -217,6 +228,11 @@ class AdminController extends Controller
             'Verifikasi Akun',
             ['username' => $user->username, 'role' => $user->role, 'status' => 'Ditolak']
         );
+
+        if ($user->no_hp) {
+            $message = "Halo {$user->name},\n\nMohon maaf, pendaftaran akun Anda ({$user->email}) telah DITOLAK oleh admin. Silakan hubungi admin untuk informasi lebih lanjut.\n\nTerima kasih,\nAdmin ASUP Ciamis";
+            $this->sendWhatsAppMessage($user->no_hp, $message);
+        }
 
         return back()->with('success', 'Pendaftaran akun telah ditolak.');
     }
@@ -260,7 +276,11 @@ class AdminController extends Controller
         $list_petani = $query->paginate(10)->withQueryString();
 
         $kecamatans = Kecamatan::all();
-        return view('admin.managepetani', compact('list_petani', 'kecamatans'));
+        return view('admin.managepetani', [
+            'list_petani' => $list_petani,
+            'kecamatans' => $kecamatans,
+            'activeMenu' => 'petani'
+        ]);
     }
 
     public function export_petani(Request $request)
@@ -520,7 +540,7 @@ class AdminController extends Controller
         ]);
 
         try {
-            $mitra = Mitra::findOrFail($id);
+            $mitra = Mitra::with('user')->findOrFail($id);
             $old_saldo = $mitra->saldo_app;
             $nominal = $request->nominal;
             
@@ -550,6 +570,12 @@ class AdminController extends Controller
             );
 
             $pesan = $request->aksi === 'tambah' ? 'ditambahkan' : 'dikurangi';
+
+            if ($mitra->user && $mitra->user->no_hp) {
+                $waMessage = "Halo {$mitra->nama_mitra},\n\nTerdapat penyesuaian saldo mitra Anda oleh Admin.\n\nAksi: " . strtoupper($request->aksi) . " SALDO\nNominal: Rp " . number_format($nominal, 0, ',', '.') . "\nSaldo Lama: Rp " . number_format($old_saldo, 0, ',', '.') . "\nSaldo Baru: Rp " . number_format($new_saldo, 0, ',', '.') . "\n\nCek aplikasi untuk informasi lebih detail.\n\nTerima kasih,\nAdmin ASUP Ciamis";
+                $this->sendWhatsAppMessage($mitra->user->no_hp, $waMessage);
+            }
+
             return back()->with('success', "Saldo mitra {$mitra->nama_mitra} berhasil {$pesan} sebesar Rp " . number_format($nominal, 0, ',', '.') . "!");
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal memperbarui saldo: ' . $e->getMessage());
@@ -578,6 +604,12 @@ class AdminController extends Controller
                 ['username' => $user->username, 'status_baru' => $request->status]
             );
 
+            if ($user->no_hp) {
+                $statusStr = strtoupper($request->status);
+                $message = "Halo {$user->name},\n\nStatus akun Anda ({$user->email}) saat ini telah diubah menjadi: *{$statusStr}* oleh admin.\n\nTerima kasih,\nAdmin ASUP Ciamis";
+                $this->sendWhatsAppMessage($user->no_hp, $message);
+            }
+
             return back()->with('success', 'Status akun ' . $user->email . ' berhasil diubah menjadi ' . $request->status);
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal memperbarui status: ' . $e->getMessage());
@@ -594,7 +626,10 @@ class AdminController extends Controller
             ->orderBy('tabel_permintaan.created_at', 'desc')
             ->paginate(10)->withQueryString();
 
-        return view('admin.approval_permintaan', compact('permintaans'));
+        return view('admin.approval_permintaan', [
+            'permintaans' => $permintaans,
+            'activeMenu' => 'approval-permintaan'
+        ]);
     }
 
     /**

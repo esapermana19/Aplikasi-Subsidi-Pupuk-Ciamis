@@ -25,7 +25,10 @@ class MusimController extends Controller
     public function index()
     {
         $musims = Musim::latest()->paginate(10);
-        return view('superadmin.regulasi', compact('musims'));
+        return view('superadmin.regulasi', [
+            'musims' => $musims,
+            'activeMenu' => 'regulasi'
+        ]);
     }
 
     public function store(Request $request)

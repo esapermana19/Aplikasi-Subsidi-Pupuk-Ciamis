@@ -17,6 +17,8 @@ use Illuminate\Notifications\Notifiable;
 
 #[Fillable([
     'email',
+    'nama',
+    'nip',
     'password',
     'role',
     'status_akun',
@@ -42,10 +44,7 @@ class User extends Authenticatable
     {
         return $this->hasOne(Admin::class, 'id_user');
     }
-    public function superadmin(): HasOne
-    {
-        return $this->hasOne(Superadmin::class, 'id_user');
-    }
+
     public function petani(): HasOne
     {
         return $this->hasOne(Petani::class, 'id_user');
@@ -74,7 +73,7 @@ class User extends Authenticatable
     public function getNameAttribute()
     {
         if (strtolower($this->role) === 'superadmin') {
-            return $this->superadmin->nama_superadmin ?? 'Super Admin';
+            return $this->nama ?? 'Super Admin';
         } elseif (strtolower($this->role) === 'admin') {
             return $this->admin->nama_admin ?? 'Admin';
         } elseif (strtolower($this->role) === 'petani') {

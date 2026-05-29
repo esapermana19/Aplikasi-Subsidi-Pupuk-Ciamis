@@ -48,7 +48,9 @@ class ProfileController extends Controller
         ]);
 
         // Update nama di tabel profil terkait
-        if ($role === 'admin' || $role === 'superadmin') {
+        if ($role === 'superadmin') {
+            $user->update(['nama' => $request->name]);
+        } elseif ($role === 'admin') {
             if ($user->admin) {
                 $user->admin->update(['nama_admin' => $request->name]);
             }

@@ -37,14 +37,15 @@ class PetaniController extends Controller
         // Ambil daftar kecamatan untuk filter
         $kecamatans = Kecamatan::all();
 
-        return view('petani.dashboard', compact(
-            'petani',
-            'transaksiTerbaru',
-            'totalTransaksi',
-            'totalPembelian',
-            'totalNilai',
-            'kecamatans'
-        ));
+        return view('petani.dashboard', [
+            'petani' => $petani,
+            'transaksiTerbaru' => $transaksiTerbaru,
+            'totalTransaksi' => $totalTransaksi,
+            'totalPembelian' => $totalPembelian,
+            'totalNilai' => $totalNilai,
+            'kecamatans' => $kecamatans,
+            'activeMenu' => 'petani.dashboard'
+        ]);
     }
 
     // Beli Pupuk
@@ -54,7 +55,12 @@ class PetaniController extends Controller
         $desas = Desa::all();
         $mitras = Mitra::with(['kecamatan', 'desa'])->get();
 
-        return view('petani.beli_pupuk', compact('kecamatans', 'desas', 'mitras'));
+        return view('petani.beli_pupuk', [
+            'kecamatans' => $kecamatans,
+            'desas' => $desas,
+            'mitras' => $mitras,
+            'activeMenu' => 'petani.beli_pupuk'
+        ]);
     }
 
     // Riwayat Transaksi
@@ -67,7 +73,10 @@ class PetaniController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-        return view('petani.riwayat_transaksi', compact('transaksis'));
+        return view('petani.riwayat_transaksi', [
+            'transaksis' => $transaksis,
+            'activeMenu' => 'petani.riwayat_transaksi'
+        ]);
     }
 
     // Detail Transaksi

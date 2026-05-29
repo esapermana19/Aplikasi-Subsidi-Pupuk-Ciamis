@@ -65,8 +65,8 @@
                                                         
                                                         if ($log->user) {
                                                             if ($log->user->role === 'superadmin') {
-                                                                $name = $log->user->superadmin->nama_superadmin ?? $log->user->username;
-                                                                $nip = $log->user->superadmin->nip ?? '-';
+                                                                $name = $log->user->nama ?? 'Super Admin';
+                                                                $nip = $log->user->nip ?? '-';
                                                             } else {
                                                                 $name = $log->user->admin->nama_admin ?? $log->user->username;
                                                                 $nip = $log->user->admin->nip ?? '-';

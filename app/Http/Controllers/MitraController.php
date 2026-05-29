@@ -130,7 +130,7 @@ class MitraController extends Controller
             'recentActivities' => $recentActivities,
             'chartLabels' => $chartLabels,
             'chartValues' => $chartValues,
-            'activeMenu' => 'dashboard'
+            'activeMenu' => 'mitra.dashboard'
         ]);
     }
 
@@ -155,12 +155,17 @@ class MitraController extends Controller
             return $pupuk;
         });
 
-        return view('mitra.pupuk_tersedia', compact('pupukList'));
+        return view('mitra.pupuk_tersedia', [
+            'pupukList' => $pupukList,
+            'activeMenu' => 'mitra.pupuk_tersedia'
+        ]);
     }
 
     public function scanPage()
     {
-        return view('mitra.scan');
+        return view('mitra.scan', [
+            'activeMenu' => 'mitra.scan'
+        ]);
     }
 
     public function scanDetail($id)
@@ -233,7 +238,10 @@ class MitraController extends Controller
             ->orderBy('updated_at', 'desc')
             ->get();
 
-        return view('mitra.riwayat_transaksi', compact('riwayat'));
+        return view('mitra.riwayat_transaksi', [
+            'riwayat' => $riwayat,
+            'activeMenu' => 'mitra.riwayat'
+        ]);
     }
 
     public function cetak_transaksi($id)
@@ -267,7 +275,12 @@ class MitraController extends Controller
             ->orderBy('updated_at', 'desc')
             ->get();
 
-        return view('mitra.saldo', compact('saldo', 'riwayat_transaksi', 'riwayat_penarikan'));
+        return view('mitra.saldo', [
+            'saldo' => $saldo,
+            'riwayat_transaksi' => $riwayat_transaksi,
+            'riwayat_penarikan' => $riwayat_penarikan,
+            'activeMenu' => 'mitra.saldo'
+        ]);
     }
 
     public function proses_tarik_saldo(Request $request)

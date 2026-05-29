@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\User;
-use App\Models\Superadmin;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 
@@ -16,18 +15,14 @@ class SuperadminSeeder extends Seeder
     public function run(): void
     {
         DB::transaction(function () {
-            $user = User::create([
+            User::create([
                 'email' => 'superadmin@gmail.com',
+                'nama' => 'Administrator Utama',
+                'nip' => '198705082026051001',
                 'password' => Hash::make('password'),
                 'role' => 'superadmin',
                 'status_akun' => 'aktif',
                 'no_hp' => '081234567890',
-            ]);
-
-            Superadmin::create([
-                'id_user' => $user->id_user,
-                'nama_superadmin' => 'Administrator Utama',
-                'nip' => '198705082026051001',
             ]);
         });
 

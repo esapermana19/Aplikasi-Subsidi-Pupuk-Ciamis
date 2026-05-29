@@ -25,7 +25,43 @@
             <button @click="sidebarOpen = true" class="p-2 -ml-2 rounded-lg text-gray-600 lg:hidden hover:bg-gray-100">
                 <i data-lucide="menu" class="h-6 w-6"></i>
             </button>
-            <h1 class="font-bold text-lg text-gray-800 capitalize">{{ str_replace('-', ' ', $activeMenu ?? 'Dashboard') }}</h1>
+            @php
+                $menuTitles = [
+                    // Admin & General
+                    'dashboard' => 'Dashboard',
+                    'petani' => 'Kelola Akun Petani',
+                    'mitra' => 'Kelola Akun Mitra',
+                    'pupuk' => 'Kelola Pupuk',
+                    'verifikasi' => 'Verifikasi Akun',
+                    'approval-permintaan' => 'Permintaan Pupuk',
+                    'transaksi' => 'Data Transaksi',
+                    'permintaan-penarikan' => 'Permintaan Penarikan',
+                    'rekonsiliasi' => 'Rekonsiliasi Data',
+                    'laporan' => 'Laporan',
+                    'log-activity' => 'Log Aktivitas',
+                    'profile' => 'Profil Saya',
+
+                    // Mitra Specific
+                    'mitra.dashboard' => 'Dashboard',
+                    'mitra.pupuk_tersedia' => 'Pupuk Tersedia',
+                    'mitra.riwayat_permintaan' => 'Riwayat Permintaan',
+                    'mitra.scan' => 'Scan QR Code',
+                    'mitra.riwayat' => 'Riwayat Transaksi',
+                    'mitra.saldo' => 'Saldo Saya',
+                    'mitra.laporan' => 'Laporan Penjualan',
+
+                    // Petani Specific
+                    'petani.dashboard' => 'Dashboard',
+                    'petani.beli_pupuk' => 'Beli Pupuk',
+                    'petani.riwayat_transaksi' => 'Riwayat Transaksi',
+
+                    // Superadmin Specific
+                    'superadmin.manage_admin' => 'Kelola Admin',
+                    'regulasi' => 'Regulasi Musim',
+                ];
+                $pageTitle = $menuTitles[$activeMenu ?? ''] ?? str_replace(['-', '_', '.'], ' ', $activeMenu ?? 'Dashboard');
+            @endphp
+            <h1 class="font-bold text-lg text-gray-800 capitalize">{{ $pageTitle }}</h1>
             <div class="w-10 lg:hidden"></div> <!-- Spacer for center alignment on mobile if needed -->
         </header>
 
