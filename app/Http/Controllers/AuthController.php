@@ -183,9 +183,12 @@ class AuthController extends Controller
 
             // 3. Logika Pengalihan Berdasarkan Role
             if ($user->role === 'admin') {
+                if ($user->admin) {
+                    $user->admin->update(['last_login' => now()]);
+                }
                 return redirect()->route('admin.dashboard');
-                }elseif ($user->role === 'superadmin') {
-                    return redirect()->route('superadmin.manage_admin');
+            } elseif ($user->role === 'superadmin') {
+                return redirect()->route('superadmin.manage_admin');
             } elseif ($user->role === 'petani') {
                 return redirect()->route('petani.dashboard');
             } elseif ($user->role === 'mitra') {

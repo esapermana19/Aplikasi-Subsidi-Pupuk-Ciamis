@@ -84,6 +84,7 @@
                             'icon' => 'database',
                             'route' => 'admin.rekonsiliasi',
                         ],
+                        ['id' => 'chat', 'label' => 'Chat Dukungan', 'icon' => 'message-square', 'route' => 'chat.index'],
                         ['id' => 'laporan', 'label' => 'Laporan', 'icon' => 'file-text', 'route' => 'admin.laporan'],
                         ['id' => 'log-activity', 'label' => 'Log Aktivitas', 'icon' => 'history', 'route' => 'admin.log_activity'],
                     ];
@@ -96,6 +97,7 @@
                             'icon' => 'users',
                             'route' => 'superadmin.manage_admin',
                         ],
+                        ['id' => 'chat', 'label' => 'Chat Dukungan', 'icon' => 'message-square', 'route' => 'chat.index'],
                         ['id' => 'log-activity', 'label' => 'Log Aktivitas', 'icon' => 'history', 'route' => 'admin.log_activity'],
                         [
                             'id' => 'regulasi',
@@ -166,6 +168,12 @@
                             'icon' => 'file-text',
                             'route' => 'mitra.laporan',
                         ],
+                        [
+                            'id' => 'chat',
+                            'label' => 'Chat Admin',
+                            'icon' => 'message-circle',
+                            'route' => 'chat.index',
+                        ],
                     ];
                 }
                 // 3. MENU UNTUK PETANI
@@ -188,6 +196,12 @@
                             'label' => 'Riwayat Transaksi',
                             'icon' => 'history',
                             'route' => 'petani.riwayat_transaksi',
+                        ],
+                        [
+                            'id' => 'chat',
+                            'label' => 'Chat Admin',
+                            'icon' => 'message-circle',
+                            'route' => 'chat.index',
                         ],
                     ];
                 }
@@ -289,6 +303,17 @@
                                 <span
                                     class="relative inline-flex rounded-full h-5 w-5 bg-orange-500 text-[10px] text-white items-center justify-center font-bold">
                                     {{ $mismatchRekonsiliasiCount }}
+                                </span>
+                            </span>
+                        @endif
+
+                        @if (($item['id'] ?? '') === 'chat' && ($unreadChatCount ?? 0) > 0)
+                            <span class="relative flex h-5 w-5">
+                                <span
+                                    class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                <span
+                                    class="relative inline-flex rounded-full h-5 w-5 bg-red-500 text-[10px] text-white items-center justify-center font-bold">
+                                    {{ $unreadChatCount }}
                                 </span>
                             </span>
                         @endif

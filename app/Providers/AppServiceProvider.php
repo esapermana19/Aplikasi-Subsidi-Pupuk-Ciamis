@@ -54,6 +54,24 @@ class AppServiceProvider extends ServiceProvider
             $view->with('pendingPermintaanCount', $pendingPermintaanCount);
             $view->with('pendingPenarikanCount', $pendingPenarikanCount);
             $view->with('mismatchRekonsiliasiCount', $mismatchRekonsiliasiCount);
+
+            $unreadChatCount = 0;
+            if (auth()->check()) {
+                $user = auth()->user();
+                if (in_array(strtolower($user->role), ['admin', 'superadmin'])) {
+                    $unreadChatCount = \App\Models\ChatMessage::where('is_read', false)
+                        ->whereHas('sender', function ($q) {
+                            $q->whereNotIn('role', ['Admin', 'Superadmin', 'admin', 'superadmin']);
+                        })->count();
+                } else {
+                    $unreadChatCount = \App\Models\ChatMessage::where('is_read', false)
+                        ->where('sender_id', '!=', $user->id_user)
+                        ->whereHas('chat', function ($q) use ($user) {
+                            $q->where('id_user', $user->id_user);
+                        })->count();
+                }
+            }
+            $view->with('unreadChatCount', $unreadChatCount);
         });
     }
 }

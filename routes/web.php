@@ -50,6 +50,14 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/profile/update', [ProfileController::class, 'update'])->name('profile.update');
     Route::post('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
 
+    // Rute Chat
+    Route::get('/chat', [\App\Http\Controllers\ChatController::class, 'index'])->name('chat.index');
+    Route::post('/chat', [\App\Http\Controllers\ChatController::class, 'store'])->name('chat.store');
+    Route::get('/chat/{id}', [\App\Http\Controllers\ChatController::class, 'show'])->name('chat.show');
+    Route::post('/chat/{id}/reply', [\App\Http\Controllers\ChatController::class, 'reply'])->name('chat.reply');
+    Route::patch('/chat/{id}/close', [\App\Http\Controllers\ChatController::class, 'closeChat'])->name('chat.close');
+    Route::patch('/chat/{id}/take-over', [\App\Http\Controllers\ChatController::class, 'takeOver'])->name('chat.take_over');
+
     Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
     Route::middleware(['role:superadmin,admin'])->group(function () {
         Route::get('/admin/log-activity', [AdminController::class, 'log_activity'])->name('admin.log_activity');
