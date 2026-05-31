@@ -106,6 +106,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/admin/transaksi/export', [AdminController::class, 'export_transaksi'])->name('admin.transaksi.export');
         Route::get('/admin/transaksi/{id}/cetak', [AdminController::class, 'cetak_transaksi'])->name('admin.cetak_transaksi');
         Route::get('/admin/laporan', [AdminController::class, 'laporan'])->name('admin.laporan');
+        Route::get('/admin/laporan/export', [AdminController::class, 'export_laporan'])->name('admin.laporan.export');
+        Route::get('/admin/laporan/download/{id}', [AdminController::class, 'download_laporan'])->name('admin.laporan.download');
     });
 
     // Khusus Superadmin

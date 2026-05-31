@@ -9,7 +9,7 @@ trait ExcelExportTrait
     /**
      * Helper untuk ekspor ke Excel dengan format HTML agar rapi
      */
-    protected function exportToExcel($filename, $title, $columns, $data, $headerColor = '#10b981')
+    protected function generateExcelHtml($title, $columns, $data, $headerColor = '#10b981')
     {
         $output = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">';
         $output .= '<head><meta http-equiv="Content-type" content="text/html;charset=utf-8" /></head><body>';
@@ -27,7 +27,6 @@ trait ExcelExportTrait
             $output .= '<tr>';
             foreach ($row as $cell) {
                 $style = 'border: 1px solid #000;';
-                // Jika numeric string panjang (NIK/Rekening/Kode), paksa jadi teks agar tidak jadi scientific notation
                 if (is_string($cell) && is_numeric($cell) && strlen($cell) > 10) {
                     $style .= "mso-number-format:'\@';";
                 }
@@ -36,6 +35,13 @@ trait ExcelExportTrait
             $output .= '</tr>';
         }
         $output .= '</table></body></html>';
+
+        return $output;
+    }
+
+    protected function exportToExcel($filename, $title, $columns, $data, $headerColor = '#10b981')
+    {
+        $output = $this->generateExcelHtml($title, $columns, $data, $headerColor);
 
         return Response::make($output)
             ->header('Content-Type', 'application/vnd.ms-excel')

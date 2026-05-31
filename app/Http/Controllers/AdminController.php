@@ -1270,6 +1270,11 @@ class AdminController extends Controller
         $desas = \App\Models\Desa::orderBy('nama_desa')->get();
         $mitras = \App\Models\Mitra::orderBy('nama_mitra')->get();
 
+        $riwayatLaporan = \App\Models\RiwayatLaporan::with('admin')
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+
         return view('admin.laporan', [
             'activeMenu' => 'laporan',
             'periode' => $bulanTahun,
@@ -1285,7 +1290,8 @@ class AdminController extends Controller
             'kecamatanSeries' => json_encode($kecamatanSeries),
             'kecamatans' => $kecamatans,
             'desas' => $desas,
-            'mitras' => $mitras
+            'mitras' => $mitras,
+            'riwayatLaporan' => $riwayatLaporan
         ]);
     }
 
@@ -1293,5 +1299,166 @@ class AdminController extends Controller
     {
         $transaksi = \App\Models\Transaksi::with(['petani', 'mitra', 'rincian.pupuk'])->where('id_transaksi', $id)->firstOrFail();
         return view('admin.cetak_transaksi', compact('transaksi'));
+    }
+
+    public function export_laporan(Request $request)
+    {
+        $request->validate([
+            'jenis_laporan' => 'required',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+        ]);
+
+        $jenis = $request->jenis_laporan;
+        $startDate = $request->start_date;
+        $endDate = $request->end_date;
+
+        $filename = "";
+        $title = "";
+        $columns = [];
+        $data = [];
+        $color = '#10b981';
+
+        if ($jenis == 'penyaluran') {
+            $details = \App\Models\DetailTransaksi::with(['transaksi.petani', 'transaksi.mitra', 'pupuk'])
+                ->whereHas('transaksi', function($q) use ($startDate, $endDate) {
+                    $q->where('status_pembayaran', 'success')
+                      ->whereDate('tgl_transaksi', '>=', $startDate)
+                      ->whereDate('tgl_transaksi', '<=', $endDate);
+                })
+                ->get();
+
+            $filename = "Laporan_Penyaluran_Pupuk_" . date('Ymd_His') . ".xls";
+            $title = "Laporan Penyaluran Pupuk ($startDate s/d $endDate)";
+            $columns = ['No', 'Tanggal', 'Nama Petani', 'NIK', 'Kios Mitra', 'Jenis Pupuk', 'Jumlah (Kg)', 'Harga Total'];
+            
+            foreach ($details as $index => $d) {
+                $data[] = [
+                    $index + 1,
+                    $d->transaksi->tgl_transaksi,
+                    $d->transaksi->petani->nama_petani ?? '-',
+                    $d->transaksi->petani->nik ?? '-',
+                    $d->transaksi->mitra->nama_mitra ?? '-',
+                    $d->pupuk->nama_pupuk ?? '-',
+                    $d->jml_beli,
+                    'Rp ' . number_format($d->subtotal, 0, ',', '.')
+                ];
+            }
+            $color = '#10b981';
+        } elseif ($jenis == 'transaksi_mitra') {
+            $transaksis = \App\Models\Transaksi::with(['mitra'])
+                ->where('status_pembayaran', 'success')
+                ->whereDate('tgl_transaksi', '>=', $startDate)
+                ->whereDate('tgl_transaksi', '<=', $endDate)
+                ->selectRaw('id_mitra, count(id_transaksi) as total_trx, sum(total) as total_nominal')
+                ->groupBy('id_mitra')
+                ->get();
+                
+            $filename = "Laporan_Transaksi_Mitra_" . date('Ymd_His') . ".xls";
+            $title = "Laporan Transaksi Per Mitra ($startDate s/d $endDate)";
+            $columns = ['No', 'Nama Mitra', 'Total Transaksi', 'Total Nominal (Rp)'];
+            foreach ($transaksis as $index => $t) {
+                $data[] = [
+                    $index + 1,
+                    $t->mitra->nama_mitra ?? '-',
+                    $t->total_trx,
+                    'Rp ' . number_format($t->total_nominal, 0, ',', '.')
+                ];
+            }
+            $color = '#3b82f6';
+        } elseif ($jenis == 'rekapitulasi_subsidi') {
+            $rekaps = \App\Models\DetailTransaksi::with(['pupuk'])
+                ->whereHas('transaksi', function($q) use ($startDate, $endDate) {
+                    $q->where('status_pembayaran', 'success')
+                      ->whereDate('tgl_transaksi', '>=', $startDate)
+                      ->whereDate('tgl_transaksi', '<=', $endDate);
+                })
+                ->selectRaw('id_pupuk, sum(jml_beli) as total_kg, sum(subtotal) as total_rp')
+                ->groupBy('id_pupuk')
+                ->get();
+                
+            $filename = "Laporan_Rekapitulasi_Subsidi_" . date('Ymd_His') . ".xls";
+            $title = "Laporan Rekapitulasi Subsidi ($startDate s/d $endDate)";
+            $columns = ['No', 'Jenis Pupuk', 'Total Tersalur (Kg)', 'Total Subsidi (Rp)'];
+            foreach ($rekaps as $index => $r) {
+                $data[] = [
+                    $index + 1,
+                    $r->pupuk->nama_pupuk ?? '-',
+                    $r->total_kg,
+                    'Rp ' . number_format($r->total_rp, 0, ',', '.')
+                ];
+            }
+            $color = '#8b5cf6';
+        } elseif ($jenis == 'petani_aktif') {
+            $petanis = \App\Models\Petani::with(['kecamatan', 'desa'])
+                ->whereHas('transaksi', function($q) use ($startDate, $endDate) {
+                    $q->where('status_pembayaran', 'success')
+                      ->whereDate('tgl_transaksi', '>=', $startDate)
+                      ->whereDate('tgl_transaksi', '<=', $endDate);
+                })
+                ->withCount(['transaksi' => function($q) use ($startDate, $endDate) {
+                    $q->where('status_pembayaran', 'success')
+                      ->whereDate('tgl_transaksi', '>=', $startDate)
+                      ->whereDate('tgl_transaksi', '<=', $endDate);
+                }])
+                ->get();
+                
+            $filename = "Laporan_Petani_Aktif_" . date('Ymd_His') . ".xls";
+            $title = "Laporan Petani Aktif Transaksi ($startDate s/d $endDate)";
+            $columns = ['No', 'NIK', 'Nama Petani', 'Kecamatan', 'Desa', 'Total Transaksi'];
+            foreach ($petanis as $index => $p) {
+                $data[] = [
+                    $index + 1,
+                    $p->nik,
+                    $p->nama_petani,
+                    $p->kecamatan->nama_kecamatan ?? '-',
+                    $p->desa->nama_desa ?? '-',
+                    $p->transaksi_count
+                ];
+            }
+            $color = '#f59e0b';
+        } else {
+            return back()->with('error', 'Jenis laporan tidak valid.');
+        }
+
+        $htmlOutput = $this->generateExcelHtml($title, $columns, $data, $color);
+        
+        $filePath = 'laporan/' . $filename;
+        \Illuminate\Support\Facades\Storage::disk('public')->put($filePath, $htmlOutput);
+        
+        $fileSize = \Illuminate\Support\Facades\Storage::disk('public')->size($filePath);
+        $fileSizeFormatted = number_format($fileSize / 1048576, 2) . ' MB';
+
+        $admin = \Illuminate\Support\Facades\DB::table('tabel_admin')
+            ->where('id_user', \Illuminate\Support\Facades\Auth::user()->id_user)
+            ->first();
+
+        if ($admin) {
+            \App\Models\RiwayatLaporan::create([
+                'id_admin' => $admin->id_admin,
+                'jenis_laporan' => $jenis,
+                'nama_laporan' => $title,
+                'periode_start' => $startDate,
+                'periode_end' => $endDate,
+                'file_path' => $filePath,
+                'file_size' => $fileSizeFormatted
+            ]);
+        }
+
+        return \Illuminate\Support\Facades\Response::make($htmlOutput)
+            ->header('Content-Type', 'application/vnd.ms-excel')
+            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"')
+            ->header('Cache-Control', 'max-age=0');
+    }
+
+    public function download_laporan($id)
+    {
+        $riwayat = \App\Models\RiwayatLaporan::findOrFail($id);
+        
+        if (!\Illuminate\Support\Facades\Storage::disk('public')->exists($riwayat->file_path)) {
+            return back()->with('error', 'File laporan tidak ditemukan.');
+        }
+
+        return \Illuminate\Support\Facades\Storage::disk('public')->download($riwayat->file_path);
     }
 }

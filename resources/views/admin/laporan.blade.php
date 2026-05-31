@@ -183,75 +183,82 @@
         <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden lg:col-span-2">
             <div class="px-6 py-5 border-b border-gray-50 flex items-center justify-between">
                 <h3 class="text-sm font-bold text-gray-800">Laporan Tersedia</h3>
-            <button class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-colors">
+            <button onclick="document.getElementById('exportModal').classList.remove('hidden')" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-colors">
                 <i data-lucide="file-text" class="h-4 w-4"></i> Buat Laporan Baru
             </button>
         </div>
         
         <div class="p-6 space-y-4">
-            {{-- Laporan Item 1 --}}
+            @forelse($riwayatLaporan as $riwayat)
             <div class="flex items-center justify-between p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors">
                 <div class="flex items-center gap-4">
                     <div class="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
                         <i data-lucide="file-text" class="h-5 w-5 text-emerald-500"></i>
                     </div>
                     <div>
-                        <h4 class="text-sm font-bold text-gray-800">Laporan Penyaluran Pupuk Februari 2026</h4>
-                        <p class="text-[11px] text-gray-500 mt-0.5">1/3/2026 &bull; Bulanan &bull; 2.4 MB</p>
+                        <h4 class="text-sm font-bold text-gray-800">{{ $riwayat->nama_laporan }}</h4>
+                        <p class="text-[11px] text-gray-500 mt-0.5">
+                            {{ \Carbon\Carbon::parse($riwayat->created_at)->format('d/m/Y') }} &bull; 
+                            Periode: {{ \Carbon\Carbon::parse($riwayat->periode_start)->format('d/m/y') }} - {{ \Carbon\Carbon::parse($riwayat->periode_end)->format('d/m/y') }} &bull; 
+                            {{ $riwayat->file_size }}
+                        </p>
                     </div>
                 </div>
-                <button class="flex items-center gap-2 px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-bold text-gray-700 hover:bg-white bg-gray-50 transition-colors">
+                <a href="{{ route('admin.laporan.download', $riwayat->id_riwayat) }}" class="flex items-center gap-2 px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-bold text-gray-700 hover:bg-white bg-gray-50 transition-colors">
                     <i data-lucide="download" class="h-3.5 w-3.5"></i> Download
-                </button>
+                </a>
             </div>
+            @empty
+            <div class="text-center py-8 text-gray-500 text-sm">
+                Belum ada riwayat laporan.
+            </div>
+            @endforelse
+        </div>
+    </div>
+</div>
 
-            {{-- Laporan Item 2 --}}
-            <div class="flex items-center justify-between p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors">
-                <div class="flex items-center gap-4">
-                    <div class="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
-                        <i data-lucide="file-text" class="h-5 w-5 text-emerald-500"></i>
-                    </div>
-                    <div>
-                        <h4 class="text-sm font-bold text-gray-800">Laporan Transaksi Per Mitra Februari 2026</h4>
-                        <p class="text-[11px] text-gray-500 mt-0.5">1/3/2026 &bull; Bulanan &bull; 1.8 MB</p>
-                    </div>
-                </div>
-                <button class="flex items-center gap-2 px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-bold text-gray-700 hover:bg-white bg-gray-50 transition-colors">
-                    <i data-lucide="download" class="h-3.5 w-3.5"></i> Download
+{{-- Export Modal --}}
+<div id="exportModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+    <div class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm transition-opacity" onclick="document.getElementById('exportModal').classList.add('hidden')"></div>
+    <div class="relative min-h-screen flex items-center justify-center p-4">
+        <div class="relative bg-white rounded-2xl shadow-xl max-w-md w-full p-6 overflow-hidden">
+            <div class="flex items-center justify-between mb-5">
+                <h3 class="text-lg font-bold text-gray-900">Buat Laporan Baru</h3>
+                <button onclick="document.getElementById('exportModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-500">
+                    <i data-lucide="x" class="h-5 w-5"></i>
                 </button>
             </div>
-
-            {{-- Laporan Item 3 --}}
-            <div class="flex items-center justify-between p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors">
-                <div class="flex items-center gap-4">
-                    <div class="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
-                        <i data-lucide="file-text" class="h-5 w-5 text-emerald-500"></i>
+            
+            <form action="{{ route('admin.laporan.export') }}" method="GET" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Laporan</label>
+                    <select name="jenis_laporan" required class="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-emerald-500 focus:border-emerald-500 block p-2.5">
+                        <option value="penyaluran">Laporan Penyaluran Pupuk</option>
+                        <option value="transaksi_mitra">Laporan Transaksi Per Mitra</option>
+                        <option value="rekapitulasi_subsidi">Laporan Rekapitulasi Subsidi</option>
+                        <option value="petani_aktif">Laporan Data Petani Aktif</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Dari Tanggal</label>
+                        <input type="date" name="start_date" required class="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-emerald-500 focus:border-emerald-500 block p-2.5">
                     </div>
                     <div>
-                        <h4 class="text-sm font-bold text-gray-800">Laporan Rekapitulasi Subsidi Q1 2026</h4>
-                        <p class="text-[11px] text-gray-500 mt-0.5">28/2/2026 &bull; Triwulan &bull; 3.2 MB</p>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Sampai Tanggal</label>
+                        <input type="date" name="end_date" required class="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-emerald-500 focus:border-emerald-500 block p-2.5">
                     </div>
                 </div>
-                <button class="flex items-center gap-2 px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-bold text-gray-700 hover:bg-white bg-gray-50 transition-colors">
-                    <i data-lucide="download" class="h-3.5 w-3.5"></i> Download
-                </button>
-            </div>
-
-            {{-- Laporan Item 4 --}}
-            <div class="flex items-center justify-between p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors">
-                <div class="flex items-center gap-4">
-                    <div class="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
-                        <i data-lucide="file-text" class="h-5 w-5 text-emerald-500"></i>
-                    </div>
-                    <div>
-                        <h4 class="text-sm font-bold text-gray-800">Laporan Data Petani Aktif Januari 2026</h4>
-                        <p class="text-[11px] text-gray-500 mt-0.5">1/2/2026 &bull; Bulanan &bull; 1.5 MB</p>
-                    </div>
+                
+                <div class="pt-4 flex gap-3">
+                    <button type="button" onclick="document.getElementById('exportModal').classList.add('hidden')" class="flex-1 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 px-4 py-2.5 rounded-xl text-sm font-bold transition-colors">
+                        Batal
+                    </button>
+                    <button type="submit" class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-colors">
+                        <i data-lucide="download" class="h-4 w-4"></i> Download Excel
+                    </button>
                 </div>
-                <button class="flex items-center gap-2 px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-bold text-gray-700 hover:bg-white bg-gray-50 transition-colors">
-                    <i data-lucide="download" class="h-3.5 w-3.5"></i> Download
-                </button>
-            </div>
+            </form>
         </div>
     </div>
 </div>
