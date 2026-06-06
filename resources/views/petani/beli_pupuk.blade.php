@@ -71,7 +71,9 @@
                             <i data-lucide="store" class="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5"></i>
                             <div>
                                 <h4 class="font-bold text-gray-800 text-sm line-clamp-2">{{ $mitra->nama_mitra }}</h4>
-                                <span class="text-[10px] bg-green-50 text-green-700 px-1.5 py-0.5 rounded font-bold border border-green-100">No: {{ $mitra->nomor_mitra ?? '-' }}</span>
+                                <span
+                                    class="text-[10px] bg-green-50 text-green-700 px-1.5 py-0.5 rounded font-bold border border-green-100">No:
+                                    {{ $mitra->nomor_mitra ?? '-' }}</span>
                             </div>
                         </div>
                         <p class="text-[11px] text-gray-500 flex items-start gap-1 mb-2 flex-grow">
@@ -185,7 +187,7 @@
             </button>
             <button id="btn-final-pay" onclick="prosesPembayaranQRIS()"
                 class="w-2/3 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition-colors text-sm flex items-center justify-center gap-2">
-                <i data-lucide="credit-card" class="w-5 h-5"></i> Bayar via QRIS / Midtrans
+                <i data-lucide="credit-card" class="w-5 h-5"></i> Bayar
             </button>
         </div>
     </div>
@@ -444,8 +446,14 @@
             const select = document.getElementById('pupuk-select');
             const inputJumlah = document.getElementById('jumlah-input');
 
-            if (!select.value) return alert("Silakan pilih jenis pupuk terlebih dahulu!");
-            if (!inputJumlah.value || inputJumlah.value <= 0) return alert("Masukkan jumlah dengan benar!");
+            if (!select.value) {
+                Swal.fire('Peringatan', 'Silakan pilih jenis pupuk terlebih dahulu!', 'warning');
+                return;
+            }
+            if (!inputJumlah.value || inputJumlah.value <= 0) {
+                Swal.fire('Peringatan', 'Masukkan jumlah dengan benar!', 'warning');
+                return;
+            }
 
             const option = select.options[select.selectedIndex];
             const idPupuk = option.value;
@@ -455,15 +463,28 @@
             const jumlahMinta = parseInt(inputJumlah.value);
 
             if (jumlahMinta > stokTersedia) {
-                return alert(`Jumlah melebihi stok! Stok yang tersedia hanya ${stokTersedia} Kg.`);
+                Swal.fire('Gagal', `Jumlah melebihi stok! Stok yang tersedia hanya ${stokTersedia} Kg.`, 'error');
+                return;
+            }
+
+            // Validasi Sisa Kuota Keseluruhan Petani
+            const sisaJatah = pupukTersedia.length > 0 ? pupukTersedia[0].sisa_jatah_petani : 0;
+            const totalKgKeranjangSekarang = keranjang.reduce((sum, item) => sum + item.jumlah, 0);
+
+            if (totalKgKeranjangSekarang + jumlahMinta > sisaJatah) {
+                Swal.fire('Gagal',
+                    `Total keseluruhan pupuk di keranjang (${totalKgKeranjangSekarang + jumlahMinta} Kg) melebihi sisa kuota subsidi Anda (${sisaJatah} Kg).`,
+                    'error');
+                return;
             }
 
             const indexAda = keranjang.findIndex(item => item.id === idPupuk);
 
             if (indexAda !== -1) {
                 if (keranjang[indexAda].jumlah + jumlahMinta > stokTersedia) {
-                    return alert(
-                        `Gagal! Total pupuk ${namaPupuk} di keranjang melebihi stok tersedia (${stokTersedia} Kg).`);
+                    Swal.fire('Gagal', `Total pupuk ${namaPupuk} di keranjang melebihi stok tersedia (${stokTersedia} Kg).`,
+                        'error');
+                    return;
                 }
                 keranjang[indexAda].jumlah += jumlahMinta;
                 keranjang[indexAda].subtotal = keranjang[indexAda].jumlah * harga;
@@ -693,7 +714,8 @@
 
                             // 3. Masukkan Data ke Struk
                             document.getElementById('struk-id').innerText = txId;
-                            document.getElementById('struk-mitra').innerHTML = `${selectedMitraNama} <br><span class="text-[10px] text-gray-500 font-medium">No: ${selectedMitraNomor}</span>`;
+                            document.getElementById('struk-mitra').innerHTML =
+                                `${selectedMitraNama} <br><span class="text-[10px] text-gray-500 font-medium">No: ${selectedMitraNomor}</span>`;
                             document.getElementById('struk-tanggal').innerText = formattedDate;
 
                             // 4. Render Detail Item

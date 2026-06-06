@@ -165,14 +165,16 @@
 
                     // Looping data pupuk
                     data.forEach(item => {
+                        let jml_diminta_zak = item.jml_diminta / 50;
+                        let jml_disetujui_zak = item.jml_disetujui / 50;
                         // Tentukan warna teks disetujui (Jika pending, strip '-' saja. Jika disetujui, warna hijau)
                         let textDisetujui = status === 'pending' ? '<span class="text-gray-400">-</span>' :
-                            `<span class="text-green-600 font-bold">${item.jml_disetujui} Kg</span>`;
+                            `<span class="text-green-600 font-bold">${jml_disetujui_zak} Zak</span>`;
 
                         container.innerHTML += `
                         <div class="flex items-center text-sm py-2 border-b border-gray-100 last:border-0">
                             <div class="w-1/2 font-medium text-gray-800">${item.nama_pupuk}</div>
-                            <div class="w-1/4 text-center text-gray-700">${item.jml_diminta} Kg</div>
+                            <div class="w-1/4 text-center text-gray-700">${jml_diminta_zak} Zak</div>
                             <div class="w-1/4 text-right">${textDisetujui}</div>
                         </div>
                     `;

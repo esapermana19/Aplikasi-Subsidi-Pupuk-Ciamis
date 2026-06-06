@@ -78,34 +78,34 @@
 
         {{-- Kuota Cards --}}
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {{-- Kuota Urea --}}
+            {{-- Sisa Kuota --}}
             <div class="group relative bg-gradient-to-br from-green-600 to-green-700 rounded-xl shadow-sm p-5 text-white hover:shadow-md transition-all duration-300 overflow-hidden">
                 <div class="flex items-start justify-between mb-4">
                     <div>
-                        <p class="text-green-100 text-xs font-semibold mb-0.5">Kuota Urea Tersisa</p>
+                        <p class="text-green-100 text-xs font-semibold mb-0.5">Sisa Kuota Keseluruhan</p>
                     </div>
                     <i data-lucide="leaf" class="h-5 w-5 text-green-200 opacity-60"></i>
                 </div>
-                <p class="text-2xl font-bold mb-3">150 <span class="text-sm text-green-100">Kg</span></p>
+                <p class="text-2xl font-bold mb-3">{{ number_format($sisa_kuota, 0, ',', '.') }} <span class="text-sm text-green-100">Kg</span></p>
                 <div class="w-full bg-green-500 bg-opacity-30 rounded-full h-1.5 overflow-hidden">
-                    <div class="bg-green-100 h-full rounded-full" style="width: 75%"></div>
+                    <div class="bg-green-100 h-full rounded-full" style="width: {{ $persentase_sisa }}%"></div>
                 </div>
-                <p class="text-xs text-green-100 mt-2">Periode 2026</p>
+                <p class="text-xs text-green-100 mt-2">Periode {{ $periode }}</p>
             </div>
 
-            {{-- Kuota NPK --}}
+            {{-- Kuota Terpakai --}}
             <div class="group relative bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl shadow-sm p-5 text-white hover:shadow-md transition-all duration-300 overflow-hidden">
                 <div class="flex items-start justify-between mb-4">
                     <div>
-                        <p class="text-violet-100 text-xs font-semibold mb-0.5">Kuota NPK Tersisa</p>
+                        <p class="text-violet-100 text-xs font-semibold mb-0.5">Pupuk Terpakai</p>
                     </div>
                     <i data-lucide="package" class="h-5 w-5 text-violet-200 opacity-60"></i>
                 </div>
-                <p class="text-2xl font-bold mb-3">75 <span class="text-sm text-violet-100">Kg</span></p>
+                <p class="text-2xl font-bold mb-3">{{ number_format($sudah_dibeli, 0, ',', '.') }} <span class="text-sm text-violet-100">Kg</span></p>
                 <div class="w-full bg-violet-400 bg-opacity-30 rounded-full h-1.5 overflow-hidden">
-                    <div class="bg-violet-100 h-full rounded-full" style="width: 60%"></div>
+                    <div class="bg-violet-100 h-full rounded-full" style="width: {{ $persentase_terpakai }}%"></div>
                 </div>
-                <p class="text-xs text-violet-100 mt-2">Periode 2026</p>
+                <p class="text-xs text-violet-100 mt-2">Dari total {{ number_format($kuota_keseluruhan, 0, ',', '.') }} Kg</p>
             </div>
 
             {{-- Transaksi Terakhir --}}
@@ -116,8 +116,13 @@
                     </div>
                     <i data-lucide="clock" class="h-5 w-5 text-orange-500 opacity-60"></i>
                 </div>
-                <p class="text-2xl font-bold text-gray-900 mb-1">Rp 450.000</p>
-                <p class="text-xs text-gray-500">10 Apr 2026</p>
+                @if($transaksiTerakhir)
+                    <p class="text-2xl font-bold text-gray-900 mb-1">Rp {{ number_format($transaksiTerakhir->total, 0, ',', '.') }}</p>
+                    <p class="text-xs text-gray-500">{{ \Carbon\Carbon::parse($transaksiTerakhir->tgl_transaksi)->translatedFormat('d M Y') }}</p>
+                @else
+                    <p class="text-xl font-bold text-gray-900 mb-1">-</p>
+                    <p class="text-xs text-gray-500">Belum ada transaksi</p>
+                @endif
             </div>
         </div>
 
@@ -153,7 +158,11 @@
                         <div>
                             <h3 class="font-semibold text-gray-900 text-sm mb-1">Informasi Penting</h3>
                             <p class="text-xs text-gray-700 mb-2">
-                                <strong>Persiapan Musim Tanam:</strong> Pastikan Anda telah mengambil jatah pupuk subsidi sebelum tanggal 30 April 2026 untuk Musim Tanam I.
+                                @if($periode != 'Belum Ada Musim Aktif')
+                                    <strong>Persiapan Musim Tanam:</strong> Pastikan Anda telah mengambil jatah pupuk subsidi sebelum tanggal {{ \Carbon\Carbon::parse(\App\Models\Musim::where('is_active', true)->first()->tgl_selesai)->translatedFormat('d F Y') }} untuk {{ $periode }}.
+                                @else
+                                    <strong>Informasi:</strong> Saat ini belum ada musim tanam yang aktif. Silakan tunggu informasi lebih lanjut.
+                                @endif
                             </p>
                             <p class="text-xs text-gray-600">
                                 Pembelian pupuk kini dapat dibayar langsung dengan <strong class="text-green-700">QRIS</strong> untuk kemudahan transaksi di Mitra.

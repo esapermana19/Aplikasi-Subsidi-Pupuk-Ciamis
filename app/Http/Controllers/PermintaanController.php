@@ -69,7 +69,7 @@ class PermintaanController extends Controller
                     $detail_data[] = [
                         'id_permintaan' => $id_permintaan,
                         'id_pupuk' => $id_pupuk,
-                        'jml_diminta' => $jml_diminta,
+                        'jml_diminta' => $jml_diminta * 50, // Konversi zak ke kg
                         'jml_disetujui' => 0, // Admin yang akan mengubah ini nanti
                         'created_at' => now(),
                         'updated_at' => now(),

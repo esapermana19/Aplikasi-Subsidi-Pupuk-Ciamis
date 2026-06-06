@@ -116,7 +116,7 @@
                                     <input type="number" name="pupuk[{{ $pupuk->id_pupuk }}]" min="0"
                                         placeholder="0"
                                         class="w-24 border border-gray-300 rounded px-2 py-1 text-right focus:outline-none focus:border-green-500">
-                                    <span class="text-sm text-gray-500">Kg/Zak</span>
+                                    <span class="text-sm text-gray-500">Zak</span>
                                 </div>
                             </div>
                         @endforeach

@@ -169,7 +169,7 @@
 
                         <!-- Slide 3 -->
                         <div id="slide-2" class="absolute inset-0 transition-opacity duration-1000 ease-in-out opacity-0 z-0">
-                            <img src="{{ asset('assets/images/sawah4.jpg') }}" alt="Kualitas Pupuk" class="w-full h-full object-cover">
+                            <img src="{{ asset('assets/images/petani1.png') }}" alt="Kualitas Pupuk" class="w-full h-full object-cover">
                             <div class="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/90 via-black/50 to-transparent">
                                 <h3 class="text-xl font-bold text-white mb-1">Stok Terjamin</h3>
                                 <p class="text-gray-300 text-xs sm:text-sm">Pemantauan ketersediaan pupuk secara real-time antar Kios dan Pusat.</p>

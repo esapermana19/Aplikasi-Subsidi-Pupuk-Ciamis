@@ -91,6 +91,7 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/admin/reject_akun/{id}', [AdminController::class, 'reject_akun'])->name('admin.reject_akun');
         // Halaman List Approval Permintaan
         Route::get('/admin/approval-permintaan', [AdminController::class, 'approval_permintaan'])->name('admin.approval_permintaan');
+        Route::get('/admin/approval-permintaan/export', [AdminController::class, 'export_permintaan'])->name('admin.permintaan.export');
         // API untuk mengambil detail permintaan (dipanggil lewat JS Modal)
         Route::get('/admin/permintaan/{id}/detail', [AdminController::class, 'detail_permintaan']);
         // Proses Simpan Approval (Setujui / Tolak)

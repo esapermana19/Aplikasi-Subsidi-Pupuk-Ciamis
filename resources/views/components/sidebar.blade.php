@@ -74,7 +74,7 @@
                         ],
                         [
                             'id' => 'permintaan-penarikan',
-                            'label' => 'Permintaan Penarikan',
+                            'label' => 'Permintaan Tarik Saldo',
                             'icon' => 'dollar-sign',
                             'route' => 'admin.permintaan_penarikan',
                         ],
@@ -97,7 +97,7 @@
                             'icon' => 'users',
                             'route' => 'superadmin.manage_admin',
                         ],
-                        ['id' => 'chat', 'label' => 'Chat Dukungan', 'icon' => 'message-square', 'route' => 'chat.index'],
+                        // ['id' => 'chat', 'label' => 'Chat Dukungan', 'icon' => 'message-square', 'route' => 'chat.index'],
                         ['id' => 'log-activity', 'label' => 'Log Aktivitas', 'icon' => 'history', 'route' => 'admin.log_activity'],
                         [
                             'id' => 'regulasi',

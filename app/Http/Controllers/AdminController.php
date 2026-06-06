@@ -616,20 +616,116 @@ class AdminController extends Controller
         }
     }
 
-    public function approval_permintaan()
+    public function approval_permintaan(Request $request)
     {
-        // Ambil semua permintaan beserta nama mitra/tokonya
-        $permintaans = DB::table('tabel_permintaan')
-            // Asumsi: Anda punya tabel_mitra dan punya relasi ke sana
-            ->join('tabel_mitra', 'tabel_permintaan.id_mitra', '=', 'tabel_mitra.id_mitra')
-            ->select('tabel_permintaan.*', 'tabel_mitra.nama_mitra')
-            ->orderBy('tabel_permintaan.created_at', 'desc')
+        $query = \App\Models\Permintaan::with('mitra');
+
+        if ($request->filled('kecamatan')) {
+            $query->whereHas('mitra', function ($q) use ($request) {
+                $q->where('id_kecamatan', $request->kecamatan);
+            });
+        }
+
+        if ($request->filled('desa')) {
+            $query->whereHas('mitra', function ($q) use ($request) {
+                $q->where('id_desa', $request->desa);
+            });
+        }
+
+        if ($request->filled('mitra')) {
+            $query->where('id_mitra', $request->mitra);
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('id_permintaan', 'like', "%{$search}%")
+                  ->orWhereHas('mitra', function ($q2) use ($search) {
+                      $q2->where('nama_mitra', 'like', "%{$search}%")
+                         ->orWhere('nama_pemilik', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        if ($request->filled('filter_bulan')) {
+            $parts = explode('-', $request->filter_bulan);
+            $query->whereYear('created_at', $parts[0])
+                  ->whereMonth('created_at', $parts[1]);
+        }
+
+        $permintaans = $query->orderByRaw("FIELD(status_permintaan, 'pending') DESC")
+            ->orderBy('created_at', 'desc')
             ->paginate(10)->withQueryString();
+
+        $kecamatans = \App\Models\Kecamatan::orderBy('nama_kecamatan')->get();
+        $desas = \App\Models\Desa::orderBy('nama_desa')->get();
+        $mitras = \App\Models\Mitra::orderBy('nama_mitra')->get();
 
         return view('admin.approval_permintaan', [
             'permintaans' => $permintaans,
+            'kecamatans' => $kecamatans,
+            'desas' => $desas,
+            'mitras' => $mitras,
             'activeMenu' => 'approval-permintaan'
         ]);
+    }
+
+    public function export_permintaan(Request $request)
+    {
+        $query = \App\Models\Permintaan::with('mitra');
+
+        if ($request->filled('kecamatan')) {
+            $query->whereHas('mitra', function ($q) use ($request) {
+                $q->where('id_kecamatan', $request->kecamatan);
+            });
+        }
+
+        if ($request->filled('desa')) {
+            $query->whereHas('mitra', function ($q) use ($request) {
+                $q->where('id_desa', $request->desa);
+            });
+        }
+
+        if ($request->filled('mitra')) {
+            $query->where('id_mitra', $request->mitra);
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('id_permintaan', 'like', "%{$search}%")
+                  ->orWhereHas('mitra', function ($q2) use ($search) {
+                      $q2->where('nama_mitra', 'like', "%{$search}%")
+                         ->orWhere('nama_pemilik', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        if ($request->filled('filter_bulan')) {
+            $parts = explode('-', $request->filter_bulan);
+            $query->whereYear('created_at', $parts[0])
+                  ->whereMonth('created_at', $parts[1]);
+        }
+
+        $permintaans = $query->orderBy('created_at', 'desc')->get();
+        
+        $filename = "Data_Permintaan_Pupuk_" . date('Ymd_His') . ".xls";
+        $columns = ['No', 'ID Permintaan', 'Tanggal', 'Nama Mitra', 'Pemilik', 'Catatan', 'Status'];
+        
+        $data = [];
+        foreach ($permintaans as $index => $p) {
+            $data[] = [
+                $index + 1,
+                $p->id_permintaan,
+                $p->created_at->format('d/m/Y H:i'),
+                $p->mitra->nama_mitra ?? '-',
+                $p->mitra->nama_pemilik ?? '-',
+                $p->catatan ?? '-',
+                strtoupper($p->status_permintaan)
+            ];
+        }
+
+        return $this->exportToExcel($filename, 'Data Permintaan Stok Pupuk Mitra', $columns, $data, '#10b981');
     }
 
     /**
@@ -675,17 +771,18 @@ class AdminController extends Controller
 
                 $pupuk_disetujui = $request->input('pupuk_disetujui', []);
                 foreach ($pupuk_disetujui as $id_detail => $jml) {
+                    $jml_kg = $jml * 50; // Konversi zak ke kg
                     $detail = DB::table('tabel_detail_permintaan')->where('id_detail_permintaan', $id_detail)->first();
 
                     // Simpan jumlah yang disetujui
                     DB::table('tabel_detail_permintaan')
                         ->where('id_detail_permintaan', $id_detail)
-                        ->update(['jml_disetujui' => $jml]);
+                        ->update(['jml_disetujui' => $jml_kg]);
 
                     // KURANGI STOK PUSAT
                     DB::table('tabel_pupuk')
                         ->where('id_pupuk', $detail->id_pupuk)
-                        ->decrement('stok', $jml);
+                        ->decrement('stok', $jml_kg);
                 }
 
                 $pesan = 'Permintaan berhasil disetujui dan sedang diproses.';

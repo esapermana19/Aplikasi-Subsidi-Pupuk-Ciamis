@@ -10,6 +10,8 @@ use App\Models\Desa;
 use App\Models\Mitra;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use App\Models\Musim;
 
 class PetaniController extends Controller
 {
@@ -37,6 +39,41 @@ class PetaniController extends Controller
         // Ambil daftar kecamatan untuk filter
         $kecamatans = Kecamatan::all();
 
+        // Hitung Statistik Kuota Berdasarkan Musim Aktif
+        $musimAktif = Musim::where('is_active', true)->first();
+        
+        $kuota_keseluruhan = 0;
+        $sudah_dibeli = 0;
+        $sisa_kuota = 0;
+        $periode = 'Belum Ada Musim Aktif';
+        $persentase_sisa = 0;
+        $persentase_terpakai = 0;
+
+        if ($musimAktif) {
+            $periode = $musimAktif->nama_musim;
+            $kuota_keseluruhan = $musimAktif->limit_per_petani;
+            
+            $sudah_dibeli = DB::table('tabel_detail_transaksi')
+                ->join('tabel_transaksi', 'tabel_detail_transaksi.id_transaksi', '=', 'tabel_transaksi.id_transaksi')
+                ->where('tabel_transaksi.id_petani', $petani->id_petani)
+                ->where('tabel_transaksi.id_musim', $musimAktif->id_musim)
+                ->where('tabel_transaksi.status_pembayaran', 'success')
+                ->sum('tabel_detail_transaksi.jml_beli');
+            
+            $sisa_kuota = max(0, $kuota_keseluruhan - $sudah_dibeli);
+            
+            if ($kuota_keseluruhan > 0) {
+                $persentase_sisa = ($sisa_kuota / $kuota_keseluruhan) * 100;
+                $persentase_terpakai = ($sudah_dibeli / $kuota_keseluruhan) * 100;
+            }
+        }
+
+        // Transaksi Terakhir (untuk card ke-3)
+        $transaksiTerakhir = Transaksi::where('id_petani', $petani->id_petani)
+            ->whereIn('status_pembayaran', ['success'])
+            ->orderBy('created_at', 'desc')
+            ->first();
+
         return view('petani.dashboard', [
             'petani' => $petani,
             'transaksiTerbaru' => $transaksiTerbaru,
@@ -44,6 +81,13 @@ class PetaniController extends Controller
             'totalPembelian' => $totalPembelian,
             'totalNilai' => $totalNilai,
             'kecamatans' => $kecamatans,
+            'kuota_keseluruhan' => $kuota_keseluruhan,
+            'sudah_dibeli' => $sudah_dibeli,
+            'sisa_kuota' => $sisa_kuota,
+            'periode' => $periode,
+            'persentase_sisa' => $persentase_sisa,
+            'persentase_terpakai' => $persentase_terpakai,
+            'transaksiTerakhir' => $transaksiTerakhir,
             'activeMenu' => 'petani.dashboard'
         ]);
     }
